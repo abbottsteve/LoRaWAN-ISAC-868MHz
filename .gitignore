@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+*-backups/
+*.kicad_prl
+*.lck
+*-drc.rpt
+*-erc.rpt
+fp-info-cache
+firmware/build/
+rf/*.so
+prov/
+provisioning_vault/
+credentials.csv

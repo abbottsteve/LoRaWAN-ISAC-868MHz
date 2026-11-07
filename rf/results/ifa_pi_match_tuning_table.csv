@@ -1,0 +1,8 @@
+unmatched_f0_shift_MHz,unmatched_Z_866p5_ohm,C_M1_pF,L_M1_nH,C_MZ_pF,C_M2_pF,matched_s11_866p5_dB,matched_worst_s11_863_870_dB,bom_action
+-20.0,21.1+14.1j,7.21,6.37,0.0,12.44,-8.34,-7.25,Post-VNA 0402 Murata GJM1555C1H / LQW15AN trim (C_MZ DNP)
+-12.0,31.2+8.2j,6.8,6.74,0.0,9.14,-11.57,-11.26,Post-VNA 0402 Murata GJM1555C1H / LQW15AN trim (C_MZ DNP)
+-6.0,42.0+4.2j,5.8,7.83,0.0,6.5,-14.84,-12.21,Post-VNA 0402 Murata GJM1555C1H / LQW15AN trim (C_MZ DNP)
+0.0,56.8+1.5j,3.6,8.2,0.5,4.3,-20.83,-17.77,"Nominal Rev E.5 Populated Elliptic Harmonic Pi-Network (C_M1=3.6p, L_M1=8.2n||C_MZ=0.5p, C_M2=4.3p)"
+6.0,77.7+3.0j,5.14,10.24,0.0,4.57,-14.77,-11.5,Post-VNA 0402 Murata GJM1555C1H / LQW15AN trim (C_MZ DNP)
+12.0,105.1+15.6j,5.14,11.53,0.0,4.21,-13.42,-10.41,Post-VNA 0402 Murata GJM1555C1H / LQW15AN trim (C_MZ DNP)
+20.0,133.7+68.4j,5.14,13.64,0.0,3.82,-11.65,-8.87,Post-VNA 0402 Murata GJM1555C1H / LQW15AN trim (C_MZ DNP)

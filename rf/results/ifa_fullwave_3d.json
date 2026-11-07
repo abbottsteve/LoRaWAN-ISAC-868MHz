@@ -1,0 +1,440 @@
+{
+  "solver": "3D Non-Uniform Yee-Grid Maxwell FDTD (rf/fdtd_3d_ant.c, 8-cell CPML, ENIG Rs + Volumetric Loss DFT, 22000 steps)",
+  "footprint": "ISAC.pretty/IFA_868MHz_ISAC_40x20mm.kicad_mod",
+  "surface_finish": "IPC-4552 ENIG (Rs_866p5 = 23.74 mOhm/sq)",
+  "window_material": "UV-stabilized ASA/PETG (0.80 mm flush open-East runoff deck + 25 um 3M 467MP transfer adhesive)",
+  "harmonic_pi_network": {
+    "c_m1_pf": 3.6,
+    "l_m1_nh": 8.2,
+    "c_mz_pf": 0.5,
+    "c_m2_pf": 4.3,
+    "q_ind_868": 42.0,
+    "esl_shunt_nh": 0.65,
+    "srf_l1_ghz": 3.9,
+    "esl_cmz_nh": 0.25
+  },
+  "media": {
+    "bare": {
+      "scenario": "1_Bare_PCB_FreeSpace (no lid)",
+      "eps_real": 1.0,
+      "eps_imag": 0.0,
+      "f0_MHz": 940.0,
+      "min_s11_dB": -3.84,
+      "s11_866p5_raw_dB": -0.78,
+      "s11_866p5_cascaded_dB": -1.34,
+      "worst_s11_863_870_dB": -1.31,
+      "eta_rad_pct": 67.5,
+      "eta_tot_pct": 14.2,
+      "z_ant_tones_ohm": [
+        [
+          8.028,
+          79.776
+        ],
+        [
+          8.055,
+          80.033
+        ],
+        [
+          7.868,
+          80.378
+        ]
+      ],
+      "z_brq_tones_ohm": [
+        [
+          4.155,
+          -15.872
+        ],
+        [
+          4.198,
+          -15.298
+        ],
+        [
+          4.145,
+          -14.751
+        ]
+      ],
+      "harm_atten_2f0_dB": 37.52,
+      "harm_atten_3f0_dB": 58.99
+    },
+    "dry air": {
+      "scenario": "2_Enclosed_Nom_0p80mm_ASA (er=4.4, Dry Air)",
+      "eps_real": 1.0,
+      "eps_imag": 0.0,
+      "f0_MHz": 869.0,
+      "min_s11_dB": -32.69,
+      "s11_866p5_raw_dB": -23.69,
+      "s11_866p5_cascaded_dB": -20.83,
+      "worst_s11_863_870_dB": -17.77,
+      "eta_rad_pct": 50.0,
+      "eta_tot_pct": 45.5,
+      "z_ant_tones_ohm": [
+        [
+          67.795,
+          1.535
+        ],
+        [
+          56.822,
+          1.5
+        ],
+        [
+          48.761,
+          2.543
+        ]
+      ],
+      "z_brq_tones_ohm": [
+        [
+          46.745,
+          10.705
+        ],
+        [
+          55.427,
+          7.936
+        ],
+        [
+          63.368,
+          3.167
+        ]
+      ],
+      "harm_atten_2f0_dB": 37.2,
+      "harm_atten_3f0_dB": 60.08
+    },
+    "lipo": {
+      "scenario": "3_Enclosed_With_302535_LiPo_Under_GND",
+      "eps_real": 1.0,
+      "eps_imag": 0.0,
+      "f0_MHz": 869.0,
+      "min_s11_dB": -32.79,
+      "s11_866p5_raw_dB": -23.68,
+      "s11_866p5_cascaded_dB": -20.81,
+      "worst_s11_863_870_dB": -17.77,
+      "eta_rad_pct": 50.0,
+      "eta_tot_pct": 45.5,
+      "z_ant_tones_ohm": [
+        [
+          67.818,
+          1.507
+        ],
+        [
+          56.839,
+          1.473
+        ],
+        [
+          48.773,
+          2.518
+        ]
+      ],
+      "z_brq_tones_ohm": [
+        [
+          46.737,
+          10.727
+        ],
+        [
+          55.423,
+          7.964
+        ],
+        [
+          63.37,
+          3.2
+        ]
+      ],
+      "harm_atten_2f0_dB": 37.17,
+      "harm_atten_3f0_dB": 60.07
+    },
+    "fr4_low": {
+      "scenario": "4_Enclosed_FR4_Low_er4p2",
+      "eps_real": 1.0,
+      "eps_imag": 0.0,
+      "f0_MHz": 879.0,
+      "min_s11_dB": -34.19,
+      "s11_866p5_raw_dB": -10.01,
+      "s11_866p5_cascaded_dB": -12.67,
+      "worst_s11_863_870_dB": -10.21,
+      "eta_rad_pct": 47.5,
+      "eta_tot_pct": 40.4,
+      "z_ant_tones_ohm": [
+        [
+          112.428,
+          18.572
+        ],
+        [
+          95.337,
+          7.508
+        ],
+        [
+          81.558,
+          2.677
+        ]
+      ],
+      "z_brq_tones_ohm": [
+        [
+          28.702,
+          11.889
+        ],
+        [
+          34.9,
+          13.084
+        ],
+        [
+          41.277,
+          13.293
+        ]
+      ],
+      "harm_atten_2f0_dB": 37.2,
+      "harm_atten_3f0_dB": 60.04
+    },
+    "fr4_high": {
+      "scenario": "5_Enclosed_FR4_High_er4p6",
+      "eps_real": 1.0,
+      "eps_imag": 0.0,
+      "f0_MHz": 859.5,
+      "min_s11_dB": -31.06,
+      "s11_866p5_raw_dB": -14.42,
+      "s11_866p5_cascaded_dB": -12.76,
+      "worst_s11_863_870_dB": -10.3,
+      "eta_rad_pct": 49.3,
+      "eta_tot_pct": 43.6,
+      "z_ant_tones_ohm": [
+        [
+          41.631,
+          4.534
+        ],
+        [
+          35.186,
+          6.644
+        ],
+        [
+          30.37,
+          8.697
+        ]
+      ],
+      "z_brq_tones_ohm": [
+        [
+          68.368,
+          -3.437
+        ],
+        [
+          75.241,
+          -14.266
+        ],
+        [
+          78.233,
+          -26.302
+        ]
+      ],
+      "harm_atten_2f0_dB": 37.19,
+      "harm_atten_3f0_dB": 60.12
+    },
+    "PTFE": {
+      "scenario": "6_PTFE_Oil_on_0p80mm_Window (eps*=2.1-j0.0002)",
+      "eps_real": 2.1,
+      "eps_imag": 0.0002,
+      "f0_MHz": 849.0,
+      "min_s11_dB": -29.33,
+      "s11_866p5_raw_dB": -7.04,
+      "s11_866p5_cascaded_dB": -7.14,
+      "worst_s11_863_870_dB": -5.82,
+      "eta_rad_pct": 46.5,
+      "eta_tot_pct": 35.4,
+      "z_ant_tones_ohm": [
+        [
+          24.906,
+          11.466
+        ],
+        [
+          20.973,
+          13.854
+        ],
+        [
+          17.961,
+          15.969
+        ]
+      ],
+      "z_brq_tones_ohm": [
+        [
+          77.433,
+          -40.644
+        ],
+        [
+          71.274,
+          -54.433
+        ],
+        [
+          62.32,
+          -63.568
+        ]
+      ],
+      "harm_atten_2f0_dB": 37.24,
+      "harm_atten_3f0_dB": 60.28
+    },
+    "glaze ice": {
+      "scenario": "7_Glaze_Ice_on_0p80mm_Window (eps*=3.2-j0.003)",
+      "eps_real": 3.2,
+      "eps_imag": 0.003,
+      "f0_MHz": 834.5,
+      "min_s11_dB": -26.91,
+      "s11_866p5_raw_dB": -2.55,
+      "s11_866p5_cascaded_dB": -2.89,
+      "worst_s11_863_870_dB": -2.23,
+      "eta_rad_pct": 29.0,
+      "eta_tot_pct": 13.4,
+      "z_ant_tones_ohm": [
+        [
+          11.11,
+          21.489
+        ],
+        [
+          8.964,
+          23.763
+        ],
+        [
+          7.3,
+          25.755
+        ]
+      ],
+      "z_brq_tones_ohm": [
+        [
+          37.371,
+          -74.194
+        ],
+        [
+          27.271,
+          -72.436
+        ],
+        [
+          20.135,
+          -69.414
+        ]
+      ],
+      "harm_atten_2f0_dB": 37.26,
+      "harm_atten_3f0_dB": 60.33
+    },
+    "alumina Al2O3": {
+      "scenario": "8_Alumina_on_0p80mm_Window (eps*=9.8-j0.002)",
+      "eps_real": 9.8,
+      "eps_imag": 0.002,
+      "f0_MHz": 783.0,
+      "min_s11_dB": -21.1,
+      "s11_866p5_raw_dB": -0.36,
+      "s11_866p5_cascaded_dB": -0.53,
+      "worst_s11_863_870_dB": -0.35,
+      "eta_rad_pct": 50.8,
+      "eta_tot_pct": 5.1,
+      "z_ant_tones_ohm": [
+        [
+          1.283,
+          48.821
+        ],
+        [
+          2.045,
+          49.784
+        ],
+        [
+          2.731,
+          50.44
+        ]
+      ],
+      "z_brq_tones_ohm": [
+        [
+          1.558,
+          -36.151
+        ],
+        [
+          2.271,
+          -34.743
+        ],
+        [
+          2.89,
+          -33.702
+        ]
+      ],
+      "harm_atten_2f0_dB": 37.35,
+      "harm_atten_3f0_dB": 60.37
+    },
+    "IPA (868 MHz)": {
+      "scenario": "9_IPA_on_0p80mm_Window (eps*=6.29-j6.09)",
+      "eps_real": 6.29,
+      "eps_imag": 6.09,
+      "f0_MHz": 794.0,
+      "min_s11_dB": -4.21,
+      "s11_866p5_raw_dB": -1.63,
+      "s11_866p5_cascaded_dB": -2.19,
+      "worst_s11_863_870_dB": -2.11,
+      "eta_rad_pct": 12.5,
+      "eta_tot_pct": 4.8,
+      "z_ant_tones_ohm": [
+        [
+          9.568,
+          48.237
+        ],
+        [
+          9.224,
+          48.786
+        ],
+        [
+          8.951,
+          49.272
+        ]
+      ],
+      "z_brq_tones_ohm": [
+        [
+          9.809,
+          -35.239
+        ],
+        [
+          9.309,
+          -34.436
+        ],
+        [
+          8.914,
+          -33.715
+        ]
+      ],
+      "harm_atten_2f0_dB": 37.3,
+      "harm_atten_3f0_dB": 60.14
+    },
+    "water film": {
+      "scenario": "10_Water_Film_on_Window (eps*=79.9-j3.81)",
+      "eps_real": 79.9,
+      "eps_imag": 3.81,
+      "f0_MHz": 776.0,
+      "min_s11_dB": -0.64,
+      "s11_866p5_raw_dB": -0.46,
+      "s11_866p5_cascaded_dB": -0.72,
+      "worst_s11_863_870_dB": -0.71,
+      "eta_rad_pct": 73.8,
+      "eta_tot_pct": 9.6,
+      "z_ant_tones_ohm": [
+        [
+          2.995,
+          55.738
+        ],
+        [
+          3.004,
+          55.894
+        ],
+        [
+          2.958,
+          56.051
+        ]
+      ],
+      "z_brq_tones_ohm": [
+        [
+          2.765,
+          -29.877
+        ],
+        [
+          2.773,
+          -29.336
+        ],
+        [
+          2.738,
+          -28.847
+        ]
+      ],
+      "harm_atten_2f0_dB": 37.46,
+      "harm_atten_3f0_dB": 60.65
+    }
+  },
+  "harmonic_50R_2f0_dB": 28.78,
+  "harmonic_50R_3f0_dB": 48.48
+}

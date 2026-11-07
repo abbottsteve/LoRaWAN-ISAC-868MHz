@@ -1,0 +1,12 @@
+case,h_core_mm,er_fr4,t_cu_um,t_mask_um,z0_ohm,eeff,lambda_g_868_mm,l_max_lambda_g,seg_return_loss_dB,seg_mismatch_il_dB
+"Wadell conformal (t_cu=0, bare, er=4.4, h=1.51mm)",1.51,4.4,0.0,0.0,57.1,2.783,207.0,0.054,27.1,0.0085
+"2D-FVM zero-thickness check (t_cu=0, bare, er=4.4)",1.51,4.4,0.0,0.0,56.73,2.779,207.2,0.054,27.5,0.0077
+"2D-FVM 1oz Cu bare ENIG (t_cu=35um, no mask, er=4.4)",1.51,4.4,35.0,0.0,53.92,2.657,211.9,0.0528,32.2,0.0026
+"2D-FVM 1oz Cu + 10um LPI mask (er=4.4, thin mask)",1.51,4.4,35.0,10.0,53.07,2.742,208.6,0.0536,34.1,0.0017
+2D-FVM 1oz Cu + 17.5um LPI mask (NOMINAL Rev E.2),1.51,4.4,35.0,17.5,52.59,2.792,206.7,0.0541,35.5,0.0012
+"2D-FVM 1oz Cu + 25um LPI mask (er=4.4, med mask)",1.51,4.4,35.0,25.0,52.16,2.839,205.0,0.0545,36.9,0.0009
+"2D-FVM 1oz Cu + 35um LPI mask (er=4.4, thick mask)",1.51,4.4,35.0,35.0,51.62,2.898,202.9,0.0551,39.3,0.0005
+"2D-FVM Stackup Corner Low-er / Thick-Core (er=4.2, h=1.66mm, 10um LPI)",1.66,4.2,35.0,10.0,54.57,2.632,212.9,0.0525,30.9,0.0035
+"2D-FVM Stackup Corner Nom-Core Low-er (er=4.2, h=1.51mm, 17.5um LPI)",1.51,4.2,35.0,17.5,53.54,2.694,210.4,0.0531,33.0,0.0022
+"2D-FVM Stackup Corner Nom-Core High-er (er=4.6, h=1.51mm, 17.5um LPI)",1.51,4.6,35.0,17.5,51.69,2.89,203.2,0.055,38.9,0.0006
+"2D-FVM Stackup Corner High-er / Thin-Core (er=4.6, h=1.36mm, 35um LPI)",1.36,4.6,35.0,35.0,50.15,3.012,199.0,0.0562,59.9,0.0

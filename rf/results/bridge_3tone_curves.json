@@ -1,0 +1,293 @@
+{
+  "revision": "E.5",
+  "p_tx_sensing_dbm": 4.0,
+  "max_lt5538_pin_dbm": -25.4,
+  "lt5538_compression_headroom_dB": 12.4,
+  "pcb_bridge_copper_lengths_mm": {
+    "/BR_P": 11.89,
+    "/BR_Q": 19.37,
+    "/BR_S": 1.44,
+    "/BR_O": 2.05,
+    "/DET_IN": 1.28
+  },
+  "c_par_brs_pf": 0.1305,
+  "lt5538_zin_866p5_series_ohm": [
+    63.48,
+    -120.35
+  ],
+  "lt5538_zin_866p5_parallel_rc": {
+    "r_par_ohm": 291.65,
+    "c_par_pf": 1.194
+  },
+  "r1_primary_mpn": "Yageo RT0402BRD078R2L (8.2 Ohm +/-0.1% Thin Film)",
+  "rterm_primary_mpn": "Susumu RG1005P-560-B-T5 (56 Ohm +/-0.1% Thin Film)",
+  "r1_0p5pct_alt_impact_dB": 0.0108,
+  "nominal_866p5_metrics": {
+    "s11_dB": -23.287,
+    "s21_dB": -0.802,
+    "s12_dB": -0.802,
+    "s22_dB": -23.7918,
+    "null_50R_dBm": -50.459,
+    "vout_50R_V": 0.7285,
+    "directivity_wc_dB": 24.8057
+  },
+  "two_point_calibration": {
+    "point1_dry_air_vout_mv": [
+      817.9,
+      757.8,
+      883.3
+    ],
+    "point2_alumina_ref_level_dbm": -26.19,
+    "water_ipa_threshold_dbm": -26.94,
+    "water_vs_ipa_gap_median_dB": 1.382,
+    "water_vs_ipa_gap_p01_dB": 0.647,
+    "water_vs_ipa_yield_pct": 99.72,
+    "hazard_4class_yield_pct": 99.45
+  },
+  "stackup_core_sweep": [
+    {
+      "corner": "-0.10mm_std_min",
+      "h_core_mm": 1.41,
+      "h_finished_mm": 1.5,
+      "ae1_f0_est_MHz": 860.2,
+      "df0_MHz": -8.8,
+      "bridge_directivity_866p5_dB": 23.85
+    },
+    {
+      "corner": "-0.08mm_tight_min",
+      "h_core_mm": 1.43,
+      "h_finished_mm": 1.52,
+      "ae1_f0_est_MHz": 862.04,
+      "df0_MHz": -6.96,
+      "bridge_directivity_866p5_dB": 24.24
+    },
+    {
+      "corner": "1.51mm_nominal",
+      "h_core_mm": 1.51,
+      "h_finished_mm": 1.6,
+      "ae1_f0_est_MHz": 869.0,
+      "df0_MHz": 0.0,
+      "bridge_directivity_866p5_dB": 24.81
+    },
+    {
+      "corner": "+0.03mm_asym_max",
+      "h_core_mm": 1.54,
+      "h_finished_mm": 1.63,
+      "ae1_f0_est_MHz": 871.47,
+      "df0_MHz": 2.47,
+      "bridge_directivity_866p5_dB": 24.6
+    },
+    {
+      "corner": "+0.08mm_tight_max",
+      "h_core_mm": 1.59,
+      "h_finished_mm": 1.68,
+      "ae1_f0_est_MHz": 875.41,
+      "df0_MHz": 6.41,
+      "bridge_directivity_866p5_dB": 23.91
+    },
+    {
+      "corner": "+0.10mm_std_max",
+      "h_core_mm": 1.61,
+      "h_finished_mm": 1.7,
+      "ae1_f0_est_MHz": 876.93,
+      "df0_MHz": 7.93,
+      "bridge_directivity_866p5_dB": 23.56
+    }
+  ],
+  "mc_summary": [
+    {
+      "bom_grade": "RevE5_Precision_BOM_2PtCal (0.1% Thin-Film R, 2% Wirewound L, +/-0.05pF C0G + 2-Pt Factory Cal)",
+      "trials": 2000,
+      "s21_median_dB": -0.802,
+      "s21_p01_dB": -0.81,
+      "s11_median_dB": -23.3,
+      "s11_p99_dB": -22.89,
+      "directivity_median_dB": 15.05,
+      "directivity_p10_dB": 9.17,
+      "directivity_p05_dB": 7.79,
+      "air_to_ice_contrast_median_dB": 20.55,
+      "air_to_ice_contrast_p01_dB": 17.6,
+      "yield_ice_contrast_gt_6dB_pct": 100.0
+    },
+    {
+      "bom_grade": "RevE5_Precision_BOM_Uncalibrated (0.1% Thin-Film R, 2% Wirewound L, +/-0.05pF C0G, Raw)",
+      "trials": 2000,
+      "s21_median_dB": -0.802,
+      "s21_p01_dB": -0.81,
+      "s11_median_dB": -23.3,
+      "s11_p99_dB": -22.9,
+      "directivity_median_dB": 14.9,
+      "directivity_p10_dB": 9.3,
+      "directivity_p05_dB": 7.83,
+      "air_to_ice_contrast_median_dB": 13.26,
+      "air_to_ice_contrast_p01_dB": 0.07,
+      "yield_ice_contrast_gt_6dB_pct": 83.65
+    },
+    {
+      "bom_grade": "Counterfactual_Generic_5pct (5% Thick-Film R, 5% Multilayer L, +/-0.25pF C, Raw)",
+      "trials": 2000,
+      "s21_median_dB": -0.812,
+      "s21_p01_dB": -0.886,
+      "s11_median_dB": -23.34,
+      "s11_p99_dB": -21.78,
+      "directivity_median_dB": 1.96,
+      "directivity_p10_dB": -4.24,
+      "directivity_p05_dB": -5.65,
+      "air_to_ice_contrast_median_dB": 4.84,
+      "air_to_ice_contrast_p01_dB": -8.7,
+      "yield_ice_contrast_gt_6dB_pct": 35.4
+    }
+  ],
+  "table": [
+    {
+      "medium": "dry air",
+      "eps_real": 1.0,
+      "eps_imag": 0.0,
+      "f_res_MHz": 869.0,
+      "df_MHz": 0.0,
+      "s11_dB": [
+        -18.79,
+        -20.83,
+        -18.33
+      ],
+      "p_det_dBm": [
+        -45.7538,
+        -48.9151,
+        -42.3113
+      ],
+      "vout_v": [
+        0.8179,
+        0.7578,
+        0.8833
+      ],
+      "tilt_dB": -3.44,
+      "notch_dB": 4.88,
+      "level_dBm": -45.66
+    },
+    {
+      "medium": "PTFE",
+      "eps_real": 2.1,
+      "eps_imag": 0.0002,
+      "f_res_MHz": 849.0,
+      "df_MHz": -20.0,
+      "s11_dB": [
+        -8.72,
+        -7.14,
+        -5.99
+      ],
+      "p_det_dBm": [
+        -33.8335,
+        -33.3626,
+        -32.5985
+      ],
+      "vout_v": [
+        1.0444,
+        1.0533,
+        1.0678
+      ],
+      "tilt_dB": -1.23,
+      "notch_dB": 0.15,
+      "level_dBm": -33.26
+    },
+    {
+      "medium": "glaze ice",
+      "eps_real": 3.2,
+      "eps_imag": 0.003,
+      "f_res_MHz": 834.5,
+      "df_MHz": -34.5,
+      "s11_dB": [
+        -3.65,
+        -2.89,
+        -2.32
+      ],
+      "p_det_dBm": [
+        -28.6117,
+        -28.6636,
+        -28.603
+      ],
+      "vout_v": [
+        1.1436,
+        1.1426,
+        1.1437
+      ],
+      "tilt_dB": -0.01,
+      "notch_dB": 0.06,
+      "level_dBm": -28.63
+    },
+    {
+      "medium": "alumina Al2O3",
+      "eps_real": 9.8,
+      "eps_imag": 0.002,
+      "f_res_MHz": 783.0,
+      "df_MHz": -86.0,
+      "s11_dB": [
+        -0.36,
+        -0.53,
+        -0.69
+      ],
+      "p_det_dBm": [
+        -25.3969,
+        -26.2129,
+        -26.9582
+      ],
+      "vout_v": [
+        1.2047,
+        1.1892,
+        1.175
+      ],
+      "tilt_dB": 1.56,
+      "notch_dB": 0.03,
+      "level_dBm": -26.19
+    },
+    {
+      "medium": "IPA (868 MHz)",
+      "eps_real": 6.29,
+      "eps_imag": 6.09,
+      "f_res_MHz": 794.0,
+      "df_MHz": -75.0,
+      "s11_dB": [
+        -2.27,
+        -2.19,
+        -2.12
+      ],
+      "p_det_dBm": [
+        -27.0102,
+        -27.7712,
+        -28.4618
+      ],
+      "vout_v": [
+        1.174,
+        1.1595,
+        1.1464
+      ],
+      "tilt_dB": 1.45,
+      "notch_dB": 0.04,
+      "level_dBm": -27.75
+    },
+    {
+      "medium": "water film",
+      "eps_real": 79.9,
+      "eps_imag": 3.81,
+      "f_res_MHz": 776.0,
+      "df_MHz": -93.0,
+      "s11_dB": [
+        -0.71,
+        -0.72,
+        -0.71
+      ],
+      "p_det_dBm": [
+        -25.7256,
+        -26.3756,
+        -26.9496
+      ],
+      "vout_v": [
+        1.1984,
+        1.1861,
+        1.1752
+      ],
+      "tilt_dB": 1.22,
+      "notch_dB": 0.04,
+      "level_dBm": -26.35
+    }
+  ]
+}

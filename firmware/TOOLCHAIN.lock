@@ -1,0 +1,8 @@
+# ISAC_868 Rev E.2 Pinned Firmware Toolchain Manifest (Audit M6)
+CROSS_CC=arm-none-eabi-gcc
+CROSS_GCC_MAJOR=12
+CROSS_GCC_VERSION=12.2.1 20221205 (15:12.2.rel1-1)
+HOST_CC=gcc
+HOST_GCC_VERSION=12.2.0 (Debian 12.2.0-14+deb12u1)
+TARGET_ARCH=-mcpu=cortex-m4 -mthumb -ffreestanding -nostdlib
+C_STANDARD=c11

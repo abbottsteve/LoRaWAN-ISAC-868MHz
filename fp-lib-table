@@ -1,0 +1,4 @@
+(fp_lib_table
+  (version 7)
+  (lib (name "ISAC")(type "KiCad")(uri "${KIPRJMOD}/ISAC.pretty")(options "")(descr "ISAC project footprints (PCB antenna)"))
+)

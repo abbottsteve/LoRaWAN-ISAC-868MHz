@@ -1,0 +1,4 @@
+bom_grade,trials,s21_median_dB,s21_p01_dB,s11_median_dB,s11_p99_dB,directivity_median_dB,directivity_p10_dB,directivity_p05_dB,air_to_ice_contrast_median_dB,air_to_ice_contrast_p01_dB,yield_ice_contrast_gt_6dB_pct
+"RevE5_Precision_BOM_2PtCal (0.1% Thin-Film R, 2% Wirewound L, +/-0.05pF C0G + 2-Pt Factory Cal)",2000,-0.802,-0.81,-23.3,-22.89,15.05,9.17,7.79,20.55,17.6,100.0
+"RevE5_Precision_BOM_Uncalibrated (0.1% Thin-Film R, 2% Wirewound L, +/-0.05pF C0G, Raw)",2000,-0.802,-0.81,-23.3,-22.9,14.9,9.3,7.83,13.26,0.07,83.65
+"Counterfactual_Generic_5pct (5% Thick-Film R, 5% Multilayer L, +/-0.25pF C, Raw)",2000,-0.812,-0.886,-23.34,-21.78,1.96,-4.24,-5.65,4.84,-8.7,35.4

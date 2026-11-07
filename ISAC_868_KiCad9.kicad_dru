@@ -1,0 +1,38 @@
+(version 1)
+
+# =============================================================================
+# ISAC_868_KiCad9.kicad_dru -- Immutable PCBWay Turnkey Custom Design Rule Deck
+# Cryptographically locked by tools/rules_isac.py & tools/rules_isac.lock.json.
+# DO NOT EDIT MANUALLY -- any modification fails `rules_isac.py --verify`.
+# =============================================================================
+
+# 1. Scoped Edge-Mount SMA Launch Exemption (J1 = Molex 73251-1153 along dy = 0 / Y = 80.0 mm):
+#    Board global min_copper_edge_clearance remains locked at 0.30 mm everywhere else.
+(rule "J1_EdgeMount_SMA_Launch_dy0"
+	(condition "A.memberOfFootprint('J1') && (A.Type == 'Pad') && (A.Position_Y <= 86.0mm)")
+	(constraint edge_clearance (min 0.00mm))
+)
+
+# 2. Power Netclass Width & Neck-Down Floor:
+#    0.45 mm nominal Power routing width; >= 0.28 mm minimum neck-down at 0402 / LGA-73 / SOT pads.
+(rule "Power_Min_Neckdown_Width"
+	(condition "A.NetClass == 'Power' && A.Type == 'Track'")
+	(constraint track_width (min 0.28mm) (opt 0.45mm))
+)
+
+# 3. RF_50R Standard 2L FR-4 CPWG Spine & GSG Pad Launch Taper (RF geometry as drawn, no coupon):
+#    1.08 mm nominal CPWG width (Z0 = 51.90 Ohm LPI-coated nom, 51.2-57.1 Ohm envelope on 1.51 mm FR-4 er=4.4,
+#    Gap=0.28 mm; all RF_50R segments <= 11.18 mm = 0.056 lambda_g <= 0.06 lambda_g @ 868 MHz);
+#    >= 0.35 mm minimum controlled launch taper into U1.37 (0.37 mm LGA-73 land), 0402 & U2 DFN-8.
+(rule "RF_50R_CPWG_And_Launch_Width"
+	(condition "A.NetClass == 'RF_50R' && A.Type == 'Track'")
+	(constraint track_width (min 0.35mm) (opt 1.08mm))
+)
+
+# 4. RF_50R Coplanar Waveguide (CPWG) Ground-Pour Gap Lock:
+#    Enforces >= 0.28 mm coplanar gap between all RF_50R copper and outer GND zones.
+(rule "RF_50R_CPWG_Coplanar_Gap"
+	(layer outer)
+	(condition "A.NetClass == 'RF_50R' && B.Type == 'Zone' && B.NetName == 'GND'")
+	(constraint clearance (min 0.28mm))
+)

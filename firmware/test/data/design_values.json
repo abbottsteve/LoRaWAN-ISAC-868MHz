@@ -1,0 +1,659 @@
+{
+  "revision": "E.5",
+  "R1": 8.2,
+  "R2": 681.0,
+  "R3": 3570.0,
+  "C_SENSE_PF": 1.0,
+  "C_COMP_PF": 1.0,
+  "L_COMP_NH": 27.0,
+  "L_SENSE_NH": 30.0,
+  "C3_TRIM_PF": 0.0,
+  "R_TERM": 56.0,
+  "Q_IND_868": 42.0,
+  "C_PAD_PF": 0.14,
+  "cpwg_spine": {
+    "w_mm": 1.08,
+    "gap_mm": 0.28,
+    "h_mm": 1.6,
+    "h_core_mm": 1.51,
+    "t_cu_mm": 0.035,
+    "t_mask_nom_mm": 0.0175,
+    "eps_r": 4.4,
+    "z0_ohm": 51.9,
+    "eeff": 2.928,
+    "z0_bare_1oz_ohm": 54.45,
+    "eeff_bare_1oz": 2.66,
+    "z0_thick_mask_ohm": 51.21,
+    "eeff_thick_mask": 3.008,
+    "z0_wadell_conformal_ohm": 57.1,
+    "eeff_wadell_conformal": 2.783,
+    "z0_range_ohm": [
+      51.2,
+      57.1
+    ],
+    "eeff_range": [
+      2.66,
+      3.01
+    ],
+    "er_sweep_lpi": {
+      "4.2": {
+        "z0_ohm": 52.79,
+        "eeff": 2.83
+      },
+      "4.4": {
+        "z0_ohm": 51.9,
+        "eeff": 2.928
+      },
+      "4.6": {
+        "z0_ohm": 51.06,
+        "eeff": 3.026
+      }
+    },
+    "error_pct": 3.81,
+    "max_seg_mm": 11.18,
+    "lambda_g_nom_mm": 201.8,
+    "max_seg_lambda_g": 0.0561,
+    "worst_case_return_loss_dB": 26.8,
+    "worst_case_mismatch_il_dB": 0.0092,
+    "impedance_control_order": "NONE (RF geometry as drawn, no impedance coupon; all RF_50R <= 0.06 lambda_g)"
+  },
+  "insertion_loss_dB": -0.802,
+  "directivity_dB": 24.81,
+  "directivity_band_dB": {
+    "863.1": 17.48,
+    "866.5": 24.81,
+    "869.5": 21.38
+  },
+  "detector_port_ohm": [
+    32.2,
+    -10.9
+  ],
+  "adc_lsb_dB": 0.042,
+  "mc_directivity_median_dB": 15.05,
+  "mc_directivity_p10_dB": 9.17,
+  "mc_directivity_p90_dB": 22.3,
+  "pla_window_mm": 0.8,
+  "pla_window_mode": "0.80mm_ASA_PETG_open_east_self_draining_deck_with_25um_3M467MP",
+  "pla_window_layers": "5 x 0.16 mm solid FDM layers (0.00 mm internal air gap)",
+  "pla_window_bounds_mm": [
+    74.6,
+    86.6,
+    19.8,
+    32.35
+  ],
+  "ide_finger_width_mm": 1.3,
+  "ide_finger_gap_mm": 1.2,
+  "ide_overlap_mm": 4.0,
+  "evanescent_decay_mm": 0.796,
+  "air_to_ice_sensitivity_MHz_per_RIU": 43.73,
+  "sleep_and_ldo": {
+    "ldo_mpn": "TPS7A0233DBVR",
+    "ldo_package": "Package_TO_SOT_SMD:SOT-23-5 (1=IN, 2=GND, 3=EN, 4=NC, 5=OUT)",
+    "ldo_iq_typ_nA": 25.0,
+    "ldo_rated_mA": 200.0,
+    "peak_load_mA": 24.1,
+    "peak_margin_x": 8.3,
+    "dropout_at_peak_mV": 36.2,
+    "vbat_raw_max_V": 5.0,
+    "d_vbat_standoff_guardband_at_5V_V": 0.0,
+    "vbat_sweep": {
+      "3.6V": {
+        "rev_d0_typ_uA": 74.7,
+        "rev_d0_max_uA": 100.2,
+        "rev_e0_typ_uA": 1.737,
+        "rev_e1_typ_uA": 1.737,
+        "rev_e0_module_spec_uA": 2.137,
+        "rev_e1_module_spec_uA": 2.137,
+        "rev_e0_max_25C_uA": 2.335,
+        "rev_e1_max_25C_uA": 2.335,
+        "d_vbat_irm_max_25C_nA": 50.0,
+        "reduction_factor_x": 43.0
+      },
+      "4.2V": {
+        "rev_d0_typ_uA": 77.7,
+        "rev_d0_max_uA": 103.2,
+        "rev_e0_typ_uA": 1.737,
+        "rev_e1_typ_uA": 1.737,
+        "rev_e0_module_spec_uA": 2.137,
+        "rev_e1_module_spec_uA": 2.137,
+        "rev_e0_max_25C_uA": 2.335,
+        "rev_e1_max_25C_uA": 2.335,
+        "d_vbat_irm_max_25C_nA": 50.0,
+        "reduction_factor_x": 44.7
+      },
+      "5.0V": {
+        "rev_d0_typ_uA": 81.7,
+        "rev_d0_max_uA": 107.2,
+        "rev_e0_typ_uA": 1.738,
+        "rev_e1_typ_uA": 1.738,
+        "rev_e0_module_spec_uA": 2.138,
+        "rev_e1_module_spec_uA": 2.138,
+        "rev_e0_max_25C_uA": 2.385,
+        "rev_e1_max_25C_uA": 2.385,
+        "d_vbat_irm_max_25C_nA": 100.0,
+        "reduction_factor_x": 47.0
+      }
+    },
+    "ldo_headroom_table": [
+      {
+        "temp_C": -20,
+        "vcell_pulse_V": 3.2,
+        "d1_vf_V": 0.41,
+        "vbat_u3_in_V": 2.79,
+        "u3_vdo_V": 0.13,
+        "v3v3_loaded_V": 2.66,
+        "lt5538_min_V": 2.7,
+        "u1_min_V": 1.8,
+        "status": "Dropout tracking (per-tone VREFINT active; cold-pulse border of LT5538 2.70V min \u2014 use >=3.8V pack below -10C)"
+      },
+      {
+        "temp_C": 25,
+        "vcell_pulse_V": 3.45,
+        "d1_vf_V": 0.33,
+        "vbat_u3_in_V": 3.12,
+        "u3_vdo_V": 0.084,
+        "v3v3_loaded_V": 3.04,
+        "lt5538_min_V": 2.7,
+        "u1_min_V": 1.8,
+        "status": "Mild LDO dropout (3.04V >= 2.70V LT5538 min; per-tone VREFINT ratiometric compensation <0.5% err)"
+      },
+      {
+        "temp_C": 60,
+        "vcell_pulse_V": 3.5,
+        "d1_vf_V": 0.27,
+        "vbat_u3_in_V": 3.23,
+        "u3_vdo_V": 0.11,
+        "v3v3_loaded_V": 3.12,
+        "lt5538_min_V": 2.7,
+        "u1_min_V": 1.8,
+        "status": "Mild LDO dropout (3.12V >= 2.70V LT5538 min; per-tone VREFINT ratiometric compensation <0.5% err)"
+      }
+    ],
+    "lt5538_supply_rail": "VBAT-fed zero-Iq load switch Q1 (TPS22919DCKR, 3.0-5.25V rated LT5538)"
+  },
+  "gated_vbat_divider": {
+    "switch_mpn": "NX3008CBKS,115",
+    "r_bg_ohm": 470000.0,
+    "r_b1_ohm": 4700.0,
+    "r_b2_ohm": 4700.0,
+    "c_bat_nF": 1.0,
+    "r_th_ohm": 2350.7,
+    "tau_us": 2.351,
+    "t_settle_12bit_us": 21.23,
+    "wakeup_window_us": 3000.0,
+    "wakeup_margin_x": 141.3,
+    "adc_clock_MHz": 2.0,
+    "adc_sample_time_us": 19.75,
+    "adc_single_conv_us": 26.0,
+    "adc_16x_oversample_ms": 0.416,
+    "adc_sampling_err_lsb": 0.0,
+    "pmos_rdson_ratio_err_pct": 0.0298,
+    "sleep_divider_leakage_nA": 0.0,
+    "gpio_backbias_current_nA": 0.0,
+    "active_divider_charge_uC": 4.296,
+    "rail_sense_window_us": 150.0,
+    "det_adc_smp1_sample_time_us": 6.25,
+    "det_adc_16x_oversample_ms": 0.2,
+    "control_gpio": "PA9 (U1 Pad 50, BAT_MON_EN, split from PA8 DET_EN)"
+  },
+  "vdda_isolation": {
+    "ferrite_mpn": "BLM15AG121SN1D",
+    "dc_drop_max_mV": 0.275,
+    "atten_2MHz_smps_dB": 59.3,
+    "atten_10MHz_dB": 75.7,
+    "atten_100MHz_dB": 63.3,
+    "atten_868MHz_dB": 43.5,
+    "residual_vdda_ripple_mVpp": 0.016,
+    "residual_adc_ripple_lsb": 0.02,
+    "residual_lt5538_err_dB": 0.0009
+  },
+  "esd_and_ae1_bleed": {
+    "iec_standard": "IEC 61000-4-2 Level 4 (+/-8 kV Contact / +/-15 kV Air)",
+    "ports": [
+      {
+        "port": "J2 VBAT_RAW",
+        "ref": "D_VBAT",
+        "mpn": "PESD5V0S1BA,115",
+        "topology": "Bidirectional SOD-323",
+        "contact_kV": 30.0,
+        "air_kV": 30.0,
+        "c_typ_pF": 35.0,
+        "reverse_battery_safe": true
+      },
+      {
+        "port": "J4 SWDIO/SWCLK",
+        "ref": "D_SWD",
+        "mpn": "PESD5V0U2BT,215",
+        "topology": "Dual Bidir SOT-23",
+        "contact_kV": 10.0,
+        "air_kV": 15.0,
+        "c_typ_pF": 2.9,
+        "c_max_pF": 3.8
+      },
+      {
+        "port": "J5 UART_TX/RX",
+        "ref": "D_UART",
+        "mpn": "PESD5V0U2BT,215",
+        "topology": "Dual Bidir SOT-23",
+        "contact_kV": 10.0,
+        "air_kV": 15.0,
+        "c_typ_pF": 2.9,
+        "c_max_pF": 3.8
+      },
+      {
+        "port": "SW1 RST",
+        "ref": "D_RST",
+        "mpn": "PESD5V0S1BA,115",
+        "topology": "Bidirectional SOD-323 + 100nF",
+        "contact_kV": 30.0,
+        "air_kV": 30.0,
+        "c_typ_pF": 35.0
+      },
+      {
+        "port": "J4/J3 Protected 3V3 Rail",
+        "ref": "D_3V3",
+        "mpn": "PESD5V0S1BA,115",
+        "topology": "Bidirectional SOD-323 + R_VAPP=1k / R_BHI=10k current limit",
+        "contact_kV": 30.0,
+        "air_kV": 30.0,
+        "c_typ_pF": 35.0
+      }
+    ],
+    "swd_c_esd_typ_pF": 2.9,
+    "swd_rise_time_10_90_ns": 0.91,
+    "swd_3dB_bw_MHz": 385.4,
+    "ae1_pla_barrier_kV": 20.0,
+    "ae1_pad2_dc_resistance_mOhm": 15.0,
+    "ae1_pad2_stub_z_350MHz_ohm": 10.56,
+    "ae1_cs_rterm_esd_atten_350MHz_dB": 22.1
+  },
+  "derating_audit": {
+    "vbat_max_V": 5.0,
+    "min_mlcc_dc_derating_x": 3.03,
+    "rf_resistor_series": "Yageo RT0402BRD078R2L (R1 8.2R 0.1%) + Susumu RG1005P (R2/R3/R_TERM 0.1%, <= 25 ppm/C NiCr Thin-Film)",
+    "rf_capacitor_dielectric": "Murata GJM1555C1H / GRM1555C1H (50 V C0G/NP0)",
+    "vswr_inf_stress": {
+      "R1_max_mW": 12.04,
+      "R1_derating_x": 5.19,
+      "R2_max_mW": 0.24,
+      "R2_derating_x": 262.01,
+      "R3_max_mW": 0.903,
+      "R3_derating_x": 69.2,
+      "R_TERM_max_mW": 0.021,
+      "R_TERM_derating_x": 2969.4,
+      "C_S_max_Vpk": 3.09,
+      "C_S_voltage_margin_x": 16.2,
+      "C_S2_max_Vpk": 2.54,
+      "L_Q_max_mArms": 14.84,
+      "L_Q_current_margin_x": 24.9,
+      "L_S_max_mArms": 11.01,
+      "L_S_current_margin_x": 33.6,
+      "U2_IN_max_dBm": -19.29,
+      "U2_abs_max_dBm": 16.0,
+      "U2_headroom_dB": 35.3
+    },
+    "capacitor_groups": [
+      {
+        "refs": "C_RF, C_S, C_S2, C_BLK, C_INN, C_M1, C_MZ, C_M2, C_BAT",
+        "dielectric": "C0G/NP0 (<= +/-30 ppm/C)",
+        "rated_V": 50.0,
+        "max_applied_V": 5.0,
+        "derating_x": 10.0
+      },
+      {
+        "refs": "C_IN1, C_VBAT",
+        "dielectric": "X5R (0402/0603 on VBAT_RAW/VBAT <= 5.0V)",
+        "rated_V": 25.0,
+        "max_applied_V": 5.0,
+        "derating_x": 5.0
+      },
+      {
+        "refs": "C_IN2, C_Q1",
+        "dielectric": "X7R (0402 on VBAT_RAW/VBAT <= 5.0V)",
+        "rated_V": 16.0,
+        "max_applied_V": 5.0,
+        "derating_x": 3.2
+      },
+      {
+        "refs": "C_SMPS1",
+        "dielectric": "X5R (4.7 uF 10V 0402 GRM155R61A475MEAAD on VDDSMPS 3.30V)",
+        "rated_V": 10.0,
+        "max_applied_V": 3.3,
+        "derating_x": 3.03
+      },
+      {
+        "refs": "C_U1A, C_VDDA1, C_VDDA2, C_RFV, C_PAV, C_OUT1, C_DET2",
+        "dielectric": "X5R/X7R (0402/0603 on regulated 3.30V rails)",
+        "rated_V": 25.0,
+        "max_applied_V": 3.3,
+        "derating_x": 7.58
+      },
+      {
+        "refs": "C_OUT2, C_DET1, C_U1B, C_U1C, C_VREF, C_SMPS2, C_SMPS3, C_LPF, C_CAPP, C_CAPM, C_RST",
+        "dielectric": "X5R/X7R (0402 on <= 3.30V rails)",
+        "rated_V": 16.0,
+        "max_applied_V": 3.3,
+        "derating_x": 4.85
+      }
+    ]
+  },
+  "battery_life_10yr": {
+    "smps_mode": "ENABLED (L_SMPS = 15 uH Murata LQH2MCN150K02L wirewound, Isat = 300 mA, ~45% TX/RX current reduction vs LDO)",
+    "usable_capacity_derating_factor": 0.8,
+    "q_wakeup_1ms_uC": 31.48,
+    "q_3tone_sweep_10ms_uC": 564.8,
+    "projections": [
+      {
+        "profile": "SF7BW125",
+        "interval_min": 15.0,
+        "toa_ms": 61.7,
+        "q_isac_sweep_uC": 596.3,
+        "q_event_total_uC": 2340.3,
+        "i_active_avg_uA": 2.6,
+        "i_total_rev_e0_uA": 4.337,
+        "i_total_rev_d0_uA": 77.3,
+        "ER14505_AA_2600mAh_rev_e0_yr": 54.7,
+        "ER14505_AA_2600mAh_rev_d0_yr": 3.07,
+        "ER18505_A_4000mAh_rev_e0_yr": 84.2,
+        "ER18505_A_4000mAh_rev_d0_yr": 4.72
+      },
+      {
+        "profile": "SF9BW125",
+        "interval_min": 15.0,
+        "toa_ms": 205.8,
+        "q_isac_sweep_uC": 596.3,
+        "q_event_total_uC": 5942.8,
+        "i_active_avg_uA": 6.603,
+        "i_total_rev_e0_uA": 8.34,
+        "i_total_rev_d0_uA": 81.3,
+        "ER14505_AA_2600mAh_rev_e0_yr": 28.5,
+        "ER14505_AA_2600mAh_rev_d0_yr": 2.92,
+        "ER18505_A_4000mAh_rev_e0_yr": 43.8,
+        "ER18505_A_4000mAh_rev_d0_yr": 4.49
+      },
+      {
+        "profile": "SF12BW125",
+        "interval_min": 30.0,
+        "toa_ms": 1482.8,
+        "q_isac_sweep_uC": 596.3,
+        "q_event_total_uC": 37867.8,
+        "i_active_avg_uA": 21.038,
+        "i_total_rev_e0_uA": 22.775,
+        "i_total_rev_d0_uA": 95.74,
+        "ER14505_AA_2600mAh_rev_e0_yr": 10.4,
+        "ER14505_AA_2600mAh_rev_d0_yr": 2.48,
+        "ER18505_A_4000mAh_rev_e0_yr": 16.0,
+        "ER18505_A_4000mAh_rev_d0_yr": 3.81
+      }
+    ]
+  },
+  "table": [
+    {
+      "medium": "dry air",
+      "eps_real": 1.0,
+      "eps_imag": 0.0,
+      "f_res_MHz": 869.0,
+      "df_MHz": 0.0,
+      "s11_dB": [
+        -18.79,
+        -20.83,
+        -18.33
+      ],
+      "p_det_dBm": [
+        -45.7538,
+        -48.9151,
+        -42.3113
+      ],
+      "vout_v": [
+        0.8179,
+        0.7578,
+        0.8833
+      ],
+      "tilt_dB": -3.44,
+      "notch_dB": 4.88,
+      "level_dBm": -45.66
+    },
+    {
+      "medium": "PTFE",
+      "eps_real": 2.1,
+      "eps_imag": 0.0002,
+      "f_res_MHz": 849.0,
+      "df_MHz": -20.0,
+      "s11_dB": [
+        -8.72,
+        -7.14,
+        -5.99
+      ],
+      "p_det_dBm": [
+        -33.8335,
+        -33.3626,
+        -32.5985
+      ],
+      "vout_v": [
+        1.0444,
+        1.0533,
+        1.0678
+      ],
+      "tilt_dB": -1.23,
+      "notch_dB": 0.15,
+      "level_dBm": -33.26
+    },
+    {
+      "medium": "glaze ice",
+      "eps_real": 3.2,
+      "eps_imag": 0.003,
+      "f_res_MHz": 834.5,
+      "df_MHz": -34.5,
+      "s11_dB": [
+        -3.65,
+        -2.89,
+        -2.32
+      ],
+      "p_det_dBm": [
+        -28.6117,
+        -28.6636,
+        -28.603
+      ],
+      "vout_v": [
+        1.1436,
+        1.1426,
+        1.1437
+      ],
+      "tilt_dB": -0.01,
+      "notch_dB": 0.06,
+      "level_dBm": -28.63
+    },
+    {
+      "medium": "alumina Al2O3",
+      "eps_real": 9.8,
+      "eps_imag": 0.002,
+      "f_res_MHz": 783.0,
+      "df_MHz": -86.0,
+      "s11_dB": [
+        -0.36,
+        -0.53,
+        -0.69
+      ],
+      "p_det_dBm": [
+        -25.3969,
+        -26.2129,
+        -26.9582
+      ],
+      "vout_v": [
+        1.2047,
+        1.1892,
+        1.175
+      ],
+      "tilt_dB": 1.56,
+      "notch_dB": 0.03,
+      "level_dBm": -26.19
+    },
+    {
+      "medium": "IPA (868 MHz)",
+      "eps_real": 6.29,
+      "eps_imag": 6.09,
+      "f_res_MHz": 794.0,
+      "df_MHz": -75.0,
+      "s11_dB": [
+        -2.27,
+        -2.19,
+        -2.12
+      ],
+      "p_det_dBm": [
+        -27.0102,
+        -27.7712,
+        -28.4618
+      ],
+      "vout_v": [
+        1.174,
+        1.1595,
+        1.1464
+      ],
+      "tilt_dB": 1.45,
+      "notch_dB": 0.04,
+      "level_dBm": -27.75
+    },
+    {
+      "medium": "water film",
+      "eps_real": 79.9,
+      "eps_imag": 3.81,
+      "f_res_MHz": 776.0,
+      "df_MHz": -93.0,
+      "s11_dB": [
+        -0.71,
+        -0.72,
+        -0.71
+      ],
+      "p_det_dBm": [
+        -25.7256,
+        -26.3756,
+        -26.9496
+      ],
+      "vout_v": [
+        1.1984,
+        1.1861,
+        1.1752
+      ],
+      "tilt_dB": 1.22,
+      "notch_dB": 0.04,
+      "level_dBm": -26.35
+    }
+  ],
+  "R1_PRIMARY_MPN": "Yageo RT0402BRD078R2L",
+  "C_PAR_BRS_PF": 0.1305,
+  "P_TX_SENSING_DBM": 4.0,
+  "P_TX_LORAWAN_DBM": 14.0,
+  "harmonic_pi_network": {
+    "c_m1_pf": 3.6,
+    "l_m1_nh": 8.2,
+    "c_mz_pf": 0.5,
+    "c_m2_pf": 4.3,
+    "q_ind_868": 42.0,
+    "esl_shunt_nh": 0.65,
+    "srf_l1_ghz": 3.9,
+    "esl_cmz_nh": 0.25
+  },
+  "mc_directivity_p05_dB": 7.79,
+  "mc_air_to_ice_contrast_median_dB": 20.55,
+  "mc_air_to_ice_contrast_p01_dB": 17.6,
+  "mc_yield_ice_contrast_gt_6dB_pct": 100.0,
+  "window_material": "UV-stabilized ASA/PETG (0.80 mm open-East self-draining flush deck + 25 um 3M 467MP acrylic transfer adhesive)",
+  "lt5538_zin_866p5_series_ohm": [
+    63.48,
+    -120.35
+  ],
+  "lt5538_zin_866p5_parallel_rc": {
+    "r_par_ohm": 291.65,
+    "c_par_pf": 1.194
+  },
+  "stackup_core_sweep": [
+    {
+      "corner": "-0.10mm_std_min",
+      "h_core_mm": 1.41,
+      "h_finished_mm": 1.5,
+      "ae1_f0_est_MHz": 860.2,
+      "df0_MHz": -8.8,
+      "bridge_directivity_866p5_dB": 23.85
+    },
+    {
+      "corner": "-0.08mm_tight_min",
+      "h_core_mm": 1.43,
+      "h_finished_mm": 1.52,
+      "ae1_f0_est_MHz": 862.04,
+      "df0_MHz": -6.96,
+      "bridge_directivity_866p5_dB": 24.24
+    },
+    {
+      "corner": "1.51mm_nominal",
+      "h_core_mm": 1.51,
+      "h_finished_mm": 1.6,
+      "ae1_f0_est_MHz": 869.0,
+      "df0_MHz": 0.0,
+      "bridge_directivity_866p5_dB": 24.81
+    },
+    {
+      "corner": "+0.03mm_asym_max",
+      "h_core_mm": 1.54,
+      "h_finished_mm": 1.63,
+      "ae1_f0_est_MHz": 871.47,
+      "df0_MHz": 2.47,
+      "bridge_directivity_866p5_dB": 24.6
+    },
+    {
+      "corner": "+0.08mm_tight_max",
+      "h_core_mm": 1.59,
+      "h_finished_mm": 1.68,
+      "ae1_f0_est_MHz": 875.41,
+      "df0_MHz": 6.41,
+      "bridge_directivity_866p5_dB": 23.91
+    },
+    {
+      "corner": "+0.10mm_std_max",
+      "h_core_mm": 1.61,
+      "h_finished_mm": 1.7,
+      "ae1_f0_est_MHz": 876.93,
+      "df0_MHz": 7.93,
+      "bridge_directivity_866p5_dB": 23.56
+    }
+  ],
+  "R_TERM_PRIMARY_MPN": "Susumu RG1005P-560-B-T5",
+  "pcb_bridge_copper_lengths_mm": {
+    "/BR_P": 11.89,
+    "/BR_Q": 19.37,
+    "/BR_S": 1.44,
+    "/BR_O": 2.05,
+    "/DET_IN": 1.28
+  },
+  "two_point_calibration": {
+    "point1_dry_air_vout_mv": [
+      817.9,
+      757.8,
+      883.3
+    ],
+    "point2_alumina_ref_level_dbm": -26.19,
+    "water_ipa_threshold_dbm": -26.94,
+    "water_vs_ipa_gap_median_dB": 1.382,
+    "water_vs_ipa_gap_p01_dB": 0.647,
+    "water_vs_ipa_yield_pct": 99.72,
+    "hazard_4class_yield_pct": 99.45
+  },
+  "tcxo_ctrl_voltage_V": 3.0,
+  "tcxo_ctrl_code_hex": "0x06",
+  "fr4_er_corners": {
+    "4.2": {
+      "f0_MHz": 879.0,
+      "worst_s11_863_870_dB": -10.21,
+      "eta_tot_pct": 40.4
+    },
+    "4.4": {
+      "f0_MHz": 869.0,
+      "worst_s11_863_870_dB": -17.77,
+      "eta_tot_pct": 45.5
+    },
+    "4.6": {
+      "f0_MHz": 859.5,
+      "worst_s11_863_870_dB": -10.3,
+      "eta_tot_pct": 43.6
+    }
+  }
+}
