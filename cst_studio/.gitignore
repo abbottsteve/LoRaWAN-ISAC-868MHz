@@ -1,0 +1,7 @@
+# Ignore multi-GB CST Studio binary solver caches while tracking macros, DXFs & Touchstone references
+*.cst
+*/Result/
+*/ModelCache/
+cst_exports/
+__pycache__/
+*.pyc

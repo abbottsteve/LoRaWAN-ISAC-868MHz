@@ -379,6 +379,9 @@ PYTHONDONTWRITEBYTECODE=1 python3 tools/test_seeded_defects.py
 │   ├── fdtd_3d_ant.c & ifa_enclosure_mom.py                           # C99/OpenMP 3D Yee-Grid Maxwell FDTD + elliptic harmonic filter
 │   ├── bridge_sparam_mc.py & bridge_loss.py                           # Distributed microstrip bridge [S] + 2,000-trial Monte-Carlo
 │   └── results/                                                       # JSON/CSV solver outputs & plots
+├── cst_studio/                                                        # CST Studio Suite 3D FIT/FEM antenna, radome & Debye superstrate package
+│   ├── macros/    (ISAC_868_Complete_Antenna_MWS.bas, ISAC_868_Setup_FEM_CrossCheck.bas, ISAC_868_Sweep_All_Superstrates.bas, ...)
+│   └── python/    (run_cst_batch.py, postprocess_cst_results.py) + cad_exports/, previews/ & results/fdtd_reference/
 ├── enclosure/                                                         # Parametric ASA/PETG enclosure & watertight STLs
 │   ├── gen_enclosure.py & render_enclosure_3d.py                      # Flat-roof + open-East window + Parker O-ring generator
 │   └── ISAC_868_Lid_0p80mm_Window.stl / ISAC_868_Base_Tray*.stl       # 3D-printable / CNC-ready solids
