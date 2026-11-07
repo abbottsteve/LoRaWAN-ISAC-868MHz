@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+message: "If you use this hardware design, electromagnetic solver suite, or embedded firmware in academic or industrial work, please cite it as below."
+title: "Dual-Function 868 MHz LoRaWAN ISAC Surface-Permittivity Sensor Node"
+version: "Rev-E.5"
+date-released: "2026-11-07"
+license: "Apache-2.0"
+repository-code: "https://github.com/abbottsteve/LoRaWAN-ISAC-868MHz"
+authors:
+  - family-names: "Boachie"
+    given-names: "Stephen K."
+keywords:
+  - "Integrated Sensing and Communications"
+  - "ISAC"
+  - "LoRaWAN"
+  - "EU868"
+  - "Dielectric Spectroscopy"
+  - "Ice Detection"
+  - "STM32WLE5"
+  - "KiCad"

@@ -52,7 +52,7 @@ void ISAC_HAL_DelayUs(uint32_t us)
     if (us == 0UL) {
         return;
     }
-    /* BLK-06 fix: Hardware wrap-safe SysTick->CVR tick accumulator (exact 4.00 ticks/us @ 4 MHz MSI) */
+    /* Hardware wrap-safe SysTick->CVR tick accumulator (exact 4.00 ticks/us @ 4 MHz MSI) */
     if ((ISAC_SYSTICK->CSR & ISAC_SYSTICK_CSR_ENABLE) != 0UL) {
         const uint32_t reload    = ISAC_SYSTICK->RVR + 1UL;
         uint32_t       remaining = us * ISAC_MSI_DEFAULT_CYCLES_PER_US;
@@ -141,7 +141,7 @@ void ISAC_HAL_GPIO_InitBoardPins(void)
     (void)ISAC_RCC->AHB2ENR;
     systick_init_1ms();
 
-    /* 0. MED-05 fix: Lock ALL unused GPIOA, GPIOB, GPIOC pins to Analog mode (MODER = 0b11, PUPDR = 0)
+    /* 0. Lock ALL unused GPIOA, GPIOB, GPIOC pins to Analog mode (MODER = 0b11, PUPDR = 0)
      *    before configuring active pins, preserving PA13/PA14 (SWDIO/SWCLK AF0) so STOP2 Schmitt-trigger
      *    input leakage is strictly 0 nA across all 29+ unbonded/unused MCU pads (including PB3 JTDO). */
     ISAC_GPIOA->MODER = 0xEBFFFFFFUL; /* All Analog (0b11), except PA13/PA14 = AF (0b10) */
@@ -165,14 +165,14 @@ void ISAC_HAL_GPIO_InitBoardPins(void)
                             (3UL << (ISAC_GPIOA_PIN_BAT_MON_EN * 2U)));
 
     /* 2. PA15 (SiP Pin 8, ADC_IN11 DET_ADC) & PB4 (SiP Pin 15, ADC_IN3 BAT_SENSE):
-     *    Analog mode (MODER = 0b11, PUPDR = 0b00) -> zero Schmitt-trigger sleep leakage! */
+     *    Analog mode (MODER = 0b11, PUPDR = 0b00) -> zero Schmitt-trigger sleep leakage */
     ISAC_GPIOA->MODER |=  (3UL << (ISAC_GPIOA_PIN_DET_ADC * 2U));
     ISAC_GPIOA->PUPDR &= ~(3UL << (ISAC_GPIOA_PIN_DET_ADC * 2U));
 
     ISAC_GPIOB->MODER |=  (3UL << (ISAC_GPIOB_PIN_BAT_SENSE * 2U));
     ISAC_GPIOB->PUPDR &= ~(3UL << (ISAC_GPIOB_PIN_BAT_SENSE * 2U));
 
-    /* 3. Internal RAK3172LP-SiP SPDT RF Switch (CRIT-02 fix!):
+    /* 3. Internal RAK3172LP-SiP SPDT RF Switch:
      *    PA0 (VC1) & PA1 (VC2) push-pull LOW (0,0 = isolated 0 nA STOP2 state) */
     ISAC_GPIOA->BSRR   = (1UL << (ISAC_GPIOA_PIN_RFSW_VC1 + 16U))
                        | (1UL << (ISAC_GPIOA_PIN_RFSW_VC2 + 16U));
@@ -185,7 +185,7 @@ void ISAC_HAL_GPIO_InitBoardPins(void)
     ISAC_GPIOA->PUPDR  &= ~((3UL << (ISAC_GPIOA_PIN_RFSW_VC1 * 2U)) |
                             (3UL << (ISAC_GPIOA_PIN_RFSW_VC2 * 2U)));
 
-    /* 4. HIGH-05 fix: Leave PA2 / PA3 (SiP Pins 29/30, USART2) in Analog High-Z (MODER = 0b11, PUPDR = 0)
+    /* 4. Leave PA2 / PA3 (SiP Pins 29/30, USART2) in Analog High-Z (MODER = 0b11, PUPDR = 0)
      *    established in step 0 so unpopulated J5 never floats a digital Schmitt-trigger input in STOP2.
      *    Bench diagnostics opt in explicitly via ISAC_HAL_UART2_InitDiagnostic(). */
     ISAC_GPIOA->MODER |=  ((3UL << (ISAC_GPIOA_PIN_UART2_TX * 2U)) |
@@ -262,7 +262,7 @@ bool ISAC_HAL_System_EnableSMPS(void)
         --guard;
     }
     if (!ISAC_HAL_System_IsSMPSEnabled()) {
-        /* BLK-03 safety: Immediately de-assert SMPSEN if SMPSRDY failed so LDO rail stays clean */
+        /* Immediately de-assert SMPSEN if SMPSRDY failed so LDO rail stays clean */
         ISAC_PWR->CR5 &= ~ISAC_PWR_CR5_SMPSEN;
         return false;
     }
@@ -306,7 +306,7 @@ void ISAC_HAL_RTC_InitWakeup(uint32_t period_s)
         if ((ISAC_RCC->BDCR & ISAC_RCC_BDCR_RTCSEL_MASK) != ISAC_RCC_BDCR_RTCSEL_LSE) {
             ISAC_RCC->BDCR = (ISAC_RCC->BDCR & ~ISAC_RCC_BDCR_RTCSEL_MASK) | ISAC_RCC_BDCR_RTCSEL_LSE;
         }
-        /* HIGH-03 fix: Hardware-discipline 4 MHz MSI to +/-20 ppm 32.768 kHz LSE (+/-0.25% over -40..+85 C) */
+        /* Hardware-discipline 4 MHz MSI to +/-20 ppm 32.768 kHz LSE (+/-0.25% over -40..+85 C) */
         ISAC_RCC->CR |= ISAC_RCC_CR_MSIPLLEN;
     } else {
         ISAC_RCC->CSR |= ISAC_RCC_CSR_LSION;
@@ -387,8 +387,8 @@ bool ISAC_HAL_SubGhz_WakeupAndReset(void)
 
 bool ISAC_HAL_SubGhz_EnsureAwake(void)
 {
-    /* HIGH-03 fix (RM0453 §5.7.2): Dedicated 60 us internal NSS low pulse + RFBUSYS=0 wait
-     * before the first SUBGHZSPI opcode/register transfer whenever waking from SET_SLEEP! */
+    /* RM0453 §5.7.2: Dedicated 60 us internal NSS low pulse + RFBUSYS=0 wait
+     * before the first SUBGHZSPI opcode/register transfer whenever waking from SET_SLEEP */
     if (g_subghz_sleeping) {
         ISAC_PWR->SUBGHZSPICR = 0UL;
         ISAC_HAL_DelayUs(60U);
@@ -567,7 +567,7 @@ void ISAC_HAL_ADC_EnableAndCalibrate(void)
         }
     }
 
-    /* 1. Select synchronous PCLK/2 SAR ADC clock BEFORE ADCAL (CRIT-04 fix!) */
+    /* 1. Select synchronous PCLK/2 SAR ADC clock BEFORE ADCAL */
     ISAC_ADC->CFGR2 = ISAC_ADC_CFGR2_CKMODE_PCLK2;
 
     /* 2. Enable internal ADC voltage regulator, VREFINT (ADC_IN13) & Die Temp Sensor (ADC_IN12);
@@ -583,7 +583,7 @@ void ISAC_HAL_ADC_EnableAndCalibrate(void)
         --guard;
     }
 
-    /* 4. HIGH-01 fix: Dual sample-time configuration @ 2 MHz PCLK/2:
+    /* 4. Dual sample-time configuration @ 2 MHz PCLK/2:
      *    - SMP1 = 12.5 cycles (6.25 us, 200 us 16x oversample) for C_LPF=100nF DET_ADC (Ch 11)
      *    - SMP2 = 39.5 cycles (19.75 us > 12 us VREFINT & 15 us TS min, 416 us 16x oversample)
      *      selected via SMPSEL for BAT_SENSE (Ch 3), TEMPSENSOR (Ch 12), and VREFINT (Ch 13) */
@@ -747,13 +747,13 @@ void ISAC_HAL_EnterStop2(void)
     __asm volatile ("isb 0xF" ::: "memory");
     ISAC_SCB->SCR &= ~ISAC_SCB_SCR_SLEEPDEEP;
 
-    /* Re-engage LSE hardware PLL auto-trim on 4 MHz MSI after STOP2 exit (HIGH-03) */
+    /* Re-engage LSE hardware PLL auto-trim on 4 MHz MSI after STOP2 exit */
     if ((ISAC_RCC->BDCR & ISAC_RCC_BDCR_LSERDY) != 0UL) {
         ISAC_RCC->CR |= ISAC_RCC_CR_MSIPLLEN;
     }
 
-    /* HIGH-02 fix: Compute true elapsed STOP2 sleep milliseconds from hardware RTC calendar + SSR
-     * so spurious/early EXTI wakeups never jump g_systick_ms forward by 900 s and bypass ETSI duty guards! */
+    /* Compute true elapsed STOP2 sleep milliseconds from hardware RTC calendar + SSR
+     * so spurious/early EXTI wakeups never jump g_systick_ms forward by 900 s and bypass ETSI duty guards */
     if (rtc_on) {
         uint32_t guard = ISAC_HW_TIMEOUT_LOOPS;
         ISAC_RTC->ICSR &= ~ISAC_RTC_ICSR_RSF;
@@ -866,7 +866,7 @@ bool ISAC_HAL_Flash_ErasePage(uint32_t page_addr)
     if (page >= 128UL) {
         return false;
     }
-    /* MED-04 fix: Never stall single-bank Flash bus while Sub-GHz radio is active (RFBUSYS != 0) */
+    /* Never stall single-bank Flash bus while Sub-GHz radio is active (RFBUSYS != 0) */
     if ((ISAC_PWR->SR2 & ISAC_PWR_SR2_RFBUSYS) != 0UL) {
         return false;
     }
@@ -883,7 +883,7 @@ bool ISAC_HAL_Flash_ErasePage(uint32_t page_addr)
     if ((primask & 1UL) == 0UL) {
         __asm volatile ("cpsie i" ::: "memory");
     }
-    /* MED-05 fix: Single-bank Flash erase (~22 ms typ per DS13105 Table 57) stalls Flash instruction fetch,
+    /* Single-bank Flash erase (~22 ms typ per DS13105 Table 57) stalls Flash instruction fetch,
      * causing at most 1 pending SysTick IRQ to fire; compensate monotonic ms tick counter for missed ticks. */
     if (ok && ((ISAC_SYSTICK->CSR & ISAC_SYSTICK_CSR_ENABLE) != 0UL)) {
         g_systick_ms = g_systick_ms + 21UL;
@@ -932,7 +932,7 @@ void __attribute__((used)) ISAC_HAL_NMI_Dispatch(uint32_t *sp)
 {
     const uint32_t eccr = ISAC_FLASH_ECCR;
 
-    /* BLK-FW-02: Catch STM32WLE5JC 72-bit Flash double-bit ECC NMI on brownout-torn NVM cells
+    /* Catch STM32WLE5JC 72-bit Flash double-bit ECC NMI on brownout-torn NVM cells
      * inside ISAC_HAL_Flash_Read() so sealed field nodes never enter an NMI -> SYSRESETREQ brick loop. */
     if (((eccr & ISAC_FLASH_ECCR_ECCD) != 0UL) && g_flash_read_guard && (sp != NULL)) {
         const uint32_t pc = sp[6];

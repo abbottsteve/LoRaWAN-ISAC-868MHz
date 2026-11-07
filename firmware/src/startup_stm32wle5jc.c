@@ -149,7 +149,7 @@ void Reset_Handler(void)
     const uint32_t *src = &_sidata;
     uint32_t       *dst = &_sdata;
 
-    /* F-17 fix: STM32WLE5 resets PA15 (JTDI / DET_ADC) and PB4 (NJTRST / BAT_SENSE) into AF0
+    /* STM32WLE5 resets PA15 (JTDI / DET_ADC) and PB4 (NJTRST / BAT_SENSE) into AF0
      * with internal ~45 kOhm pull-ups to VDD (~74 uA/pin while NRST=0 or BOOT0=1). Immediately
      * switch both pins to high-Z analog mode (MODER=0b11, PUPDR=0b00) before .data/.bss init. */
     ISAC_RCC->AHB2ENR |= (ISAC_RCC_AHB2ENR_GPIOAEN | ISAC_RCC_AHB2ENR_GPIOBEN);
@@ -176,7 +176,7 @@ void Reset_Handler(void)
 
 void Default_Handler(void)
 {
-    /* HIGH-FW-04: Ensure PA8 (DET_EN), PA9 (BAT_MON_EN), and PA0/PA1 (RF switch) are de-asserted on fault */
+    /* Ensure PA8 (DET_EN), PA9 (BAT_MON_EN), and PA0/PA1 (RF switch) are de-asserted on fault */
     ISAC_GPIOA->BSRR = (1UL << (ISAC_GPIOA_PIN_DET_EN     + 16U))
                      | (1UL << (ISAC_GPIOA_PIN_BAT_MON_EN + 16U))
                      | (1UL << (ISAC_GPIOA_PIN_RFSW_VC1   + 16U))

@@ -323,7 +323,7 @@ typedef struct {
 #define ISAC_ADC_CR_ADCAL           (1UL << 31)
 #define ISAC_ADC_CFGR2_OVSE         (1UL << 0)
 #define ISAC_ADC_CFGR2_OVSR_16X     (3UL << 2)   /* 16x hardware oversampling (OVSS=0 -> 0..65520) */
-#define ISAC_ADC_CFGR2_CKMODE_PCLK2 (1UL << 30)  /* Synchronous PCLK/2 SAR ADC clock (CRIT-04 fix!) */
+#define ISAC_ADC_CFGR2_CKMODE_PCLK2 (1UL << 30)  /* Synchronous PCLK/2 SAR ADC clock */
 #define ISAC_ADC_CCR_VREFEN         (1UL << 22)
 #define ISAC_ADC_CCR_TSEN           (1UL << 23)  /* Internal die temperature sensor enable */
 
@@ -352,7 +352,7 @@ typedef struct {
 #define ISAC_DCB_DHCSR_C_DEBUGEN    (1UL << 0)
 
 /* =========================================================================
- * 5. Compile-Time CMSIS / RM0453 Register-Map Offset Verification (F-01)
+ * 5. Compile-Time CMSIS / RM0453 Register-Map Offset Verification
  * ========================================================================= */
 /* GPIO (RM0453 §9.4) */
 _Static_assert(offsetof(ISAC_GPIO_Regs_t, MODER)   == 0x00U, "GPIO MODER offset");
@@ -390,7 +390,7 @@ _Static_assert(offsetof(ISAC_RCC_Regs_t, CCIPR)     == 0x88U, "RCC CCIPR offset"
 _Static_assert(offsetof(ISAC_RCC_Regs_t, BDCR)      == 0x90U, "RCC BDCR offset");
 _Static_assert(offsetof(ISAC_RCC_Regs_t, CSR)       == 0x94U, "RCC CSR offset");
 
-/* PWR (RM0453 §6.6 — F-01 critical fix: SR1=0x10, SR2=0x14, SCR=0x18, CR5=0x1C) */
+/* PWR (RM0453 §6.6: SR1=0x10, SR2=0x14, SCR=0x18, CR5=0x1C) */
 _Static_assert(offsetof(ISAC_PWR_Regs_t, CR1)         == 0x00U, "PWR CR1 offset");
 _Static_assert(offsetof(ISAC_PWR_Regs_t, CR2)         == 0x04U, "PWR CR2 offset");
 _Static_assert(offsetof(ISAC_PWR_Regs_t, CR3)         == 0x08U, "PWR CR3 offset");

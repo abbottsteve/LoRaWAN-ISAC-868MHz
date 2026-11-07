@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 """
-Independent Exported-Artifact Cross-Check Verifier (`Rev E.2` — Task T5)
-========================================================================
-Independently cross-checks exported manufacturing, CAD, Gerber, Drill, BOM, CPL,
-and Firmware deliverables WITHOUT importing `gen_sch.py` or `gen_pcb.py`:
+Multi-Domain Design Consistency Verifier (`Rev E.5`)
+====================================================
+Cross-checks exported manufacturing, CAD, Gerber, Drill, BOM, CPL, and firmware
+artefacts independently of the schematic/PCB generator scripts:
 
   1. Schematic Netlist (`.net`) <-> PCB (`.kicad_pcb`) <-> Turnkey BOM (`.csv`)
      <-> Turnkey CPL (`.csv`, F.Cu pad-array IPC-7351 centroids)
   2. Gerber `.gbrjob` (`ENIG`), `B_Paste.gbp` (`0` apertures), `F/B_Silkscreen`
      (`0` non-`AE1` ink in `X > 50.0 mm` antenna keepout), Excellon `-PTH.drl` /
-     `-NPTH.drl`, `SHA256SUMS.txt`, and zero `.pyc` / `__pycache__` / `.bak` hygiene
-  3. Firmware source & compiled `.elf` / `.bin` scan confirming zero compiled-in
-     `2B7E1516...` keys and presence of NVM + boot self-test symbols
+     `-NPTH.drl`, `SHA256SUMS.txt`, and working-tree cache hygiene
+  3. Firmware source & compiled `.elf` / `.bin` scan confirming no hardcoded
+     test `AppKey` bytes and presence of NVM + boot self-test symbols
 """
 
 import csv
@@ -306,7 +306,7 @@ def main():
             f"got vias={len(via_hits)}, tht={len(tht_hits)}, npth={len(npth_hits)}"
         )
 
-    # 4. Firmware Zero-Hardcoded-Key & Required Symbol Audit
+    # 4. Firmware Provisioning-Key Hygiene & Symbol Check
     for sub in ("src", "include"):
         sdir = os.path.join(ROOT, "firmware", sub)
         for fn in os.listdir(sdir):
@@ -354,7 +354,7 @@ def main():
             sys.stderr.write(f"  - {err}\n")
         return 1
 
-    print("[CROSS-CHECK PASS] Independent Rev E.5 multi-domain parity & security audit passed.")
+    print("[CONSISTENCY PASS] Rev E.5 schematic, PCB, BOM, CPL, Gerber, and firmware checks passed.")
     return 0
 
 

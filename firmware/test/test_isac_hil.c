@@ -212,7 +212,7 @@ void ISAC_HAL_DelayMs(uint32_t ms)
         g_hil.irq_status  |= ISAC_SUBGHZ_IRQ_TX_DONE;
     }
     if (g_hil.rx_pkt_in_flight) {
-        /* If SetStopRxTimerOnPreamble(0x01) was NOT issued, SX1262 hardware RX timer still aborts mid-packet! */
+        /* If SetStopRxTimerOnPreamble(0x01) was NOT issued, SX1262 hardware RX timer still aborts mid-packet */
         if (!g_hil.stop_rx_timer_on_preamble && (g_hil.sim_tick_ms >= g_hil.rx_timeout_at_ms)) {
             g_hil.rx_pkt_in_flight = false;
             g_hil.irq_status      |= ISAC_SUBGHZ_IRQ_TIMEOUT;
@@ -294,7 +294,7 @@ bool ISAC_HAL_SubGhz_WriteCmd(uint8_t opcode, const uint8_t *params, uint8_t len
     } else if (opcode == ISAC_SUBGHZ_CMD_CLEAR_IRQ_STATUS) {
         g_hil.irq_status = 0U;
     } else if (opcode == ISAC_SUBGHZ_CMD_SET_TX) {
-        /* Simulate realistic 57 ms SF7BW125 Time-on-Air (> old broken 25 ms loop timeout!) */
+        /* Simulate realistic 57 ms SF7BW125 Time-on-Air (> old broken 25 ms loop timeout) */
         g_hil.tx_in_flight    = true;
         g_hil.tx_done_at_ms   = g_hil.sim_tick_ms + 57UL;
         g_hil.last_tx_freq_hz = g_hil.current_rf_freq_hz;
@@ -845,7 +845,7 @@ static void test_pin_map_and_smps_sequence(void)
     }
     HIL_ASSERT(!saw_dio2_9d,  "Forbidden SetDio2AsRfSwitchCtrl(0x9D) issued on RAK3172LP-SiP!");
     HIL_ASSERT(saw_use_dcdc,  "Missing SUBGHZ_SetRegulatorMode(0x01 /* USE_DCDC */)");
-    HIL_ASSERT(saw_tcxo_3v0,  "BLK-04: Missing SetDIO3AsTCXOCtrl(0x97, 3.0V=0x06, 320 ticks) for PB0 32 MHz TCXO");
+    HIL_ASSERT(saw_tcxo_3v0,  "Missing SetDIO3AsTCXOCtrl(0x97, 3.0V=0x06, 320 ticks) for PB0 32 MHz TCXO");
     HIL_ASSERT(saw_cal_all,   "Missing SetCalibrate(0x89, 0x7F)");
     HIL_ASSERT(saw_cal_img,   "Missing CalibrateImage(0x98, 0xD7, 0xDB) for EU868");
     HIL_ASSERT(saw_rfo_lp,    "Missing SetPaConfig with deviceSel=0x01 (RFO_LP)");
@@ -888,7 +888,7 @@ static void test_pin_map_and_smps_sequence(void)
     HIL_ASSERT(!g_hil.cw_active && (g_hil.rf_sw_mode == ISAC_RFSW_OFF),
                "CW carrier or RF switch left active after sweep!");
 
-    /* F-01 Regression: Verify live SMPSRDY fault clears FPort 10 bit 4 (never hard-coded true) */
+    /* Verify live SMPSRDY fault clears FPort 10 bit 4 (never hard-coded true) */
     g_hil.inject_smps_fault = true;
     HIL_ASSERT(!ISAC_Init_Radio_And_SMPS(), "ISAC_Init_Radio_And_SMPS() must return false when SMPSRDY fails");
     HIL_ASSERT(!ISAC_Is_SMPS_Active(), "ISAC_Is_SMPS_Active() must be false when PWR_SR2_SMPSRDY=0");
@@ -902,7 +902,7 @@ static void test_pin_map_and_smps_sequence(void)
                "FPort 10 bit 4 must report 0 when live SMPSRDY is 0!");
     g_hil.inject_smps_fault = false;
 
-    /* F-01 Regression: Verify RFBUSYS timeout propagates false through Init, Sweep & Class A TX */
+    /* Verify RFBUSYS timeout propagates false through Init, Sweep & Class A TX */
     g_hil.inject_rfbusy_timeout = true;
     HIL_ASSERT(!ISAC_Init_Radio_And_SMPS(), "ISAC_Init_Radio_And_SMPS() must fail on RFBUSYS timeout");
     isac_raw_sweep_t sw_busy = { 0 };
@@ -1003,7 +1003,7 @@ static void test_vrefint_droop_and_drift_and_classification(const benchmark_curv
                 }
 
                 HIL_ASSERT(tel_cur.tilt_db_x100 == tel_nom.tilt_db_x100,
-                           "%s (VDDA=%u, dP=%d cdb): Tilt drifted %d != %d (expected 0.00 dB error!)",
+                           "%s (VDDA=%u, dP=%d cdb): Tilt drifted %d != %d (expected 0.00 dB error)",
                            c->name, sw_cur.vdda_mv, (int)shifts_cdb[s_i],
                            tel_cur.tilt_db_x100, tel_nom.tilt_db_x100);
                 HIL_ASSERT(tel_cur.notch_db_x100 == tel_nom.notch_db_x100,
@@ -1048,7 +1048,7 @@ static void test_vrefint_droop_and_drift_and_classification(const benchmark_curv
     ISAC_Extract_Features_And_Classify(&sw_flt, &tel_flt);
     HIL_ASSERT(tel_flt.state == ISAC_SURFACE_FAULT, "Open-bridge fault did not trigger ISAC_SURFACE_FAULT");
 
-    /* F-08 Regression: Inject 10% dynamic VDDA droop across tones (3.30 V -> 3.135 V -> 2.97 V)
+    /* Inject 10% dynamic VDDA droop across tones (3.30 V -> 3.135 V -> 2.97 V)
      * during CW PA emission and verify < 0.5% det_mv error + min VDDA recorded in sw_step.vdda_mv */
     g_hil.vdda_true_100uv    = 33000UL;
     g_hil.vbat_true_mv       = 3600UL;
@@ -1070,22 +1070,22 @@ static void test_vrefint_droop_and_drift_and_classification(const benchmark_curv
     g_hil.vdda_tone_override_100uv[2] = 0UL;
 
     HIL_ASSERT(sw_step.vdda_mv == 2970U,
-               "F-08: sw_step.vdda_mv = %u mV != expected min 2970 mV", sw_step.vdda_mv);
+               "sw_step.vdda_mv = %u mV != expected min 2970 mV", sw_step.vdda_mv);
     HIL_ASSERT(sw_step.vdda_tone_mv[0] == 3300U &&
                sw_step.vdda_tone_mv[1] == 3135U &&
                sw_step.vdda_tone_mv[2] == 2970U,
-               "F-08: per-tone VDDA tracking mismatch (%u, %u, %u mV)",
+               "per-tone VDDA tracking mismatch (%u, %u, %u mV)",
                sw_step.vdda_tone_mv[0], sw_step.vdda_tone_mv[1], sw_step.vdda_tone_mv[2]);
     for (uint32_t t = 0U; t < ISAC_NUM_TONES; ++t) {
         const double true_mv = (double)g_hil.tone_vout_100uv[t] / 10.0;
         const double pct_err = (fabs((double)sw_step.det_mv[t] - true_mv) / true_mv) * 100.0;
         HIL_ASSERT(pct_err < 0.5,
-                   "F-08: tone %u det_mv = %u vs %.1f mV (%.3f%% >= 0.5%%)",
+                   "tone %u det_mv = %u vs %.1f mV (%.3f%% >= 0.5%%)",
                    t, sw_step.det_mv[t], true_mv, pct_err);
     }
     HIL_ASSERT(tel_step.state == ISAC_SURFACE_GLAZE_ICE &&
                abs((int)tel_step.tilt_db_x100 - (-1)) <= 2,
-               "F-08: Glaze ice misclassified under 10%% intra-sweep VDDA droop (tilt=%d, state=%s)",
+               "Glaze ice misclassified under 10%% intra-sweep VDDA droop (tilt=%d, state=%s)",
                tel_step.tilt_db_x100, state_name(tel_step.state));
 }
 
@@ -1139,17 +1139,17 @@ static void test_fport10_serialization_and_etsi_duty_cycle(void)
     HIL_ASSERT(!ISAC_DutyCycle_CanTransmit(&dc, 25UL, 2000000UL) && dc.throttled,
                "1-hour 36,000 ms (1%%) airtime cap did not throttle");
 
-    /* F-09 Regression: Fresh 3.60 V Li-SOCl2 cell minus B5819W D1 drop (e.g. 3250 mV & 3150 mV
-     * at post-D1 VBAT node) MUST NOT false-trigger bit 5 (ISAC_FLAG_LOW_BATTERY)! */
+    /* Fresh 3.60 V Li-SOCl2 cell minus B5819W D1 drop (e.g. 3250 mV & 3150 mV
+     * at post-D1 VBAT node) MUST NOT false-trigger bit 5 (ISAC_FLAG_LOW_BATTERY) */
     isac_telemetry_t fresh_post_d1_tel = golden_tel;
     fresh_post_d1_tel.vbat_mv = 3250U; /* 3.60 V cell - 0.35 V B5819W forward drop */
     ISAC_Pack_LoRaWAN_FPort10(&fresh_post_d1_tel, &dc, wire);
     HIL_ASSERT((wire[0] & ISAC_FLAG_LOW_BATTERY) == 0U,
-               "F-09: Fresh 3.60 V cell post-D1 (3250 mV) falsely set ISAC_FLAG_LOW_BATTERY!");
+               "Fresh 3.60 V cell post-D1 (3250 mV) falsely set ISAC_FLAG_LOW_BATTERY!");
     fresh_post_d1_tel.vbat_mv = 3150U;
     ISAC_Pack_LoRaWAN_FPort10(&fresh_post_d1_tel, &dc, wire);
     HIL_ASSERT((wire[0] & ISAC_FLAG_LOW_BATTERY) == 0U,
-               "F-09: Healthy plateau cell post-D1 (3150 mV) falsely set ISAC_FLAG_LOW_BATTERY!");
+               "Healthy plateau cell post-D1 (3150 mV) falsely set ISAC_FLAG_LOW_BATTERY!");
 
     /* Depleting EOL cell entering ER14335M knee (post-D1 VBAT = 2750 mV < 2800 mV) sets bit 5 */
     isac_telemetry_t lowbat_tel = golden_tel;
@@ -1226,7 +1226,7 @@ static void test_lorawan_aes_cmac_otaa_and_class_a(void)
     ISAC_LoRaWAN_InitOTAA(&ctx, dev_eui, join_eui, k_nist_key);
 
     /* Synthesize a valid gateway JoinAccept (decrypted on-node via AES128_EncryptBlock -> stage AES128_Decrypt,
-     * or construct plaintext `dec` and compute inverse; even simpler: test ABP + direct JoinAccept round-trip!) */
+     * or construct plaintext `dec` and compute inverse; even simpler: test ABP + direct JoinAccept round-trip) */
     static const uint8_t k_app_skey[16] = {
         0x3CU,0x4FU,0xCFU,0x09U,0x88U,0x15U,0xF7U,0xABU,
         0xA6U,0xD2U,0xAEU,0x28U,0x16U,0x15U,0x7EU,0x2BU
@@ -1277,7 +1277,7 @@ static void test_lorawan_aes_cmac_otaa_and_class_a(void)
     HIL_ASSERT(g_hil.rf_sw_mode == ISAC_RFSW_OFF,
                "RF switch not returned to ISAC_RFSW_OFF before STOP2");
 
-    /* Decrypt captured 23-byte PHY frame in `g_hil.tx_fifo` and verify exact MIC + FPort 10 recovery! */
+    /* Decrypt captured 23-byte PHY frame in `g_hil.tx_fifo` and verify exact MIC + FPort 10 recovery */
     const uint8_t *phy = g_hil.tx_fifo;
     HIL_ASSERT(phy[0] == ISAC_LORAWAN_MHDR_UNCONF_DATA_UP && phy[8] == ISAC_LORAWAN_FPORT,
                "PHY MHDR (0x40) or FPort (10) mismatch");
@@ -1307,7 +1307,7 @@ static void test_reve3_rx2_sf12_brownout_etsi0p1_and_tare(void)
 {
     printf("[6/6] Verifying Rev E.3 Closures: 1,810 ms SF12 RX2 JoinAccept/Downlink, Pre-Sweep Guards & Tare...\n");
 
-    /* (A) BLK-04 + HIGH-04: 1,810 ms SF12BW125 33-byte JoinAccept (CFList + RxDelay=5s + DLSettings=0x13) on RX2 */
+    /* (A) 1,810 ms SF12BW125 33-byte JoinAccept (CFList + RxDelay=5s + DLSettings=0x13) on RX2 */
     static const uint8_t k_app_key[16] = {
         0x2BU,0x7EU,0x15U,0x16U,0x28U,0xAEU,0xD2U,0xA6U,
         0xABU,0xF7U,0x15U,0x88U,0x09U,0xCFU,0x4FU,0x3CU
@@ -1335,15 +1335,15 @@ static void test_reve3_rx2_sf12_brownout_etsi0p1_and_tare(void)
     memcpy(&g_hil.rx_fifo[0x80U], k_join_accept_cf33, 33U);
     g_hil.staged_rx_len    = 33U;
     g_hil.stage_rx_on_rx2  = true;
-    g_hil.staged_rx_toa_ms = 1810UL; /* Full 1,810 ms SF12BW125 JoinAccept flight! */
+    g_hil.staged_rx_toa_ms = 1810UL; /* Full 1,810 ms SF12BW125 JoinAccept flight */
 
     const bool jok = ISAC_LoRaWAN_JoinOTAA(&otaa_ctx);
     HIL_ASSERT(jok && otaa_ctx.joined,
-               "BLK-04: 1,810 ms SF12BW125 RX2 JoinAccept failed!");
+               "1,810 ms SF12BW125 RX2 JoinAccept failed!");
     HIL_ASSERT(g_hil.stop_rx_timer_on_preamble,
-               "BLK-04: SetStopRxTimerOnPreamble(0x9F, 0x01) was not issued before SET_RX!");
+               "SetStopRxTimerOnPreamble(0x9F, 0x01) was not issued before SET_RX!");
     HIL_ASSERT(g_hil.last_rx_search_timeout_ms >= 325UL,
-               "BLK-04: SF12 symbol-search timeout %lu ms < 325 ms (10 * T_sym)",
+               "SF12 symbol-search timeout %lu ms < 325 ms (10 * T_sym)",
                (unsigned long)g_hil.last_rx_search_timeout_ms);
     HIL_ASSERT(otaa_ctx.dev_addr == 0x26018683UL &&
                otaa_ctx.rx1_delay_ms == 5000U &&
@@ -1351,7 +1351,7 @@ static void test_reve3_rx2_sf12_brownout_etsi0p1_and_tare(void)
                otaa_ctx.rx2_sf == 9U &&
                otaa_ctx.num_channels == 8U &&
                otaa_ctx.channel_hz[7] == 867900000UL,
-               "HIGH-04: JoinAccept CFList / RxDelay=5s / DLSettings not parsed!");
+               "JoinAccept CFList / RxDelay=5s / DLSettings not parsed!");
 
     /* Simulate MCU power-cycle reset and restore full session from `g_hil_saved_sess` */
     isac_lorawan_ctx_t reboot_ctx;
@@ -1365,9 +1365,9 @@ static void test_reve3_rx2_sf12_brownout_etsi0p1_and_tare(void)
                reboot_ctx.num_channels == 8U &&
                reboot_ctx.channel_hz[3] == 867100000UL &&
                reboot_ctx.channel_hz[7] == 867900000UL,
-               "HIGH-04: CFList + RxDelay=5s lost across simulated MCU reset!");
+               "CFList + RxDelay=5s lost across simulated MCU reset!");
 
-    /* Also verify 1,810 ms Confirmed Data Downlink on RX2 persists `fcnt_down` & `pending_ack`! */
+    /* Also verify 1,810 ms Confirmed Data Downlink on RX2 persists `fcnt_down` & `pending_ack` */
     reboot_ctx.rx2_sf = 12U;
     uint8_t dl_phy[16] = { 0U };
     dl_phy[0] = ISAC_LORAWAN_MHDR_CONF_DATA_DOWN;
@@ -1388,18 +1388,18 @@ static void test_reve3_rx2_sf12_brownout_etsi0p1_and_tare(void)
     const uint32_t persist_before_dl = g_hil_persist_calls;
     const uint8_t dummy_ul[10] = { 0x80U };
     HIL_ASSERT(ISAC_LoRaWAN_SendClassA(&reboot_ctx, ISAC_LORAWAN_FPORT, dummy_ul, 10U, NULL) == ISAC_LORAWAN_TX_OK,
-               "BLK-04: SendClassA with 1,810 ms SF12 RX2 Confirmed Downlink failed!");
+               "SendClassA with 1,810 ms SF12 RX2 Confirmed Downlink failed!");
     HIL_ASSERT(g_hil_persist_calls >= (persist_before_dl + 2U) &&
                g_hil_saved_sess.fcnt_down == 8UL &&
                g_hil_saved_sess.pending_ack == 1U,
-               "HIGH-04: Confirmed downlink did not persist fcnt_down=8 & pending_ack=1 to NVM!");
+               "Confirmed downlink did not persist fcnt_down=8 & pending_ack=1 to NVM!");
     g_hil.staged_rx_len    = 0U;
     g_hil.staged_rx_toa_ms = 0UL;
 
-    /* (B) BLK-05 & HIGH-07: Passive pre-sweep VBAT brownout guard + 0.1% 863.1 MHz duty guard (0 CW TX!) */
+    /* (B) Passive pre-sweep VBAT brownout guard + 0.1% 863.1 MHz duty guard (0 CW TX) */
     hil_reset_trace();
     g_hil.vdda_true_100uv = 33000UL;
-    g_hil.vbat_true_mv    = 2890UL; /* Brownout < 3000 mV! */
+    g_hil.vbat_true_mv    = 2890UL; /* Brownout < 3000 mV */
     g_hil.vrefint_cal     = 1650U;
     uint16_t pre_vbat = 0U, pre_vdda = 0U;
     HIL_ASSERT(ISAC_Acquire_Supply_Rails(&pre_vbat, &pre_vdda), "ISAC_Acquire_Supply_Rails failed");
@@ -1408,7 +1408,7 @@ static void test_reve3_rx2_sf12_brownout_etsi0p1_and_tare(void)
     HIL_ASSERT(g_hil.cmd_count == 0U && g_hil.cw_trigger_count == 0U &&
                !g_hil.det_en_high && !g_hil.det_en_turned_on &&
                !g_hil.bat_mon_en_high && g_hil.bat_mon_en_was_high_at_adc,
-               "HIGH-04: Passive rail sense must gate Q2 via PA9 ONLY (PA8/LT5538 strictly OFF) & issue ZERO SPI/CW!");
+               "Passive rail sense must gate Q2 via PA9 ONLY (PA8/LT5538 strictly OFF) & issue ZERO SPI/CW!");
 
     isac_duty_tracker_t dc01;
     ISAC_DutyCycle_Init(&dc01, 0UL);
@@ -1438,10 +1438,10 @@ static void test_reve3_rx2_sf12_brownout_etsi0p1_and_tare(void)
                g_hil.cw_tx_power_dbm[2] == ISAC_SENSING_TX_DBM &&
                g_hil.last_tx_power_dbm  == ISAC_LORAWAN_TX_DBM &&
                ISAC_SENSING_TX_DBM      == 4,
-               "MED-03: Expected +4 dBm CW sweep and +14 dBm restored LoRaWAN power (got %d / %d)",
+               "Expected +4 dBm CW sweep and +14 dBm restored LoRaWAN power (got %d / %d)",
                (int)g_hil.cw_tx_power_dbm[0], (int)g_hil.last_tx_power_dbm);
 
-    /* (C) HIGH-06: Per-unit factory dry-air leakage power tare (`ISAC_Sensing_SetCalibration`) */
+    /* (C) Per-unit factory dry-air leakage power tare (`ISAC_Sensing_SetCalibration`) */
     isac_raw_sweep_t sw_off_air = sw_pwr;
     sw_off_air.det_100uv[0] = 10450UL; sw_off_air.det_mv[0] = 1045U;
     sw_off_air.det_100uv[1] = 10620UL; sw_off_air.det_mv[1] = 1062U;
@@ -1456,7 +1456,7 @@ static void test_reve3_rx2_sf12_brownout_etsi0p1_and_tare(void)
     ISAC_Sensing_SetCalibration(unit_tare_mv, true);
     ISAC_Extract_Features_And_Classify(&sw_off_air, &tel_cal);
     HIL_ASSERT(tel_cal.state == ISAC_SURFACE_DRY_AIR && tel_cal.notch_db_x100 >= 450,
-               "HIGH-06: Factory dry-air tare failed to restore Dry Air notch (%d cB, state=%s)",
+               "Factory dry-air tare failed to restore Dry Air notch (%d cB, state=%s)",
                tel_cal.notch_db_x100, state_name(tel_cal.state));
     ISAC_Sensing_SetCalibration(NULL, false);
 }
@@ -1465,14 +1465,14 @@ static void test_reve4_remediation_suite(void)
 {
     printf("[7/7] Verifying Rev E.4 Closures: CLKDE Readback/USE_LDO, NSS Wakeup, Bidirectional Tare, Die-Temp, Join 1%% & Wet SF12...\n");
 
-    /* (1) BLK-03: CLKDE readback failure MUST NOT assert PWR_CR5_SMPSEN and MUST fall back to USE_LDO (0x00) */
+    /* (1) CLKDE readback failure MUST NOT assert PWR_CR5_SMPSEN and MUST fall back to USE_LDO (0x00) */
     memset(&g_hil, 0, sizeof(g_hil));
     hil_reset_trace();
     g_hil.inject_clkde_readback_zero = true;
     HIL_ASSERT(!ISAC_Init_Radio_And_SMPS(),
-               "BLK-03: ISAC_Init_Radio_And_SMPS() must return false when SMPSC0R.CLKDE readback == 0");
+               "ISAC_Init_Radio_And_SMPS() must return false when SMPSC0R.CLKDE readback == 0");
     HIL_ASSERT(!g_hil.smps_hw_cr5_enabled,
-               "BLK-03 DANGER: PWR_CR5_SMPSEN was asserted despite CLKDE readback == 0!");
+               "PWR_CR5_SMPSEN was asserted despite CLKDE readback == 0!");
     bool saw_use_ldo = false;
     bool saw_use_dcdc_bad = false;
     for (uint32_t i = 0U; i < g_hil.cmd_count; ++i) {
@@ -1483,10 +1483,10 @@ static void test_reve4_remediation_suite(void)
         }
     }
     HIL_ASSERT(saw_use_ldo && !saw_use_dcdc_bad && !ISAC_Is_SMPS_Active(),
-               "BLK-03: Radio did not fall back cleanly to SetRegulatorMode(USE_LDO = 0x00)!");
+               "Radio did not fall back cleanly to SetRegulatorMode(USE_LDO = 0x00)!");
     g_hil.inject_clkde_readback_zero = false;
 
-    /* (2) HIGH-03: Warm-sleep NSS wakeup pulse before post-STOP2 SUBGHZSPI commands */
+    /* (2) Warm-sleep NSS wakeup pulse before post-STOP2 SUBGHZSPI commands */
     HIL_ASSERT(ISAC_Init_Radio_And_SMPS(), "Recovery init failed");
     HIL_ASSERT(g_hil.radio_sleeping, "Radio should be parked in SET_SLEEP after init");
     g_hil.wakeup_nss_pulses          = 0U;
@@ -1500,14 +1500,14 @@ static void test_reve4_remediation_suite(void)
     isac_raw_sweep_t sw_wake = { 0 };
     HIL_ASSERT(ISAC_Acquire_3Tone_Sweep(&sw_wake), "Post-sleep sweep failed");
     HIL_ASSERT(g_hil.wakeup_nss_pulses >= 1U && g_hil.woke_before_post_sleep_spi,
-               "HIGH-03: Missing NSS wakeup pulse before post-sleep SUBGHZSPI transaction!");
+               "Missing NSS wakeup pulse before post-sleep SUBGHZSPI transaction!");
     HIL_ASSERT(sw_wake.tone_cw_ms[0] >= ISAC_TONE1_CW_AIRTIME_MS,
-               "HIGH-01: Per-tone measured CW airtime %u ms < %lu ms",
+               "Per-tone measured CW airtime %u ms < %lu ms",
                sw_wake.tone_cw_ms[0], (unsigned long)ISAC_TONE1_CW_AIRTIME_MS);
 
-    /* (3) BLK-02: Bidirectional factory dry-air tare for -3sigma negative excursion (f1 < nom) */
+    /* (3) Bidirectional factory dry-air tare for -3sigma negative excursion (f1 < nom) */
     isac_raw_sweep_t sw_neg_air = sw_wake;
-    sw_neg_air.det_100uv[0] = 6700UL; sw_neg_air.det_mv[0] = 670U; /* Null shifted to f1 < 818.0 mV! */
+    sw_neg_air.det_100uv[0] = 6700UL; sw_neg_air.det_mv[0] = 670U; /* Null shifted to f1 < 818.0 mV */
     sw_neg_air.det_100uv[1] = 8800UL; sw_neg_air.det_mv[1] = 880U;
     sw_neg_air.det_100uv[2] = 9100UL; sw_neg_air.det_mv[2] = 910U;
     isac_telemetry_t tel_neg_uncal = { 0 }, tel_neg_cal = { 0 };
@@ -1520,11 +1520,11 @@ static void test_reve4_remediation_suite(void)
     ISAC_Sensing_SetCalibration(neg_tare_mv, true);
     ISAC_Extract_Features_And_Classify(&sw_neg_air, &tel_neg_cal);
     HIL_ASSERT(tel_neg_cal.state == ISAC_SURFACE_DRY_AIR && tel_neg_cal.notch_db_x100 >= 450,
-               "BLK-02: Bidirectional negative dry-air tare failed (notch=%d cB, state=%s)!",
+               "Bidirectional negative dry-air tare failed (notch=%d cB, state=%s)!",
                tel_neg_cal.notch_db_x100, state_name(tel_neg_cal.state));
     ISAC_Sensing_SetCalibration(NULL, false);
 
-    /* (4) MED-02: Die-temperature warm-dew (+20 C) vs sub-zero glaze-ice (-5 C) disambiguation */
+    /* (4) Die-temperature warm-dew (+20 C) vs sub-zero glaze-ice (-5 C) disambiguation */
     isac_raw_sweep_t sw_ice = sw_wake;
     sw_ice.det_100uv[0] = 11435UL; sw_ice.det_mv[0] = 1144U;
     sw_ice.det_100uv[1] = 11425UL; sw_ice.det_mv[1] = 1143U;
@@ -1533,16 +1533,16 @@ static void test_reve4_remediation_suite(void)
     ISAC_Extract_Features_And_Classify_WithTemp(&sw_ice, +200, &tel_warm_dew);    /* +20.0 C */
     ISAC_Extract_Features_And_Classify_WithTemp(&sw_ice, -50,  &tel_subzero_ice); /*  -5.0 C */
     HIL_ASSERT(tel_warm_dew.state == ISAC_SURFACE_LIQUID_WATER,
-               "MED-02: +20.0 C partial dew falsely classified as %s instead of LIQUID_WATER!",
+               "+20.0 C partial dew falsely classified as %s instead of LIQUID_WATER!",
                state_name(tel_warm_dew.state));
     HIL_ASSERT(tel_subzero_ice.state == ISAC_SURFACE_GLAZE_ICE,
-               "MED-02: -5.0 C glaze ice failed to classify as GLAZE_ICE (%s)!",
+               "-5.0 C glaze ice failed to classify as GLAZE_ICE (%s)!",
                state_name(tel_subzero_ice.state));
     HIL_ASSERT(tel_warm_dew.tilt_db_x100 == tel_subzero_ice.tilt_db_x100 &&
                tel_warm_dew.notch_db_x100 == tel_subzero_ice.notch_db_x100,
-               "MED-02: Temperature intercept compensation perturbed differential Tilt/Notch!");
+               "Temperature intercept compensation perturbed differential Tilt/Notch!");
 
-    /* (5) MED-03 & BLK-04: SX1262 0x0736/0x0889 workarounds + Post-Join 1% Off-Time + §7 Join Back-Off */
+    /* (5) SX1262 0x0736/0x0889 workarounds + Post-Join 1% Off-Time + §7 Join Back-Off */
     static const uint8_t k_app_key[16] = {
         0x2BU,0x7EU,0x15U,0x16U,0x28U,0xAEU,0xD2U,0xA6U,
         0xABU,0xF7U,0x15U,0x88U,0x09U,0xCFU,0x4FU,0x3CU
@@ -1566,13 +1566,13 @@ static void test_reve4_remediation_suite(void)
     g_hil.staged_rx_len = 0U; /* Timeout both RX1 & RX2 */
     HIL_ASSERT(!ISAC_LoRaWAN_JoinOTAA(&backoff_ctx), "Unanswered JoinOTAA should return false");
     HIL_ASSERT(backoff_ctx.join_attempts == 1U && backoff_ctx.next_join_allowed_ms >= (1057UL + 36000UL),
-               "BLK-04: Missing >= 36 s JoinRequest retransmission backoff (%lu ms)",
+               "Missing >= 36 s JoinRequest retransmission backoff (%lu ms)",
                (unsigned long)backoff_ctx.next_join_allowed_ms);
     hil_reset_trace();
     HIL_ASSERT(!ISAC_LoRaWAN_JoinOTAA(&backoff_ctx) && g_hil.cmd_count == 0U,
-               "BLK-04: Immediate JoinOTAA retry before backoff expiry was NOT blocked!");
+               "Immediate JoinOTAA retry before backoff expiry was NOT blocked!");
 
-    /* 5b: Successful RX1 JoinAccept (+5.06 s) inside SendClassA() MUST wait until t_join_end + 6,200 ms (1% off-time)! */
+    /* 5b: Successful RX1 JoinAccept (+5.06 s) inside SendClassA() MUST wait until t_join_end + 6,200 ms (1% off-time) */
     isac_lorawan_ctx_t rx1_join_ctx;
     ISAC_LoRaWAN_InitOTAA(&rx1_join_ctx, dev_eui, k_join_eui, k_app_key);
     hil_reset_trace();
@@ -1582,7 +1582,7 @@ static void test_reve4_remediation_suite(void)
     g_hil.sim_tick_ms      = 2000UL;
     memcpy(&g_hil.rx_fifo[0x80U], k_join_accept_cf33, 33U);
     g_hil.staged_rx_len    = 33U;
-    g_hil.stage_rx_on_rx2  = false;  /* Arrive on RX1 @ +5.0 s (< 6.2 s 1% off-time!) */
+    g_hil.stage_rx_on_rx2  = false;  /* Arrive on RX1 @ +5.0 s (< 6.2 s 1% off-time) */
     g_hil.staged_rx_toa_ms = 62UL;
     const uint8_t ul_frame[10] = { 0x90U, 0U, 171U, 0xEEU, 0x02U, 0U, 100U, 0x0EU, 0x74U, 103U };
     uint32_t ul_toa = 0UL;
@@ -1590,34 +1590,34 @@ static void test_reve4_remediation_suite(void)
                "SendClassA with RX1 OTAA Join failed");
     /* Join TX ends at 2000 + 57 = 2057 ms -> min DataUp TX start = 2057 + 6200 = 8257 ms -> DataUp TX ends >= 8314 ms */
     HIL_ASSERT(g_hil.tx_done_at_ms >= (2057UL + 6200UL + 57UL),
-               "BLK-04: First DataUp violated EU868 1%% post-Join off-time (tx_done_at=%lu ms < 8314 ms)!",
+               "First DataUp violated EU868 1%% post-Join off-time (tx_done_at=%lu ms < 8314 ms)!",
                (unsigned long)g_hil.tx_done_at_ms);
     HIL_ASSERT(g_hil.saw_iq_std_on_ul && g_hil.saw_iq_inv_on_dl && ((g_hil.tx_mod_reg & 0x04U) != 0U),
-               "MED-03: SX1262 0x0736 IQ polarity or 0x0889 BW125 TxModulation workaround missing!");
+               "SX1262 0x0736 IQ polarity or 0x0889 BW125 TxModulation workaround missing!");
 
-    /* (6) HIGH-06 & MED-01: Adaptive SF12 (DR0) under wet/IPA radome & SF9 (DR3, 86% energy saving) under Glaze Ice */
+    /* (6) Adaptive SF12 (DR0) under wet/IPA radome & SF9 (DR3, 86% energy saving) under Glaze Ice */
     isac_duty_tracker_t dc_sf;
     ISAC_DutyCycle_Init(&dc_sf, 0UL);
     HIL_ASSERT(ISAC_Select_Uplink_SF(ISAC_SURFACE_DRY_AIR, &dc_sf, 0UL, 4UL) == 7U &&
                ISAC_Select_Uplink_SF(ISAC_SURFACE_OIL, &dc_sf, 0UL, 4UL) == 7U,
                "Dry Air / Oil should remain on SF7BW125 (DR5)");
     HIL_ASSERT(ISAC_Select_Uplink_SF(ISAC_SURFACE_GLAZE_ICE, &dc_sf, 0UL, 4UL) == 9U,
-               "MED-01: Glaze Ice should step uplink to SF9BW125 (DR3, 206 ms ToA per rf_link_budget.md)!");
+               "Glaze Ice should step uplink to SF9BW125 (DR3, 206 ms ToA per rf_link_budget.md)!");
     HIL_ASSERT(ISAC_Select_Uplink_SF(ISAC_SURFACE_LIQUID_WATER, &dc_sf, 0UL, 4UL) == 12U &&
                ISAC_Select_Uplink_SF(ISAC_SURFACE_IPA, &dc_sf, 0UL, 4UL) == 12U,
-               "HIGH-06: Wet/IPA radome did not step uplink to SF12BW125 (DR0, +12.5 dB gain)!");
+               "Wet/IPA radome did not step uplink to SF12BW125 (DR0, +12.5 dB gain)!");
     dc_sf.used_airtime_ms = 35000UL; /* Only 1,000 ms left in 1-hour 1% budget (< 1,483 ms SF12, > 371 ms SF10) */
     HIL_ASSERT(ISAC_Select_Uplink_SF(ISAC_SURFACE_LIQUID_WATER, &dc_sf, 0UL, 4UL) == 10U,
-               "HIGH-06: Duty-constrained wet fallback should step to SF10 (371 ms) when SF12 exceeds cap");
+               "Duty-constrained wet fallback should step to SF10 (371 ms) when SF12 exceeds cap");
 }
 
 static void test_reve5_remediation_suite(void)
 {
     printf("[8/8] Verifying Rev E.5 Closures: 2-Point Calibrated Water/IPA Separation (>= 0.50 dB), PA9 Q2 Split & +4 dBm Headroom...\n");
 
-    /* HIGH-02: Verify 2-point factory calibration (dry tare + reference intercept offset cal_ref_cdb)
+    /* Verify 2-point factory calibration (dry tare + reference intercept offset cal_ref_cdb)
      * achieves >= 0.50 dB (50 cB) separation margin between LIQUID_WATER (-26.35 dBm) and IPA (-27.75 dBm)
-     * across +/-2.00 dB (+/-200 cdb) LT5538 log-intercept / PA output tolerance! */
+     * across +/-2.00 dB (+/-200 cdb) LT5538 log-intercept / PA output tolerance */
     const int16_t shifts_cdb[3] = { 0, +200, -200 };
     const uint16_t nom_dry_mv[3] = { 818U, 759U, 884U };
 
@@ -1663,7 +1663,7 @@ static void test_reve5_remediation_suite(void)
                    (lvl_cal_w - (-2705)) >= 50 &&
                    ((-2705) - lvl_cal_ipa) >= 50 &&
                    sep_cdb >= 130,
-                   "HIGH-02 (d_cdb=%+d): Water/IPA cal separation failed (w=%s %d cdb, ipa=%s %d cdb, sep=%d cdb)",
+                   "(d_cdb=%+d) — Water/IPA cal separation failed (w=%s %d cdb, ipa=%s %d cdb, sep=%d cdb)",
                    (int)d_cdb, state_name(tel_w.state), (int)lvl_cal_w,
                    state_name(tel_ipa.state), (int)lvl_cal_ipa, (int)sep_cdb);
     }
@@ -1672,9 +1672,9 @@ static void test_reve5_remediation_suite(void)
 
 static void test_principal_audit_closures(const benchmark_curve_t *curves, uint32_t num_curves)
 {
-    printf("[9/9] Verifying Principal Audit Closures: LoRaWAN 1.0.3 §7 24h Sliding-Window Join Backoff & Monotonic eps_est_x100...\n");
+    printf("[9/9] Verifying LoRaWAN 1.0.3 §7 24h Sliding-Window Join Backoff & Monotonic eps_est_x100...\n");
 
-    /* 1. BLK-FW-01: Exhaustive 96-hour sliding-window JoinRequest airtime audit across SF7, SF9, SF10, SF12 */
+    /* 1. Exhaustive 96-hour sliding-window JoinRequest airtime audit across SF7, SF9, SF10, SF12 */
     {
         static const uint8_t k_sfs[4] = { 7U, 9U, 10U, 12U };
         for (uint32_t s = 0U; s < 4U; ++s) {
@@ -1700,7 +1700,7 @@ static void test_principal_audit_closures(const benchmark_curve_t *curves, uint3
                 }
             }
             HIL_ASSERT(h1_airtime_ms < 36000UL && (n_tx <= 10U || tx_start_ms[10] >= 3600000ULL),
-                       "BLK-FW-01 (SF%u, ToA=%lu ms): Hour-1 airtime=%lu ms or Tier-2 bled into Hour 1 (t11=%llu ms)",
+                       "(SF%u, ToA=%lu ms) — Hour-1 airtime=%lu ms or Tier-2 bled into Hour 1 (t11=%llu ms)",
                        sf, (unsigned long)toa_ms, (unsigned long)h1_airtime_ms,
                        (unsigned long long)((n_tx > 10U) ? tx_start_ms[10] : 0ULL));
 
@@ -1712,10 +1712,10 @@ static void test_principal_audit_closures(const benchmark_curve_t *curves, uint3
                 }
             }
             HIL_ASSERT(h10_airtime_ms < 36000UL && (n_tx <= 20U || tx_start_ms[20] >= 39600000ULL),
-                       "BLK-FW-01 (SF%u, ToA=%lu ms): 10-hour Tier-2 airtime=%lu ms >= 36,000 ms",
+                       "(SF%u, ToA=%lu ms) — 10-hour Tier-2 airtime=%lu ms >= 36,000 ms",
                        sf, (unsigned long)toa_ms, (unsigned long)h10_airtime_ms);
 
-            /* (c) Every 24-hour sliding window [t_i, t_i + 86,400,000 ms) starting in Tier 3 (i >= 20): strictly < 8,700 ms! */
+            /* (c) Every 24-hour sliding window [t_i, t_i + 86,400,000 ms) starting in Tier 3 (i >= 20): strictly < 8,700 ms */
             uint32_t max_24h_airtime_ms = 0UL;
             for (uint32_t i = 20U; i < n_tx; ++i) {
                 const uint64_t win_end = tx_start_ms[i] + 86400000ULL;
@@ -1728,12 +1728,12 @@ static void test_principal_audit_closures(const benchmark_curve_t *curves, uint3
                 }
             }
             HIL_ASSERT(max_24h_airtime_ms > 0UL && max_24h_airtime_ms < 8700UL,
-                       "BLK-FW-01 (SF%u, ToA=%lu ms): Tier-3 24h sliding-window airtime %lu ms >= 8,700 ms limit!",
+                       "(SF%u, ToA=%lu ms) — Tier-3 24h sliding-window airtime %lu ms >= 8,700 ms limit!",
                        sf, (unsigned long)toa_ms, (unsigned long)max_24h_airtime_ms);
         }
     }
 
-    /* 2. HIGH-FW-05: Verify strictly monotonic eps_est_x100 across tilt (-500..+300 cB) & all FDTD media */
+    /* 2. Verify strictly monotonic eps_est_x100 across tilt (-500..+300 cB) & all FDTD media */
     {
         uint16_t prev_eps = 0U;
         bool monotonic_ok = true;
@@ -1761,11 +1761,11 @@ static void test_principal_audit_closures(const benchmark_curve_t *curves, uint3
         }
         ISAC_Sensing_SetCalibration2Pt(NULL, false, 0, false);
         HIL_ASSERT(monotonic_ok && prev_eps == 980U,
-                   "HIGH-FW-05: estimate_loaded_eps_x100 non-monotonic or wrong upper knot (%u != 980)",
+                   "estimate_loaded_eps_x100 non-monotonic or wrong upper knot (%u != 980)",
                    prev_eps);
 
         /* Verify every pair (a, b) of physical FDTD benchmark curves satisfies:
-         * curves[a].eps_real < curves[b].eps_real => curve_eps[a] < curve_eps[b] (0 inversions!) */
+         * curves[a].eps_real < curves[b].eps_real => curve_eps[a] < curve_eps[b] (0 inversions) */
         uint16_t curve_eps[16] = { 0U };
         for (uint32_t idx = 0U; idx < num_curves; ++idx) {
             isac_raw_sweep_t sw_c = { 0 };
@@ -1791,10 +1791,10 @@ static void test_principal_audit_closures(const benchmark_curve_t *curves, uint3
             }
         }
         HIL_ASSERT(pairs_monotonic,
-                   "HIGH-FW-05: FDTD media eps_est_x100 violated physical permittivity ordering!");
+                   "FDTD media eps_est_x100 violated physical permittivity ordering!");
     }
 
-    /* 3. BLK-FW-01: 49.71-day (2^32 ms) & 24.85-day (2^31 ms) tick rollover immunity across 100 rollovers (>13.6 yrs) */
+    /* 3. 49.71-day (2^32 ms) & 24.85-day (2^31 ms) tick rollover immunity across 100 rollovers (>13.6 yrs) */
     {
         isac_duty_tracker_t dc_wrap;
         const uint32_t t_pre_wrap = 0xFFFE0000UL; /* 131.072 s before 2^32 rollover */
@@ -1806,22 +1806,22 @@ static void test_principal_audit_closures(const benchmark_curve_t *curves, uint3
         /* Still inside backoff 500 ms later -> MUST reject */
         HIL_ASSERT(!ISAC_DutyCycle_CanTransmitSubband0p1(&dc_wrap, 2UL, t_pre_wrap + 500UL) &&
                    !ISAC_DutyCycle_CanTransmit(&dc_wrap, 61UL, t_pre_wrap + 500UL),
-                   "BLK-FW-01: Premature TX inside active pre-wrap backoff was not blocked");
+                   "Premature TX inside active pre-wrap backoff was not blocked");
 
-        /* Next 15-minute STOP2 wakeup (+900,000 ms -> wraps modulo 2^32 to 0x000BBBA0) -> MUST allow TX! */
+        /* Next 15-minute STOP2 wakeup (+900,000 ms -> wraps modulo 2^32 to 0x000BBBA0) -> MUST allow TX */
         const uint32_t t_post_wrap = (uint32_t)(t_pre_wrap + 900000U);
         HIL_ASSERT(ISAC_DutyCycle_CanTransmitSubband0p1(&dc_wrap, 2UL, t_post_wrap) &&
                    ISAC_DutyCycle_CanTransmit(&dc_wrap, 61UL, t_post_wrap),
-                   "BLK-FW-01: 49.71-day uint32_t tick rollover caused false duty-cycle radio blackout!");
+                   "49.71-day uint32_t tick rollover caused false duty-cycle radio blackout!");
 
         /* Cross-boundary backoff: TX at 0xFFFFFC18 (-1000 ms) -> 2000 ms backoff wraps to 0x000003E8 (+1000 ms) */
         const uint32_t t_straddle = 0xFFFFFC18UL;
         ISAC_DutyCycle_RecordSubband0p1AirTime(&dc_wrap, 2UL, t_straddle);
         HIL_ASSERT(!ISAC_DutyCycle_CanTransmitSubband0p1(&dc_wrap, 2UL, 0x00000100UL) &&
                    ISAC_DutyCycle_CanTransmitSubband0p1(&dc_wrap, 2UL, 0x000003E8UL),
-                   "BLK-FW-01: Backoff straddling 0xFFFFFFFF -> 0x000003E8 mishandled!");
+                   "Backoff straddling 0xFFFFFFFF -> 0x000003E8 mishandled!");
 
-        /* Multi-year 100-rollover (4,971 days > 13.6 years) + 35-day (> 24.85-day 2^31 ms!) low-battery hibernation */
+        /* Multi-year 100-rollover (4,971 days > 13.6 years) + 35-day (> 24.85-day 2^31 ms) low-battery hibernation */
         isac_lorawan_ctx_t lw_wrap;
         uint8_t z8[8] = { 0 }, z16[16] = { 0 };
         uint32_t sim_ms = 0UL;
@@ -1858,7 +1858,7 @@ static void test_principal_audit_closures(const benchmark_curve_t *curves, uint3
             ISAC_DutyCycle_RecordAirTime(&dc_wrap, 65UL, sim_ms);
         }
         HIL_ASSERT(multi_year_ok,
-                   "BLK-FW-01: Multi-year 100-rollover + 35-day low-battery simulation suffered false blackout!");
+                   "Multi-year 100-rollover + 35-day low-battery simulation suffered false blackout!");
     }
 }
 
@@ -1903,7 +1903,7 @@ static void test_lbs_interference_blanking_and_soft_cw_quench(void)
                    state_name(tel.state));
     }
 
-    /* 2. Transient LTE/LoRa burst jammer (460 mV on 1st check, clears after 20 ms PA8=0 backoff -> recovers!) */
+    /* 2. Transient LTE/LoRa burst jammer (460 mV on 1st check, clears after 20 ms PA8=0 backoff -> recovers) */
     {
         isac_raw_sweep_t sw = { 0 };
         isac_telemetry_t tel = { 0 };
@@ -1925,7 +1925,7 @@ static void test_lbs_interference_blanking_and_soft_cw_quench(void)
                    "Recovered sweep misclassified %s instead of GLAZE_ICE!", state_name(tel.state));
     }
 
-    /* 3. Persistent external RF jammer (480 mV across all retries -> 0 CW transmitted, deterministic FAULT!) */
+    /* 3. Persistent external RF jammer (480 mV across all retries -> 0 CW transmitted, deterministic FAULT) */
     {
         isac_raw_sweep_t sw = { 0 };
         isac_telemetry_t tel = { 0 };
@@ -1956,7 +1956,7 @@ static void test_lbs_interference_blanking_and_soft_cw_quench(void)
     }
 
     /* 4. Mid-sweep RF packet collision (quiet pre-sweep 140 mV, burst 450 mV on post-sweep check):
-     *    Must preserve tone_cw_ms[0..2] >= 2 ms for ETSI duty-cycle accounting while forcing FAULT! */
+     *    Must preserve tone_cw_ms[0..2] >= 2 ms for ETSI duty-cycle accounting while forcing FAULT */
     {
         isac_raw_sweep_t sw = { 0 };
         isac_telemetry_t tel = { 0 };

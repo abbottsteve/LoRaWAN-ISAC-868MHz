@@ -2,7 +2,7 @@
 """
 ifa_enclosure_mom.py -- Full-Wave 3D Non-Uniform Yee-Grid Maxwell FDTD Solver &
                         4-Element Elliptic Low-Pass Harmonic Filter Co-Analysis
-                        for ISAC_868 Rev E.5 (Audit Findings BLK-03, HIGH-01, HIGH-07).
+                        for ISAC_868 Rev E.5.
 
 ZERO hardcoded f0 overrides, ZERO lumped RLC tautologies, ZERO empirical scale factors:
   1. Directly parses the exact copper segments and custom pad primitives from
@@ -59,7 +59,7 @@ EPS0 = 8.8541878128e-12
 MU0 = 1.25663706212e-6
 Z0 = 50.0
 
-# Populated Rev E.5 4-Element Elliptic Low-Pass Harmonic Pi-Network (BLK-05, HIGH-03)
+# Populated Rev E.5 4-Element Elliptic Low-Pass Harmonic Pi-Network
 # Pre-distorted for 0.65 nH shunt 0402 pad+via ESL & LQW15AN8N2G00D 3.9 GHz SRF:
 HARMONIC_PI_NOM = dict(
     c_m1_pf=3.6,       # Murata GJM1555C1H3R6WB01D (3.6 pF +/-0.05 pF 50V C0G)
@@ -723,17 +723,17 @@ def run_full_ifa_audit() -> None:
     fig.savefig(os.path.join(OUT_DIR, "ifa_enclosure_mom.png"), bbox_inches="tight")
     plt.close(fig)
 
-    # Mandatory Rev E.5 Acceptance Gate Assertions (BLK-03, BLK-05, HIGH-03)
+    # Mandatory Rev E.5 Acceptance Gate Assertions
     nom_row = summary_rows[1]
     bat_row = summary_rows[2]
     er42_row = summary_rows[3]
     er46_row = summary_rows[4]
     water_row = summary_rows[-1]
     assert nom_row["s11_866p5_raw_dB"] <= -14.0, (
-        f"BLK-03 FAIL: Standalone 3D-FDTD Dry-Air |S11|(866.5 MHz) = {nom_row['s11_866p5_raw_dB']} dB > -14.0 dB!"
+        f"Standalone 3D-FDTD Dry-Air |S11|(866.5 MHz) = {nom_row['s11_866p5_raw_dB']} dB > -14.0 dB!"
     )
     assert nom_row["s11_866p5_dB"] <= -14.0, (
-        f"BLK-03 FAIL: Filter-cascaded Dry-Air |S11|(866.5 MHz) = {nom_row['s11_866p5_dB']} dB > -14.0 dB!"
+        f"Filter-cascaded Dry-Air |S11|(866.5 MHz) = {nom_row['s11_866p5_dB']} dB > -14.0 dB!"
     )
     for corner_label, r_chk in [
         ("Enclosed er=4.4 Dry Air", nom_row),
@@ -742,18 +742,18 @@ def run_full_ifa_audit() -> None:
         ("Enclosed FR-4 er=4.6 High Corner", er46_row),
     ]:
         assert r_chk["worst_s11_863_870_dB"] <= -10.0, (
-            f"HIGH-03 FAIL ({corner_label}): EU868 worst |S11| = {r_chk['worst_s11_863_870_dB']} dB > -10.0 dB!"
+            f"({corner_label}) — EU868 worst |S11| = {r_chk['worst_s11_863_870_dB']} dB > -10.0 dB!"
         )
     assert 35.0 <= nom_row["eta_rad_866p5_pct"] <= 62.0, (
-        f"HIGH-03 FAIL: Unexpected ENIG+FR4+ASA radiation efficiency {nom_row['eta_rad_866p5_pct']}%"
+        f"Unexpected ENIG+FR4+ASA radiation efficiency {nom_row['eta_rad_866p5_pct']}%"
     )
     for tag, h2, h3 in [
         ("50-Ohm", float(harm_50_db[idx_2f0]), float(harm_50_db[idx_3f0])),
         ("Dry-Air AE1", nom_row["harm_atten_2f0_dB"], nom_row["harm_atten_3f0_dB"]),
         ("Water-Detuned AE1", water_row["harm_atten_2f0_dB"], water_row["harm_atten_3f0_dB"]),
     ]:
-        assert h2 >= 28.0, f"BLK-05 FAIL ({tag}): parasitic-aware 2f0 suppression {h2:.2f} dB < 28.0 dB!"
-        assert h3 >= 45.0, f"BLK-05 FAIL ({tag}): parasitic-aware 3f0 suppression {h3:.2f} dB < 45.0 dB!"
+        assert h2 >= 28.0, f"({tag}) — parasitic-aware 2f0 suppression {h2:.2f} dB < 28.0 dB!"
+        assert h3 >= 45.0, f"({tag}) — parasitic-aware 3f0 suppression {h3:.2f} dB < 45.0 dB!"
 
     print(
         f"[PASS] Full-Wave 3D Maxwell FDTD + Parasitic-Aware Elliptic Harmonic Filter Audit ({time.time()-t_start:.1f}s):\n"

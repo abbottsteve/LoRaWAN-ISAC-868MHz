@@ -4,8 +4,7 @@ gen_enclosure.py -- Parametric CAD, 3D PCBA Clearance Verifier & Watertight STL
                     Generator for the Rev E.5 868 MHz ISAC Node with Open-East
                     Self-Draining 0.80 mm UV-Stabilized ASA / PETG Sensing Deck,
                     Continuous 360-Degree Parker ORD 5700 Face-Seal O-Ring Groove,
-                    Solid Weatherproof Electronics Roof & Wall-Gusseted M2.5 Bosses
-                    (Audit Closure: BLK-02, BLK-03, MED-04).
+                    Solid Weatherproof Electronics Roof & Wall-Gusseted M2.5 Bosses.
 
 Canonical Right-Handed Coordinate System (1:1 identical to Gerber X2, Drill, CPL & STEP):
   - Origin (0, 0, 0) = Bottom-Left corner of the 90.00 x 40.00 mm PCB on F.Cu top surface
@@ -74,7 +73,7 @@ WALL = 2.60            # Symmetric 4-wall thickness (0.400 lip + 1.80 groove + 0
 WALL_NORTH = WALL      # Symmetric 2.60 mm North wall -> 95.70 x 45.70 mm outer shell!
 
 # Parker ORD 5700 Static Face-Seal Perimeter O-Ring Gland (Dia 1.20 mm Shore 50A Silicone/EPDM cord)
-# Compliant Z-stackup (HIGH-MECH-01): Z_SKIRT_BOT = -1.44 mm leaves a +0.16 mm compliant spring gap above
+# Compliant Z-stackup: Z_SKIRT_BOT = -1.44 mm leaves a +0.16 mm compliant spring gap above
 # Z_BASE_TOP = -1.60 mm at nominal 1.60 mm PCB so +/-10% PCB thickness tolerance (1.44..1.76 mm) never
 # hard-stops on the outer skirt before clamping the 0.80 mm sensing boss & 3M 467MP adhesive!
 ORING_CORD_DIA_MM = 1.20
@@ -356,7 +355,7 @@ def get_lid_grid():
         for j in range(ny):
             yc = 0.5 * (ys[j] + ys[j + 1])
 
-            # Open-East self-draining runoff deck (BLK-02): flush z_top = +0.80 mm from X = 74.60
+            # Open-East self-draining runoff deck: flush z_top = +0.80 mm from X = 74.60
             # all the way off the East outer wall X = 92.85 mm (0.00 mm dam lip, 0.00 mL pool!)
             in_open_east_deck = (xc > WIN_X0) and (WIN_Y0 < yc < WIN_Y1)
             if in_open_east_deck:
@@ -474,7 +473,7 @@ def build_base_tray_battery() -> trimesh.Trimesh:
 
 def verify_weatherproof_gland_and_drainage() -> dict[str, float]:
     """
-    Verify BLK-02, BLK-03 & HIGH-MECH-01 mechanical invariants directly on the generated grid:
+    Verify enclosure sealing and drainage invariants directly on the generated grid:
       1. Compliant Z-stackup + Parker ORD 5700 static face-seal O-ring gland:
          - Z_SKIRT_BOT = -1.44 mm leaves +0.16 mm compliant clamping gap at nominal 1.60 mm PCB
            (0.00 mm gap at -10% thin 1.44 mm PCB -> zero overconstrained hard-stop!).
@@ -524,13 +523,13 @@ def verify_weatherproof_gland_and_drainage() -> dict[str, float]:
             # Verify zero roof debug slots anywhere (only 4x M2.5 screw holes inactive)
             if not lid_act[i, j]:
                 assert any(abs(xc - hx) < HOLE_HALF and abs(yc - hy) < HOLE_HALF for hx, hy in HOLES), (
-                    f"BLK-03 violation: Roof perforation outside M2.5 holes at ({xc:.2f}, {yc:.2f})!"
+                    f"Roof perforation outside M2.5 holes at ({xc:.2f}, {yc:.2f})!"
                 )
 
             # Verify open-East self-draining sensing runoff deck AND 100% uniform flat Z_LID_TOP roof!
             if (xc > WIN_X0) and (WIN_Y0 < yc < WIN_Y1):
                 assert lid_act[i, j] and abs(lid_zt[i, j] - T_WINDOW_MM) < 1e-5, (
-                    f"BLK-02 violation: East drainage blocked at ({xc:.2f}, {yc:.2f}), z_top={lid_zt[i,j]}!"
+                    f"East drainage blocked at ({xc:.2f}, {yc:.2f}), z_top={lid_zt[i,j]}!"
                 )
             elif lid_act[i, j]:
                 assert abs(lid_zt[i, j] - Z_LID_TOP) < 1e-5, (
@@ -789,7 +788,7 @@ def verify_pcba_clearances() -> dict[str, float]:
     return min_clr_by_tag
 
 
-# MED-04: 1:1 Synchronized OpenSCAD Parametric Model matching get_lid_grid() & get_base_grid()
+# 1:1 Synchronized OpenSCAD Parametric Model matching get_lid_grid() & get_base_grid()
 SCAD_TEMPLATE = """\
 // ISAC_868_Enclosure_0p80mm.scad -- Rev E.5 Uniform-Flat-Roof Waterproof Enclosure
 // Coordinate System: Right-Handed AuxOrigin / Gerber / STEP (+X East 0..90, +Y North 0..40, +Z Up above F.Cu)
@@ -1169,7 +1168,7 @@ def plot_battery_blueprint(out_png: str):
 
 
 if __name__ == "__main__":
-    # Remove obsolete Rev E.4 debug slot plugs STL if present (BLK-03: solid weatherproof roof!)
+    # Remove obsolete Rev E.4 debug slot plugs STL if present (solid weatherproof roof!)
     for stale_plugs in (
         os.path.join(HERE, "ISAC_868_Debug_Slot_Plugs.stl"),
         os.path.join(ROOT, "fab", "mechanical", "ISAC_868_Debug_Slot_Plugs.stl"),

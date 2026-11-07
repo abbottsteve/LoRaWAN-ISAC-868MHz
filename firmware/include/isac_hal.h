@@ -54,7 +54,7 @@ void     ISAC_HAL_ReadUniqueId64(uint8_t uid_be[8]);
 
 void     ISAC_HAL_DelayUs(uint32_t us);
 
-/* ---- Rev E.2 robustness services (audit B3/H6, RM0453 Rev 6 §7.4.31) -------------- */
+/* ---- Reset diagnostics, option-byte readout, IWDG & STOP2 services (RM0453 §7.4.31) -- */
 #define ISAC_RESET_FLAG_RFILA  (1UL << 24)
 #define ISAC_RESET_FLAG_OBL    (1UL << 25)
 #define ISAC_RESET_FLAG_PIN    (1UL << 26)

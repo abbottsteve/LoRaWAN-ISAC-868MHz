@@ -709,7 +709,7 @@ def run_dfm_audit(pcb_path, gerber_dir, pro_path, pretty_dir):
                     f"[GATE c] F_Paste.gtp region aperture fails 0.10mm stencil AR: AR@0.10={ar10:.3f} (<0.80)"
                 )
 
-    # Verify every defined & flashed aperture in F_Paste.gtp on 0.10 mm (100 um) stencil (BLK-07)
+    # Verify every defined & flashed aperture in F_Paste.gtp on 0.10 mm (100 um) stencil
     seen_paste_comps = set()
     min_ar10 = float("inf")
     min_ar_desc = ""
@@ -746,7 +746,7 @@ def run_dfm_audit(pcb_path, gerber_dir, pro_path, pretty_dir):
 
     paste_union = unary_union([fl["poly"] for fl in fpaste_gbr["flashes"]])
 
-    # Zero paste flashes on ANY DNP footprint (BLK-07 / Gate 3)
+    # Zero paste flashes on ANY DNP footprint
     dnp_refs = sorted(r for r, fp in fps_by_ref.items() if fp.IsDNP())
     for dnp_r in dnp_refs:
         if dnp_r in seen_paste_comps:
@@ -1012,7 +1012,7 @@ def run_dfm_audit(pcb_path, gerber_dir, pro_path, pretty_dir):
                 continue
             pt = pcbnew.VECTOR2I(pcbnew.FromMM(x0_mm + dx), pcbnew.FromMM(y0_mm + dy))
             if t.GetNetname() == "/BR_S":
-                # Intentional 2.20 x 2.20 mm F.Cu/B.Cu parasitic cutout void (BLK-01 / BLK-02)
+                # Intentional 2.20 x 2.20 mm F.Cu/B.Cu parasitic cutout void
                 brs_void_samples += 1
                 if not (33.40 <= dx <= 35.60 and 24.18 <= dy <= 26.38):
                     errors.append(
@@ -1059,7 +1059,7 @@ def run_dfm_audit(pcb_path, gerber_dir, pro_path, pretty_dir):
                         f"(dx={dx:.2f}, dy={dy:.2f})!"
                     )
 
-    # Verify every F.Cu GND zone island has >= 2 stitching vias (F-16)
+    # Verify every F.Cu GND zone island has >= 2 stitching vias
     gnd_vias_board = [
         t.GetPosition()
         for t in board.GetTracks()
@@ -1233,7 +1233,7 @@ def run_dfm_audit(pcb_path, gerber_dir, pro_path, pretty_dir):
             )
 
     # Gate 3 Forensic Checks:
-    # (1) Zero F_Silkscreen.gto or B_Silkscreen.gbo primitives in X_gbr >= 50.0 mm (HIGH-01)
+    # (1) Zero F_Silkscreen.gto or B_Silkscreen.gbo primitives in X_gbr >= 50.0 mm
     ant_silk_box = box(50.0, -5.0, 95.0, 45.0)
     for s_lbl, s_polys in (("F_Silkscreen.gto", silk_items_gbr), ("B_Silkscreen.gbo", bsilk_items_gbr)):
         ant_hits = [p for p in s_polys if p.intersects(ant_silk_box) and p.intersection(ant_silk_box).area > 1e-7]
@@ -1242,7 +1242,7 @@ def run_dfm_audit(pcb_path, gerber_dir, pro_path, pretty_dir):
                 f"[GATE f] {s_lbl} contains {len(ant_hits)} silkscreen primitive(s) in X_gbr >= 50.0 mm keepout!"
             )
 
-    # (2) Single continuous bare-ENIG AE1 F_Mask.gts window [73.40..87.80] x [6.65..20.80] mm (HIGH-01)
+    # (2) Single continuous bare-ENIG AE1 F_Mask.gts window [73.40..87.80] x [6.65..20.80] mm
     # Exclude H3 (86.5, 36.5) and H4 (86.5, 3.5) M2.5 NPTH hole clearances at top/bottom board corners
     all_ant_mask_opens = [g for g in fmask_geoms if g.intersects(box(50.5, 0.0, 90.0, 40.0))]
     ae1_mask_opens = [g for g in fmask_geoms if g.intersects(box(50.5, 5.5, 90.0, 34.5))]
@@ -1266,7 +1266,7 @@ def run_dfm_audit(pcb_path, gerber_dir, pro_path, pretty_dir):
                 f"(fill={rect_fill:.4f}) != [73.40..87.80]x[6.65..20.80] continuous rectangle!"
             )
 
-    # (3) 100% of visible F.SilkS reference designators <= 2.00 mm from courtyard & 0 collisions (HIGH-02)
+    # (3) 100% of visible F.SilkS reference designators <= 2.00 mm from courtyard & 0 collisions
     vis_ref_count = 0
     max_ref_crtyd_mm = 0.0
     via_polys_aux = [

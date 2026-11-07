@@ -1,6 +1,6 @@
 /**
  * @file isac_nvm.h
- * @brief Power-fail-safe non-volatile storage for LoRaWAN session state (Rev E.2, audit B3)
+ * @brief Power-fail-safe non-volatile storage for LoRaWAN session state
  *        and per-unit provisioning block reader.
  *
  * Session store: two 2 KB flash pages (A/B), append-only log of 96-byte CRC-protected
@@ -38,7 +38,7 @@ bool ISAC_HAL_Flash_ProgramDoubleWord(uint32_t addr, uint32_t lo, uint32_t hi);
 void ISAC_HAL_Flash_Read(uint32_t addr, void *dst, uint32_t len);
 bool ISAC_HAL_Flash_ConsumeEccFault(void);
 
-/** Session record payload (what is persisted across resets / brownouts -- HIGH-04 / HIGH-05). */
+/** Session record payload persisted across resets and brownouts. */
 typedef struct {
     uint16_t dev_nonce;        /**< Last DevNonce used in a JoinRequest (persisted BEFORE TX) */
     uint8_t  joined;           /**< 1 = nwk_skey/app_skey/dev_addr valid                      */
@@ -57,7 +57,7 @@ typedef struct {
     uint8_t  sticky_mac_ans[ISAC_NVM_MAX_STICKY_MAC_ANS];
 } isac_nvm_session_t;
 
-/** Per-unit provisioning block (one flash page, written by production tooling -- HIGH-02 / HIGH-06). */
+/** Per-unit provisioning block (one flash page, written by production tooling). */
 typedef struct {
     uint32_t magic;            /**< ISAC_PROV_MAGIC                                           */
     uint8_t  version;          /**< ISAC_PROV_VERSION (2)                                     */

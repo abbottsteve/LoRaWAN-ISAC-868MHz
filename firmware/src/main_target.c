@@ -22,7 +22,7 @@
 #include "isac_sensing.h"
 
 /*
- * Rev E.2 (audit B3): NO credential is compiled into the image. Keys, EUIs and the OTAA/ABP
+ * NO credential is compiled into the image. Keys, EUIs and the OTAA/ABP
  * selection live in a dedicated, per-unit provisioning page (ISAC_NVM_PROVISION_ADDR) written
  * once by tools/provision_unit.py. An erased/corrupt page => the unit stays asleep and never
  * joins or transmits.
@@ -30,7 +30,7 @@
 #include "isac_nvm.h"
 
 /*
- * Rev E.2 (audit B4): worst-case CW dwell per hour must fit inside the STRICTEST EU 863-870 MHz
+ * worst-case CW dwell per hour must fit inside the STRICTEST EU 863-870 MHz
  * sub-band duty limit (0.1 %, i.e. 3600 ms/h) so that no tone frequency needs separate accounting.
  * Spectral/modulation legality of the CW tones is a lab item (docs/OPEN_ITEMS.md O-05).
  */
@@ -38,7 +38,7 @@ _Static_assert(((3600UL / ISAC_DEFAULT_REPORT_PERIOD_S) * ISAC_SWEEP_CW_AIRTIME_
                "CW sweep dwell exceeds 0.1% hourly duty cycle");
 _Static_assert(ISAC_DEFAULT_REPORT_PERIOD_S >= 60UL, "report period below 60 s is not supported");
 
-/** Brown-out, LT5538 linear-headroom & 1S Li-ion/LiPo over-discharge guards (Rev E.4 HIGH-04):
+/** Brown-out, LT5538 linear-headroom & 1S Li-ion/LiPo over-discharge guards (Rev E.5):
  *  - VDDA < 2700 mV: regulated 3V3 collapsing below LT5538 2.7 V VCC minimum -> inhibit all TX.
  *  - VDDA < 3000 mV or VBAT < 3050 mV: skip CW reflectometry, report FAULT + LowBat if >= 2.7 V / 3.0 V.
  *  - VBAT < 3000 mV: 1S Li-ion/LiPo 0% discharge cutoff (protects bare cells from < 3.0 V). */
@@ -122,13 +122,13 @@ static bool provision_lorawan_session(void)
         ISAC_LoRaWAN_InitABP(&g_lorawan_ctx, prov.abp_dev_addr, prov.abp_nwk_skey, prov.abp_app_skey);
     }
 
-    /* Apply per-unit 2-point factory calibration (Point-1 dry-air tare + Point-2 Al2O3/load ref, HIGH-02) */
+    /* Apply per-unit 2-point factory calibration (Point-1 dry-air tare + Point-2 Al2O3/load ref) */
     ISAC_Sensing_SetCalibration2Pt(prov.cal_dry_mv,
                                    (prov.cal_flags & ISAC_PROV_FLAG_CAL_DRY_VALID) != 0U,
                                    prov.cal_ref_cdb,
                                    (prov.cal_flags & ISAC_PROV_FLAG_CAL_REF_VALID) != 0U);
 
-    /* Resume full session (DevNonce, keys, counters, CFList, RX1 delay/DR/RX2) across resets (HIGH-04) */
+    /* Resume full session (DevNonce, keys, counters, CFList, RX1 delay/DR/RX2) across resets */
     if (ISAC_NVM_LoadSession(&sess)) {
         ISAC_LoRaWAN_RestoreFromNvmSession(&g_lorawan_ctx, &sess);
     }
@@ -234,9 +234,9 @@ int main(void)
     ISAC_HAL_RTC_InitWakeup(ISAC_DEFAULT_REPORT_PERIOD_S);
     provisioned = provision_lorawan_session();
     if (!provisioned) {
-        /* MED-05 fix: Initialize all board GPIOs to Analog / 0 nA STOP2 state (PA0=PA1=PA8=PA9=0)
+        /* Initialize all board GPIOs to Analog / 0 nA STOP2 state (PA0=PA1=PA8=PA9=0)
          * and park the internal SX1262 transceiver in sleep BEFORE entering STOP2 so unprovisioned
-         * inventory boards never leak Schmitt-trigger or STDBY_RC (~600 uA) shelf current! */
+         * inventory boards never leak Schmitt-trigger or STDBY_RC (~600 uA) shelf current */
         uint8_t cold_sleep = 0x00U;
         ISAC_HAL_GPIO_InitBoardPins();
         ISAC_HAL_GPIO_SetDetEnable(false);
@@ -265,12 +265,12 @@ int main(void)
         bool           sweep_ok     = false;
 
         ISAC_HAL_Watchdog_Kick();
-        /* BLK-FW-01 fix: Advance duty-cycle 1-hour window & latch expired TX/Join backoffs on every
-         * 900 s wakeup BEFORE any low-battery inhibit branch so multi-month brownouts never wrap 2^31/2^32 ms! */
+        /* Advance duty-cycle 1-hour window & latch expired TX/Join backoffs on every
+         * 900 s wakeup BEFORE any low-battery inhibit branch so multi-month brownouts never wrap 2^31/2^32 ms */
         ISAC_DutyCycle_Tick(&g_duty_tracker, now_ms);
         ISAC_LoRaWAN_TickBackoff(&g_lorawan_ctx, now_ms);
 
-        /* BLK-05: Non-radiating pre-sweep VBAT/VDDA rail check BEFORE any CW PA emission! */
+        /* Non-radiating pre-sweep VBAT/VDDA rail check BEFORE any CW PA emission */
         if (!ISAC_Acquire_Supply_Rails(&rail_vbat_mv, &rail_vdda_mv) ||
             (rail_vdda_mv < ISAC_MIN_TX_VDDA_MV) ||
             (rail_vbat_mv < ISAC_MIN_TX_VBAT_MV)) {
@@ -283,7 +283,7 @@ int main(void)
             radio_ready = ISAC_Init_Radio_And_SMPS();
         }
 
-        /* HIGH-04: Gate +4.0 dBm CW reflectometry if rails sagged below 3.00 V VDDA / 3.05 V VBAT */
+        /* Gate +4.0 dBm CW reflectometry if rails sagged below 3.00 V VDDA / 3.05 V VBAT */
         if ((rail_vdda_mv < ISAC_MIN_SENSE_VDDA_MV) || (rail_vbat_mv < ISAC_MIN_SENSE_VBAT_MV)) {
             cw_1pct_ms = 0UL;
             g_last_telemetry.tilt_db_x100   = 0;
@@ -296,7 +296,7 @@ int main(void)
             g_last_telemetry.smps_dcdc_ok   = ISAC_Is_SMPS_Active();
             g_lorawan_ctx.battery_level     = battery_level_from_rails(rail_vbat_mv, rail_vdda_mv);
         } else {
-            /* BLK-05 & HIGH-08: Pre-sweep ETSI <= 0.1% (863.1 MHz) & <= 1.0% duty-cycle gate BEFORE CW! */
+            /* Pre-sweep ETSI <= 0.1% (863.1 MHz) & <= 1.0% duty-cycle gate BEFORE CW */
             if (!ISAC_DutyCycle_CanTransmitSubband0p1(&g_duty_tracker, ISAC_TONE1_CW_AIRTIME_MS, now_ms) ||
                 !ISAC_DutyCycle_CanTransmit(&g_duty_tracker, cw_1pct_ms, now_ms)) {
                 ++g_sweep_inhibit_duty;
@@ -339,7 +339,7 @@ int main(void)
             }
         }
 
-        /* HIGH-06: Adaptive SF12 (DR0, +12.5 dB gain) fallback whenever radome is wet/iced/detuned */
+        /* Adaptive SF12 (DR0, +12.5 dB gain) fallback whenever radome is wet/iced/detuned */
         join_toa_ms = g_lorawan_ctx.joined
             ? 0UL
             : ISAC_LoRaWAN_CalcTimeOnAirMs(g_lorawan_ctx.tx_sf, ISAC_LORAWAN_JOIN_REQ_PHY_LEN);

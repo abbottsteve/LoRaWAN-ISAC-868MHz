@@ -172,7 +172,7 @@ bool ISAC_NVM_LoadSession(isac_nvm_session_t *out)
 static bool program_record(uint32_t addr, const uint8_t rec[ISAC_NVM_RECORD_SIZE])
 {
     uint8_t i;
-    /* BLK-FW-02: Write payload + CRC32 double-words (offsets 8..88) FIRST, and commit
+    /* Write payload + CRC32 double-words (offsets 8..88) FIRST, and commit
      * header double-word 0 (ISAC_NVM_REC_MAGIC + seq) LAST so any mid-record power-cut
      * leaves bytes 0..7 erased (0xFF) until the full CRC-verified body is committed. */
     for (i = 8U; i < ISAC_NVM_RECORD_SIZE; i += 8U) {
@@ -253,7 +253,7 @@ bool ISAC_NVM_SaveSession(const isac_nvm_session_t *in)
         }
         target_slot = 0UL;
     } else {
-        /* HIGH-FW-04: Track per-page ECC faults so an inactive-page ECC scar heals ONLY the
+        /* Track per-page ECC faults so an inactive-page ECC scar heals ONLY the
          * inactive page without erasing or discarding free slots on a clean active page. */
         const uint32_t active_idx = (pos.page_addr == ISAC_NVM_PAGE_A_ADDR) ? 0U : 1U;
         const uint32_t other_idx  = 1U - active_idx;

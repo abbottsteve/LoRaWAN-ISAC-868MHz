@@ -3,7 +3,7 @@
  *                  with 8-Cell CPML Absorbing Boundaries, Exact Spectral
  *                  Dielectric + ENIG Conductor Loss Integration, and Frequency-
  *                  Resolved Radiation Efficiency for ISAC_868_KiCad9 Rev E.5
- *                  (BLK-03, HIGH-03, MED-01).
+ *.
  *
  * Solves time-dependent 3D Maxwell curl equations directly from first principles:
  *   curl(E) = -mu_0 * dH/dt

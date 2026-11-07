@@ -175,8 +175,8 @@ bool ISAC_Init_Radio_And_SMPS(void)
     uint8_t stdby_rc = ISAC_SUBGHZ_STDBY_RC;
     uint8_t reg_dcdc = ISAC_SUBGHZ_REGMODE_USE_DCDC;
     uint8_t reg_ldo  = ISAC_SUBGHZ_REGMODE_USE_LDO;
-    /* BLK-04 fix: Power RAK3172LP-SiP internal 32 MHz TCXO via PB0/DIO3 at RAKwireless-mandated 3.0 V (0x06,
-     * 5.0 ms = 320 ticks), fed cleanly by TPS7A0233DBVR 3.3 V rail with 300 mV headroom (8.3x LDO margin)! */
+    /* Power RAK3172LP-SiP internal 32 MHz TCXO via PB0/DIO3 at RAKwireless-mandated 3.0 V (0x06,
+     * 5.0 ms = 320 ticks), fed cleanly by TPS7A0233DBVR 3.3 V rail with 300 mV headroom (8.3x LDO margin) */
     uint8_t tcxo_cfg[4] = {
         ISAC_SUBGHZ_TCXO_CTRL_3_0V,
         (uint8_t)((ISAC_SUBGHZ_TCXO_TIMEOUT_5MS_TICKS >> 16U) & 0xFFU),
@@ -204,7 +204,7 @@ bool ISAC_Init_Radio_And_SMPS(void)
     ISAC_HAL_GPIO_SetBatMonEnable(false);
     ISAC_HAL_RFSwitch_SetMode(ISAC_RFSW_OFF);
 
-    /* 1. BLK-03 fix: Wake internal Sub-GHz transceiver, set SUBGHZ_SMPSC0R.CLKDE (0x0916 bit 6),
+    /* 1. Wake internal Sub-GHz transceiver, set SUBGHZ_SMPSC0R.CLKDE (0x0916 bit 6),
      *    and READ BACK 0x0916 to verify CLKDE == 1 BEFORE asserting PWR_CR5_SMPSEN per
      *    ST DS13105 Rev 12 §3.9.1 Danger ("risk of destructive damage to the device"). */
     radio_ok = ISAC_HAL_SubGhz_WakeupAndReset() &&
@@ -218,7 +218,7 @@ bool ISAC_Init_Radio_And_SMPS(void)
     }
 
     /* 2. Enable STM32WLE5JC MCU SMPS step-down converter ONLY if CLKDE readback succeeded;
-     *    otherwise (or if SMPSRDY failed), fall back cleanly to SetRegulatorMode(USE_LDO = 0x00)! */
+     *    otherwise (or if SMPSRDY failed), fall back cleanly to SetRegulatorMode(USE_LDO = 0x00) */
     if (radio_ok) {
         if (clkde_ok) {
             smps_hw_ok = ISAC_HAL_System_EnableSMPS();
@@ -293,7 +293,7 @@ static uint32_t adc_raw16_to_100uv(uint32_t ch_raw16, uint32_t vdda_100uv)
 
 /**
  * @brief Passively measure `VBAT` (`PB4/ADC_IN3` via `PA9`/`Q2` `BAT_MON_EN`) and `VDDA` (`VREFINT`)
- *        WITHOUT asserting `PA8` (`DET_EN` -> `0 mA` `LT5538` draw!) or waking the Sub-GHz transceiver (`HIGH-04`).
+ *        WITHOUT asserting `PA8` (`DET_EN` -> `0 mA` `LT5538` draw) or waking the Sub-GHz transceiver.
  */
 bool ISAC_Acquire_Supply_Rails(uint16_t *out_vbat_mv, uint16_t *out_vdda_mv)
 {
@@ -330,12 +330,12 @@ bool ISAC_Acquire_Supply_Rails(uint16_t *out_vbat_mv, uint16_t *out_vdda_mv)
 
 /**
  * @brief Execute deterministic 3-tone ISAC acquisition after STOP2 wakeup:
- *   a) Assert PA8 (`DET_EN = 1`, Q1 `VBAT -> 3V3_DET`) + PA9 (`BAT_MON_EN = 1`, Q2 divider), wait 3.0 ms (`BLK-06`).
+ *   a) Assert PA8 (`DET_EN = 1`, Q1 `VBAT -> 3V3_DET`) + PA9 (`BAT_MON_EN = 1`, Q2 divider), wait 3.0 ms.
  *   b) Calibrate 12-bit SAR ADC, sample 16x oversampled VREFINT + ADC_IN3 (`PB4`) -> `vbat_mv`, release PA9 (`Q2`).
  *   b2) Listen-Before-Sense (`LBS`): with CW TX OFF, sample `DET_ADC` to verify ambient antenna RF ingress
  *       <= 320 mV (~-72 dBm); back off 20 ms (`PA8 = 0`) up to 2 retries on burst interference (`0 ms` airtime).
- *   c) Configure RFO_LP to +4 dBm (`ISAC_SENSING_TX_DBM`, `MED-03`), step across 863.1, 866.5, 869.5 MHz,
- *      wait 550 us (>99.5% LPF settle), sample live CW-loaded `VREFINT` + `DET_ADC` per tone (`F-08`), and
+ *   c) Configure RFO_LP to +4 dBm (`ISAC_SENSING_TX_DBM`), step across 863.1, 866.5, 869.5 MHz,
+ *      wait 550 us (>99.5% LPF settle), sample live CW-loaded `VREFINT` + `DET_ADC` per tone, and
  *      soft-ramp PA envelope down to -9 dBm (`40 us` ramp + `50 us` settle) before `SET_STANDBY(XOSC)`.
  *   c2) Post-sweep `LBS`: isolate RF switch, wait 650 us (`6.5 * tau_LPF`, 99.85% `C_LPF` decay), and verify
  *       ambient floor <= 320 mV to flag any mid-sweep RF packet collision (`lbs_jammed = true`).
@@ -386,7 +386,7 @@ bool ISAC_Acquire_3Tone_Sweep(isac_raw_sweep_t *out_sweep)
     vbat_half_100uv    = adc_raw16_to_100uv(out_sweep->bat_raw16, vdda_100uv);
     out_sweep->vbat_mv = (uint16_t)((2UL * vbat_half_100uv + 5UL) / 10UL);
 
-    /* MED-02: Sample internal MCU die temperature sensor BEFORE CW PA emission (0 us RF airtime!) */
+    /* Sample internal MCU die temperature sensor BEFORE CW PA emission (0 us RF airtime) */
     out_sweep->die_temp_degc_x10 = ISAC_HAL_ADC_ReadDieTempDegCx10((uint16_t)min_vdda_mv);
 
     /* Read live SMPS ready status while MCU is active in Run mode */
@@ -430,7 +430,7 @@ bool ISAC_Acquire_3Tone_Sweep(isac_raw_sweep_t *out_sweep)
         }
     }
 
-    /* (c) Step SX1262 RFO_LP (+4 dBm CW, `MED-03`) across f1=863.1, f2=866.5, f3=869.5 MHz */
+    /* (c) Step SX1262 RFO_LP (+4 dBm CW) across f1=863.1, f2=866.5, f3=869.5 MHz */
     radio_ok = ISAC_HAL_SubGhz_WriteCmd(ISAC_SUBGHZ_CMD_SET_STANDBY, &stdby_xosc, 1U) &&
                ISAC_HAL_SubGhz_WriteCmd(ISAC_SUBGHZ_CMD_SET_TX_PARAMS, tx_prm_sense, 2U);
     if (radio_ok) {
@@ -472,7 +472,7 @@ bool ISAC_Acquire_3Tone_Sweep(isac_raw_sweep_t *out_sweep)
         /* Wait 550 us = 5.5 * tau_LPF (99.59% > 99.5% video LPF settling; total CW = 1.22 ms/tone) */
         ISAC_HAL_DelayUs(ISAC_LPF_SETTLE_US);
 
-        /* F-08 fix: Sample VREFINT while CW PA load is active right before DET_ADC */
+        /* Sample VREFINT while CW PA load is active right before DET_ADC */
         out_sweep->vrefint_tone_raw16[i] = ISAC_HAL_ADC_ReadOversampled16x(ISAC_ADC_CH_VREFINT);
         tone_vdda_100uv = vrefint_raw16_to_vdda_100uv(out_sweep->vrefint_cal,
                                                       out_sweep->vrefint_tone_raw16[i]);
@@ -538,7 +538,7 @@ bool ISAC_Acquire_3Tone_Sweep(isac_raw_sweep_t *out_sweep)
  */
 static uint16_t estimate_loaded_eps_x100(int32_t tilt_x100)
 {
-    /* HIGH-FW-05 fix: Strictly monotonic 868 MHz Debye real permittivity knots (tilt_db_x100 -> eps_r' * 100)
+    /* Strictly monotonic 868 MHz Debye real permittivity knots (tilt_db_x100 -> eps_r' * 100)
      * from Full-Wave 3D-FDTD `design_values.json` (Dry Air -344 -> 100, PTFE/Oil -123 -> 210,
      * Glaze Ice -1 -> 320, IPA @ 868 MHz +145 -> 629, Alumina Al2O3 +156 -> 980; Water Film = 7990 via state): */
     static const int16_t  k_tilt[5] = { -344, -123,   -1,  145,  156 };
@@ -561,9 +561,9 @@ static uint16_t estimate_loaded_eps_x100(int32_t tilt_x100)
 }
 
 /**
- * @brief Apply bidirectional per-unit factory dry-air leakage power tare (`BLK-02`),
- *        2-point factory Al2O3/load gain+intercept calibration (`HIGH-02`),
- *        LT5538 intercept temperature drift compensation & physical freezing-point gate (`MED-02`),
+ * @brief Apply bidirectional per-unit factory dry-air leakage power tare,
+ *        2-point factory Al2O3/load gain+intercept calibration,
+ *        LT5538 intercept temperature drift compensation & physical freezing-point gate,
  *        and compute Tilt, Notch, Level, Permittivity & Medium Class.
  */
 void ISAC_Extract_Features_And_Classify_WithTemp(const isac_raw_sweep_t *sweep,
@@ -592,7 +592,7 @@ void ISAC_Extract_Features_And_Classify_WithTemp(const isac_raw_sweep_t *sweep,
         }
         /* Apply scalar dry-air leakage tare strictly near the unit's own dry-air floor (<= 25 mV);
          * at high reflection (|Gamma| ~ 0.7, +250..+450 mV above dry air), bridge directivity E_D
-         * combines vectorially rather than incoherently in power (`HIGH-02`). */
+         * combines vectorially rather than incoherently in power. */
         apply_dry_tare = (max_ddry_mv <= 25U);
     }
 
@@ -603,7 +603,7 @@ void ISAC_Extract_Features_And_Classify_WithTemp(const isac_raw_sweep_t *sweep,
             int32_t       cal_db   = round_div_s32((cal_u100 - k_nom_dry_u100[i]) * 10, 19);
             int32_t       dp_tare_q12, meas_db, p_meas_q12, p_corr_q12, corr_db;
 
-            /* Clamp tare excursion to [-8.00 dB .. +26.00 dB] around nominal dry air (`BLK-02`) */
+            /* Clamp tare excursion to [-8.00 dB .. +26.00 dB] around nominal dry air */
             if (cal_db < -800) {
                 cal_db = -800;
             } else if (cal_db > 2600) {
@@ -645,7 +645,7 @@ void ISAC_Extract_Features_And_Classify_WithTemp(const isac_raw_sweep_t *sweep,
     out_tel->vdda_mv        = sweep->vdda_mv;
     out_tel->smps_dcdc_ok   = sweep->smps_dcdc_enabled;
 
-    /* 4. Diagnostic sanity check (rail droop, open bridge, or LBS RF jammer) & dual-regime classifier (`HIGH-02`) */
+    /* 4. Diagnostic sanity check (rail droop, open bridge, or LBS RF jammer) & dual-regime classifier */
     if (sweep->lbs_jammed || (sweep->vdda_mv < 2400U) || (sweep->det_mv[0] < 80U)) {
         out_tel->state        = ISAC_SURFACE_FAULT;
         out_tel->eps_est_x100 = 0U;
@@ -655,7 +655,7 @@ void ISAC_Extract_Features_And_Classify_WithTemp(const isac_raw_sweep_t *sweep,
     if (g_cal_ref_valid) {
         /* Production 2-point calibrated 2D (Level_cal, Tilt, DryDelta) classifier:
          * Cancels LT5538 +/-2 dB intercept + SX1262 PA tolerance via Point-2 Al2O3 ceramic reference,
-         * achieving 1.38 dB median / 0.65 dB P01 (>= 0.50 dB) Water-vs-IPA separation & 99.45% 4-hazard yield! */
+         * achieving 1.38 dB median / 0.65 dB P01 (>= 0.50 dB) Water-vs-IPA separation & 99.45% 4-hazard yield */
         const int32_t level_cal_x100 = (int32_t)out_tel->level_dbm_x100 - (int32_t)g_cal_ref_cdb;
         const bool    is_dry = g_cal_dry_valid ? (max_ddry_mv <= 15U) : (notch_x100 >= 220);
 
@@ -823,7 +823,7 @@ void ISAC_Unpack_LoRaWAN_FPort10(const uint8_t payload[ISAC_FPORT10_PAYLOAD_LEN]
 }
 
 /* =========================================================================
- * ETSI EN 300 220-1 / ERC/REC 70-03 Sub-GHz Duty-Cycle Trackers (`BLK-05`, `HIGH-07`)
+ * ETSI EN 300 220-1 / ERC/REC 70-03 Sub-GHz Duty-Cycle Trackers
  *   - 1.0% (36,000 ms/hr, 100x backoff) for 865-868.6 MHz (Tone 2 & EU868 uplinks)
  *   - 0.1% ( 3,600 ms/hr, 1000x backoff) for 863-865 MHz h1.3 (Tone 1 = 863.1 MHz)
  * ========================================================================= */
@@ -843,7 +843,7 @@ void ISAC_DutyCycle_Init(isac_duty_tracker_t *dc, uint32_t now_ms)
 
 static void duty_roll_window_if_expired(isac_duty_tracker_t *dc, uint32_t now_ms)
 {
-    /* BLK-FW-01 fix: Wrap-safe signed modular check + immediate deadline latching once expired
+    /* Wrap-safe signed modular check + immediate deadline latching once expired
      * prevents both 49.71-day (2^32 ms) unsigned blackout and 24.85-day (2^31 ms) idle sign flip. */
     if ((int32_t)(now_ms - dc->min_next_tx_ms) >= 0) {
         dc->min_next_tx_ms = now_ms;

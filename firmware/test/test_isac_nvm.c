@@ -1,6 +1,6 @@
 /**
  * @file test_isac_nvm.c
- * @brief Host tests for session persistence (audit B3), provisioning gate and MAC commands (B4).
+ * @brief Host tests for session persistence , provisioning gate and MAC commands (B4).
  *        Flash is emulated in RAM with real-flash semantics (program only onto erased
  *        double-words; erase = 0xFF) plus power-fail injection.
  */
@@ -130,7 +130,7 @@ static void test_power_fail(void)
         (void)ISAC_NVM_SaveSession(&s);
         g_fail_after = -1;
         if (cut < 12) {
-            /* BLK-FW-02 commit-last invariant: header MAGIC+seq dword @ Page B offset 0 MUST remain 0xFF until cut == 12! */
+            /* commit-last invariant: header MAGIC+seq dword @ Page B offset 0 MUST remain 0xFF until cut == 12 */
             uint32_t b;
             bool hdr_erased = true;
             for (b = 0U; b < 8U; ++b) {
@@ -174,7 +174,7 @@ static void test_provision(void)
 
 static void test_provision_python_fixture(void)
 {
-    /* LOW-03 fix: resolve fixture path relative to __FILE__ so the binary works from any CWD */
+    /* resolve fixture path relative to __FILE__ so the binary works from any CWD */
     char path_rel[512];
     const char *src = __FILE__;
     const char *slash = strrchr(src, '/');
@@ -234,7 +234,7 @@ static void test_mac_and_persist_hooks(void)
     CHECK((phy[5] & 0x0FU) == 8U && (phy[5] & 0x80U) == 0U, "FOptsLen=8, ADR bit clear");
     CHECK(g_cb == 1U && c.fcnt_up == 42U && c.mac_ans_len == 0U, "counter persisted after increment, answers flushed");
 
-    /* HIGH-04: Verify full LoRaWAN session (CFList + RxDelay + rx1_dr_offset + rx2_sf + pending_ack + fcnt_down)
+    /* Verify full LoRaWAN session (CFList + RxDelay + rx1_dr_offset + rx2_sf + pending_ack + fcnt_down)
      * survives simulated MCU reset via ISAC_LoRaWAN_SaveToNvmSession / ISAC_LoRaWAN_RestoreFromNvmSession */
     {
         isac_lorawan_ctx_t c_reboot;
@@ -253,9 +253,9 @@ static void test_mac_and_persist_hooks(void)
         c.channel_hz[7]  = 867900000UL;
 
         ISAC_LoRaWAN_SaveToNvmSession(&c, &snap);
-        CHECK(ISAC_NVM_SaveSession(&snap), "HIGH-04 snapshot save");
+        CHECK(ISAC_NVM_SaveSession(&snap), "snapshot save");
         ISAC_LoRaWAN_InitOTAA(&c_reboot, eui, eui, key);
-        CHECK(ISAC_NVM_LoadSession(&loaded), "HIGH-04 snapshot load");
+        CHECK(ISAC_NVM_LoadSession(&loaded), "snapshot load");
         ISAC_LoRaWAN_RestoreFromNvmSession(&c_reboot, &loaded);
         CHECK(c_reboot.joined &&
               c_reboot.rx1_delay_ms == 5000U &&
@@ -269,16 +269,16 @@ static void test_mac_and_persist_hooks(void)
               c_reboot.sticky_mac_ans_len == 3U &&
               c_reboot.sticky_mac_ans[0] == 0x08U &&
               c_reboot.sticky_mac_ans[1] == 0x0AU,
-              "HIGH-04/HIGH-05 full MAC + sticky session restored identically after MCU reset");
+              "full MAC + sticky session restored identically after MCU reset");
 
-        /* HIGH-05: Second uplink (still awaiting network DL ack) MUST repeat sticky 0x08 + 0x0A,0x00 (3 B),
-         * while dropping one-shot DevStatusAns (0x06) and LinkADRAns (0x03)! */
+        /* Second uplink (still awaiting network DL ack) MUST repeat sticky 0x08 + 0x0A,0x00 (3 B),
+         * while dropping one-shot DevStatusAns (0x06) and LinkADRAns (0x03) */
         n = ISAC_LoRaWAN_BuildUnconfirmedUplink(&c_reboot, 10U, app, 10U, phy);
         CHECK(n == (uint8_t)(23U + 3U) && (phy[5] & 0x0FU) == 3U &&
               phy[8] == 0x08U && phy[9] == 0x0AU && phy[10] == 0x00U,
-              "HIGH-05 sticky RXTimingSetupAns + DlChannelAns repeated on uplink until valid DL (len=%u)", n);
+              "sticky RXTimingSetupAns + DlChannelAns repeated on uplink until valid DL (len=%u)", n);
 
-        /* HIGH-05: Truncated MAC command buffer MUST NOT read out-of-bounds or enqueue bogus answers */
+        /* Truncated MAC command buffer MUST NOT read out-of-bounds or enqueue bogus answers */
         {
             uint8_t trunc_adr[3] = { 0x03U, 0x11U, 0x22U }; /* LinkADRReq needs 5 bytes */
             uint8_t trunc_rxt[1] = { 0x08U };               /* RXTimingSetupReq needs 2 bytes */
@@ -286,10 +286,10 @@ static void test_mac_and_persist_hooks(void)
             ISAC_LoRaWAN_ProcessMacCommands(&c_reboot, trunc_adr, sizeof trunc_adr);
             ISAC_LoRaWAN_ProcessMacCommands(&c_reboot, trunc_rxt, sizeof trunc_rxt);
             CHECK(c_reboot.mac_ans_len == 0U && c_reboot.rx1_delay_ms == 5000U,
-                  "HIGH-05 truncated MAC commands safely rejected without state mutation");
+                  "truncated MAC commands safely rejected without state mutation");
         }
 
-        /* HIGH-05: Malformed downlink with FOptsLen > 0 AND FPort == 0 MUST be rejected BEFORE fcnt_down update */
+        /* Malformed downlink with FOptsLen > 0 AND FPort == 0 MUST be rejected BEFORE fcnt_down update */
         {
             uint8_t bad_dl[16] = { 0 };
             uint32_t mic;
@@ -298,7 +298,7 @@ static void test_mac_and_persist_hooks(void)
             bad_dl[5] = 0x02U; /* FOptsLen = 2 */
             bad_dl[6] = 20U;   bad_dl[7] = 0U; /* FCntDown = 20 */
             bad_dl[8] = 0x08U; bad_dl[9] = 0x01U; /* FOpts */
-            bad_dl[10] = 0x00U; /* FPort == 0 (illegal when FOptsLen > 0!) */
+            bad_dl[10] = 0x00U; /* FPort == 0 (illegal when FOptsLen > 0) */
             bad_dl[11] = 0xAAU;
             mic = ISAC_LoRaWAN_ComputeDataMIC(c_reboot.nwk_skey, 0x26000001UL, 1U, 20UL, bad_dl, 12U);
             bad_dl[12] = (uint8_t)(mic);       bad_dl[13] = (uint8_t)(mic >> 8);
@@ -307,10 +307,10 @@ static void test_mac_and_persist_hooks(void)
             CHECK(!ISAC_LoRaWAN_ProcessDataDownlink(&c_reboot, bad_dl, 16U) &&
                   c_reboot.fcnt_down == 19UL && !c_reboot.pending_ack &&
                   c_reboot.sticky_mac_ans_len == 3U,
-                  "HIGH-05 FOptsLen>0 && FPort==0 rejected before fcnt_down/pending_ack update");
+                  "FOptsLen>0 && FPort==0 rejected before fcnt_down/pending_ack update");
         }
 
-        /* HIGH-05: Downlink exceeding MAX_FCNT_GAP (16384) MUST be rejected */
+        /* Downlink exceeding MAX_FCNT_GAP (16384) MUST be rejected */
         {
             uint8_t gap_dl[12] = { 0 };
             uint32_t gap_fcnt = 19UL + ISAC_LORAWAN_MAX_FCNT_GAP;
@@ -325,10 +325,10 @@ static void test_mac_and_persist_hooks(void)
             gap_dl[10]= (uint8_t)(mic >> 16); gap_dl[11] = (uint8_t)(mic >> 24);
             CHECK(!ISAC_LoRaWAN_ProcessDataDownlink(&c_reboot, gap_dl, 12U) &&
                   c_reboot.fcnt_down == 19UL,
-                  "HIGH-05 downlink with gap >= 16384 rejected");
+                  "downlink with gap >= 16384 rejected");
         }
 
-        /* HIGH-05: Valid authenticated downlink clears sticky MAC answers so next uplink has FOptsLen == 0 */
+        /* Valid authenticated downlink clears sticky MAC answers so next uplink has FOptsLen == 0 */
         {
             uint8_t ok_dl[12] = { 0 };
             uint32_t mic;
@@ -341,7 +341,7 @@ static void test_mac_and_persist_hooks(void)
             ok_dl[10]= (uint8_t)(mic >> 16); ok_dl[11] = (uint8_t)(mic >> 24);
             CHECK(ISAC_LoRaWAN_ProcessDataDownlink(&c_reboot, ok_dl, 12U) &&
                   c_reboot.fcnt_down == 21UL && c_reboot.sticky_mac_ans_len == 0U,
-                  "HIGH-05 valid downlink clears sticky MAC answers");
+                  "valid downlink clears sticky MAC answers");
             n = ISAC_LoRaWAN_BuildUnconfirmedUplink(&c_reboot, 10U, app, 10U, phy);
             CHECK(n == 23U && (phy[5] & 0x0FU) == 0U, "post-DL uplink has clean FOptsLen=0");
         }
@@ -350,7 +350,7 @@ static void test_mac_and_persist_hooks(void)
 
 static void test_ecc_self_healing_and_rx_param_setup(void)
 {
-    /* 1. BLK-FW-02: Simulated STM32WLE5JC 72-bit Flash double-bit ECC fault (FLASH_ECCR.ECCD)
+    /* 1. Simulated STM32WLE5JC 72-bit Flash double-bit ECC fault (FLASH_ECCR.ECCD)
      *    on an active NVM page slot MUST NOT brick LoadSession() and MUST self-heal on SaveSession() */
     {
         isac_nvm_session_t s, l;
@@ -370,21 +370,21 @@ static void test_ecc_self_healing_and_rx_param_setup(void)
         g_fail_after = -1;
         g_ecc_fault_addr = ISAC_NVM_PAGE_A_ADDR + (2UL * ISAC_NVM_RECORD_SIZE) + 16UL;
 
-        /* Even if ECC fault sits directly inside slot 1's payload, LoadSession falls back to slot 0 without NMI crash! */
+        /* Even if ECC fault sits directly inside slot 1's payload, LoadSession falls back to slot 0 without NMI crash */
         g_ecc_fault_addr = ISAC_NVM_PAGE_A_ADDR + (1UL * ISAC_NVM_RECORD_SIZE) + 16UL;
         CHECK(ISAC_NVM_LoadSession(&l) && l.fcnt_up == 101UL,
-              "BLK-FW-02 LoadSession survives ECC fault on slot 1 and recovers slot 0 (fcnt=%lu)",
+              "LoadSession survives ECC fault on slot 1 and recovers slot 0 (fcnt=%lu)",
               (unsigned long)l.fcnt_up);
 
-        /* Next SaveSession() detects ECC fault on Page A, migrates cleanly to Page B, and erases/heals Page A! */
+        /* Next SaveSession() detects ECC fault on Page A, migrates cleanly to Page B, and erases/heals Page A */
         s = mk(104U, 104UL);
-        CHECK(ISAC_NVM_SaveSession(&s), "BLK-FW-02 SaveSession migrates & heals ECC-corrupted Page A");
-        CHECK(g_ecc_fault_addr == 0UL, "BLK-FW-02 Page A erase healed simulated 72-bit ECC fault");
+        CHECK(ISAC_NVM_SaveSession(&s), "SaveSession migrates & heals ECC-corrupted Page A");
+        CHECK(g_ecc_fault_addr == 0UL, "Page A erase healed simulated 72-bit ECC fault");
         CHECK(ISAC_NVM_LoadSession(&l) && l.fcnt_up == 104UL && !ISAC_HAL_Flash_ConsumeEccFault(),
-              "BLK-FW-02 Post-heal LoadSession clean on Page B with zero residual ECC faults");
+              "Post-heal LoadSession clean on Page B with zero residual ECC faults");
     }
 
-    /* 1b. HIGH-FW-04: Inactive-page ECC scar MUST NOT erase or discard free slots on clean active page */
+    /* 1b. Inactive-page ECC scar MUST NOT erase or discard free slots on clean active page */
     {
         isac_nvm_session_t s, l;
         uint32_t magic_slot2 = 0UL;
@@ -393,24 +393,24 @@ static void test_ecc_self_healing_and_rx_param_setup(void)
         g_ecc_latched = false;
 
         s = mk(201U, 201UL);
-        CHECK(ISAC_NVM_SaveSession(&s), "HIGH-FW-04 setup Page A slot 0");
+        CHECK(ISAC_NVM_SaveSession(&s), "setup Page A slot 0");
         s = mk(202U, 202UL);
-        CHECK(ISAC_NVM_SaveSession(&s), "HIGH-FW-04 setup Page A slot 1");
+        CHECK(ISAC_NVM_SaveSession(&s), "setup Page A slot 1");
 
         /* Inject brownout ECC scar on INACTIVE Page B while active Page A still has 19 blank slots */
         g_ecc_fault_addr = ISAC_NVM_PAGE_B_ADDR + 32UL;
         g_erases = 0U;
         s = mk(203U, 203UL);
-        CHECK(ISAC_NVM_SaveSession(&s), "HIGH-FW-04 SaveSession with inactive Page B ECC scar");
+        CHECK(ISAC_NVM_SaveSession(&s), "SaveSession with inactive Page B ECC scar");
         memcpy(&magic_slot2, &g_flash[(ISAC_NVM_PAGE_A_ADDR - FL_BASE) + (2UL * ISAC_NVM_RECORD_SIZE)], 4U);
         CHECK(g_erases == 1U && g_ecc_fault_addr == 0UL && magic_slot2 == ISAC_NVM_REC_MAGIC,
-              "HIGH-FW-04 appended to clean Page A slot 2 and healed ONLY inactive Page B (erases=%u)",
+              "appended to clean Page A slot 2 and healed ONLY inactive Page B (erases=%u)",
               g_erases);
         CHECK(ISAC_NVM_LoadSession(&l) && l.fcnt_up == 203UL && !ISAC_HAL_Flash_ConsumeEccFault(),
-              "HIGH-FW-04 Post-heal LoadSession reads slot 2 on Page A with zero ECC faults");
+              "Post-heal LoadSession reads slot 2 on Page A with zero ECC faults");
     }
 
-    /* 2. HIGH-FW-03: LoRaWAN 1.0.3 §5.4 RXParamSetupReq (0x05) full parameter validation + sticky Ans */
+    /* 2. LoRaWAN 1.0.3 §5.4 RXParamSetupReq (0x05) full parameter validation + sticky Ans */
     {
         isac_lorawan_ctx_t c;
         uint8_t key[16] = { 0x11U };
@@ -428,28 +428,28 @@ static void test_ecc_self_healing_and_rx_param_setup(void)
         CHECK(c.rx1_dr_offset == 2U && c.rx2_sf == 9U &&
               c.mac_ans_len == 2U && c.mac_ans[0] == 0x05U && c.mac_ans[1] == 0x07U &&
               c.sticky_mac_ans_len == 2U && c.sticky_mac_ans[0] == 0x05U && c.sticky_mac_ans[1] == 0x07U,
-              "HIGH-FW-03 valid RXParamSetupReq (DR3/SF9 @ 869.525 MHz, off=2) applied with sticky 0x07 ACK");
+              "valid RXParamSetupReq (DR3/SF9 @ 869.525 MHz, off=2) applied with sticky 0x07 ACK");
 
         c.mac_ans_len = 0U;
         c.sticky_mac_ans_len = 0U;
         ISAC_LoRaWAN_ProcessMacCommands(&c, req_bad_ch, sizeof req_bad_ch);
         CHECK(c.rx1_dr_offset == 2U && c.rx2_sf == 9U &&
               c.mac_ans_len == 2U && c.mac_ans[0] == 0x05U && c.mac_ans[1] == 0x06U,
-              "HIGH-FW-03 non-869.525 MHz RXParamSetupReq NACKed (0x06) without mutating RX params");
+              "non-869.525 MHz RXParamSetupReq NACKed (0x06) without mutating RX params");
 
         c.mac_ans_len = 0U;
         c.sticky_mac_ans_len = 0U;
         ISAC_LoRaWAN_ProcessMacCommands(&c, req_bad_dr, sizeof req_bad_dr);
         CHECK(c.rx1_dr_offset == 2U && c.rx2_sf == 9U &&
               c.mac_ans_len == 2U && c.mac_ans[0] == 0x05U && c.mac_ans[1] == 0x05U,
-              "HIGH-FW-03 unsupported RX2DataRate DR6 NACKed (0x05) without mutating RX params");
+              "unsupported RX2DataRate DR6 NACKed (0x05) without mutating RX params");
 
         c.mac_ans_len = 0U;
         c.sticky_mac_ans_len = 0U;
         ISAC_LoRaWAN_ProcessMacCommands(&c, req_bad_off, sizeof req_bad_off);
         CHECK(c.rx1_dr_offset == 2U && c.rx2_sf == 9U &&
               c.mac_ans_len == 2U && c.mac_ans[0] == 0x05U && c.mac_ans[1] == 0x03U,
-              "HIGH-FW-03 invalid RX1DROffset=6 NACKed (0x03) without mutating RX params");
+              "invalid RX1DROffset=6 NACKed (0x03) without mutating RX params");
     }
 }
 

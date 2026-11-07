@@ -42,12 +42,12 @@
 #define ISAC_SUBGHZ_STDBY_XOSC                  0x01U
 #define ISAC_SUBGHZ_SLEEP_WARM_START            0x04U
 #define ISAC_SUBGHZ_REGMODE_USE_LDO             0x00U
-#define ISAC_SUBGHZ_REGMODE_USE_DCDC            0x01U  /* Engages external 15 uH L_SMPS buck! */
-#define ISAC_SUBGHZ_PA_DEVSEL_RFO_LP            0x01U  /* Mandatory RAK3172LP-SiP +14 dBm PA */
+#define ISAC_SUBGHZ_REGMODE_USE_DCDC            0x01U  /* Engages external 15 uH L_SMPS buck */
+#define ISAC_SUBGHZ_PA_DEVSEL_RFO_LP            0x01U  /* RAK3172LP-SiP +14 dBm PA path */
 #define ISAC_SUBGHZ_RAMP_40_US                  0x02U
 #define ISAC_SUBGHZ_PKT_TYPE_LORA               0x01U
-#define ISAC_SUBGHZ_TCXO_CTRL_1_8V              0x02U  /* Legacy 1.8 V code (unused in Rev E.5) */
-#define ISAC_SUBGHZ_TCXO_CTRL_3_0V              0x06U  /* Mandatory 3.0 V DIO3/PB0 TCXO supply per RAK3172LP-SiP datasheet (BLK-04) */
+#define ISAC_SUBGHZ_TCXO_CTRL_1_8V              0x02U  /* 1.8 V TCXO trim code (unused) */
+#define ISAC_SUBGHZ_TCXO_CTRL_3_0V              0x06U  /* 3.0 V DIO3/PB0 TCXO supply per RAK3172LP-SiP datasheet */
 #define ISAC_SUBGHZ_TCXO_TIMEOUT_5MS_TICKS      320UL  /* 320 * 15.625 us = 5.0 ms TCXO settle */
 #define ISAC_SUBGHZ_CALIBRATE_ALL_BLOCKS        0x7FU  /* RC64k, RC13M, PLL, ADC, IMG */
 
@@ -76,16 +76,16 @@
 #define ISAC_TONE2_FREQ_HZ                      866500000UL  /* Dry-air IFA resonance  */
 #define ISAC_TONE3_FREQ_HZ                      869500000UL  /* EU868 g3 high sub-band */
 
-/* Timing & TX power windows verified for Rev E.5 (`BLK-06`, `HIGH-01`, `MED-03`):
+/* Timing & TX power windows for Rev E.5:
  *   - 3000 us wakeup >= TPS22919DCKR max t_ON (~2.5 ms over -40..+85 C) + LT5538 1 nF CAP settling
  *   - 550 us LPF dwell = 5.5 * tau_LPF (R_LPF=1k, C_LPF=100nF, tau=100us -> 99.59% > 99.5%)
  *   - Dual ADC->SMPR: 416 us VREFINT (SMP2=39.5) + 200 us DET_ADC (SMP1=12.5) -> 1.166 ms/tone CW
  *   - Conservative integer ceiling: 2 ms/tone (6 ms total 3-tone sweep; 24 ms/h << 3,600 ms/h 0.1% cap)
- *   - +4 dBm CW sweep power (`MED-03`): P_in(LT5538) <= -25.40 dBm (+12.40 dB linear margin below -13 dBm knee) */
+ *   - +4 dBm CW sweep power: P_in(LT5538) <= -25.40 dBm (+12.40 dB linear margin below -13 dBm knee) */
 #define ISAC_WAKEUP_SETTLE_US                   3000UL
 #define ISAC_RAIL_SENSE_SETTLE_US               150UL   /* Passive PA9/Q2 + C_BAT=1nF 12-bit settle (7x tau) */
 #define ISAC_LPF_SETTLE_US                      550UL
-#define ISAC_SENSING_TX_DBM                     4       /* +4 dBm linear CW sweep power (MED-03) */
+#define ISAC_SENSING_TX_DBM                     4       /* +4 dBm linear CW sweep power */
 #define ISAC_CW_QUENCH_DBM                      (-9)    /* -9 dBm RFO_LP min PA setting for 40 us soft ramp-down */
 #define ISAC_CW_QUENCH_SETTLE_US                50UL    /* >= 40 us SX1262 PA envelope ramp-down before STDBY_XOSC */
 #define ISAC_LORAWAN_TX_DBM                     14      /* +14 dBm LoRaWAN Class A TX power */
@@ -102,17 +102,17 @@
 #define ISAC_LBS_BACKOFF_MS                     20UL    /* Gated PA8=0 carrier-sense retry backoff [ms] */
 #define ISAC_LBS_MAX_RETRIES                    2U      /* Max pre-sweep LBS retries before FAULT blanking */
 
-/* Die-temperature threshold for physical glaze-ice vs warm-dew disambiguation (`MED-02`) */
+/* Die-temperature threshold for glaze-ice vs warm-dew disambiguation */
 #define ISAC_TEMP_UNAVAILABLE                   (-32768)
 #define ISAC_ICE_MAX_TEMP_DEGC_X10              40      /* +4.0 C max die temp for physical GLAZE_ICE */
 
-/* LT5538 Log-Detector Transfer Constants @ 868 MHz (`analysis/design_calc.py`):
+/* LT5538 Log-Detector Transfer Constants @ 868 MHz:
  *   V_OUT = K_SLOPE * (P_IN_dBm - P_INT_dBm), K_SLOPE = 19.0 mV/dB, P_INT = -88.80 dBm */
 #define ISAC_LT5538_SLOPE_UV_PER_CDB            190L    /* 19.0 mV/dB = 190 uV per 0.01 dB */
 #define ISAC_LT5538_INTERCEPT_DBM_X100          (-8880L)/* -88.80 dBm */
 
 /* LoRaWAN Application Port & 10-Byte Payload Contract
- * Rev E.2 (audit B5): Target battery is 1S Li-ion / LiPo (3.00-4.20 V operating range) via Q3
+ * Target battery is 1S Li-ion / LiPo (3.00-4.20 V operating range) or 3.6 V Li-SOCl2 via Q3
  * AO3401A ideal diode (< 4 mV forward drop). PB4 / ADC_IN3 measures post-Q3 `VBAT`:
  *   - Full / nominal 1S Li-ion/LiPo (4.20 V -> 3.15 V) -> healthy (bit 5 = 0).
  *   - Discharge knee warning (`VBAT < 3100 mV`, ~5% remaining above 3.00 V cutoff) -> warn (bit 5 = 1). */
@@ -166,7 +166,7 @@ typedef struct {
     uint16_t tone_cw_ms[ISAC_NUM_TONES];  /**< Measured CW airtime per tone (>= 2 ms) [ms] */
     uint16_t lbs_pre_mv;                  /**< Pre-sweep TX-off ambient LT5538 floor [mV]  */
     uint16_t lbs_post_mv;                 /**< Post-sweep TX-off ambient LT5538 floor [mV] */
-    int16_t  die_temp_degc_x10;           /**< MCU die temperature [0.1 C] (`MED-02`)      */
+    int16_t  die_temp_degc_x10;           /**< MCU die temperature [0.1 C]                 */
     bool     smps_dcdc_enabled;           /**< True when live 15 uH SMPS buck is ready     */
     bool     lbs_jammed;                  /**< True when ambient RF jammer > 320 mV seen   */
 } isac_raw_sweep_t;

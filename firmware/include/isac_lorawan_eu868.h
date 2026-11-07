@@ -88,7 +88,7 @@ typedef struct isac_lorawan_ctx_s {
     uint8_t  last_downlink_len;
     uint8_t  last_downlink[32];
 
-    /* Rev E.2 / E.5 (audit B3/B4, HIGH-05): persistence hook + one-shot & sticky MAC-command answers */
+    /* Session persistence callback + one-shot & sticky MAC-command answers (LoRaWAN 1.0.3 §5) */
     void   (*persist_cb)(const struct isac_lorawan_ctx_s *ctx); /**< Called BEFORE any TX that consumes a nonce/counter */
     uint8_t  mac_ans[ISAC_LORAWAN_MAX_FOPTS];
     uint8_t  mac_ans_len;
@@ -96,7 +96,7 @@ typedef struct isac_lorawan_ctx_s {
     uint8_t  sticky_mac_ans_len;
     uint8_t  battery_level;                     /**< DevStatusAns battery: 0=ext power,1..254,255=unknown */
 
-    /* Rev E.4 (`BLK-04`): ETSI 1% post-Join off-time & LoRaWAN 1.0.3 §7 Join back-off state */
+    /* ETSI 1% post-Join off-time & LoRaWAN 1.0.3 §7 Join back-off state */
     uint32_t last_join_tx_end_ms;
     uint32_t last_join_toa_ms;
     uint16_t join_attempts;
@@ -109,7 +109,7 @@ void ISAC_LoRaWAN_RestoreSession(isac_lorawan_ctx_t *ctx,
                                  uint32_t fcnt_up, uint32_t fcnt_down,
                                  const uint8_t nwk_skey[16], const uint8_t app_skey[16]);
 
-/** Serialize / restore full LoRaWAN session including CFList channels, RX1 delay/offset, RX2 SF & ACK (HIGH-04). */
+/** Serialize / restore full LoRaWAN session including CFList channels, RX1 delay/offset, RX2 SF & ACK. */
 void ISAC_LoRaWAN_SaveToNvmSession(const isac_lorawan_ctx_t *ctx, isac_nvm_session_t *out);
 void ISAC_LoRaWAN_RestoreFromNvmSession(isac_lorawan_ctx_t *ctx, const isac_nvm_session_t *in);
 

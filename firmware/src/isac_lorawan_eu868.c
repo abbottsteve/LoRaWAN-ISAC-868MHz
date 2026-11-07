@@ -318,7 +318,7 @@ static void init_default_eu868_channels(isac_lorawan_ctx_t *ctx)
 
 uint32_t ISAC_LoRaWAN_NextJoinBackoffMs(uint16_t attempt_num, uint32_t join_toa_ms)
 {
-    /* BLK-FW-01 fix: Enforce BOTH ETSI EN 300 220-1 <= 1% g1 sub-band off-time (100 * ToA)
+    /* Enforce BOTH ETSI EN 300 220-1 <= 1% g1 sub-band off-time (100 * ToA)
      * AND sliding-window fencepost-exact LoRaWAN L2 1.0.3 §7 Retransmissions back-off across
      * ALL SF7..SF12 (including wet-boot SF12 JoinRequest = 1,483 ms):
      *   - Tier 1 (attempts 1..10, Hour 0..1, < 36 s / 1 h): >= 361 s spacing spans > 1.0 h
@@ -561,7 +561,7 @@ uint8_t ISAC_LoRaWAN_BuildUnconfirmedUplink(isac_lorawan_ctx_t *ctx,
     }
 
     /* Assemble outgoing FOpts: queued MAC answers first, then any sticky 0x05/0x08/0x09/0x0A
-     * answers not yet acknowledged by a valid network downlink (`HIGH-05`, LoRaWAN 1.0.3 §5). */
+     * answers not yet acknowledged by a valid network downlink (LoRaWAN 1.0.3 §5). */
     for (k = 0U; (k < ctx->mac_ans_len) && (fopts_len < ISAC_LORAWAN_MAX_FOPTS); ++k) {
         fopts[fopts_len++] = ctx->mac_ans[k];
     }
@@ -781,7 +781,7 @@ static void mac_push_sticky(isac_lorawan_ctx_t *ctx, const uint8_t *b, uint8_t n
 }
 
 /*
- * EU868 MAC command handling (LoRaWAN 1.0.3 §5, HIGH-05):
+ * EU868 MAC command handling (LoRaWAN 1.0.3 §5):
  *   - Strict per-CID remaining-length bounds checks BEFORE mutating state or queueing answers.
  *   - Sticky MAC answers (0x05 RXParamSetupAns, 0x08 RXTimingSetupAns, 0x09 TxParamSetupAns,
  *     0x0A DlChannelAns) repeat on subsequent uplinks until a valid downlink advances fcnt_down.
@@ -904,8 +904,8 @@ bool ISAC_LoRaWAN_ProcessDataDownlink(isac_lorawan_ctx_t *ctx, const uint8_t *rx
         return false;
     }
 
-    /* HIGH-05 (LoRaWAN 1.0.3 §4.3.1.6): Reject malformed frames carrying BOTH FOpts (FOptsLen > 0)
-     * and FPort == 0 (or empty FPort 0 payload) BEFORE advancing fcnt_down or setting pending_ack! */
+    /* (LoRaWAN 1.0.3 §4.3.1.6) — Reject malformed frames carrying BOTH FOpts (FOptsLen > 0)
+     * and FPort == 0 (or empty FPort 0 payload) BEFORE advancing fcnt_down or setting pending_ack */
     if ((mac_hdr_end + 4U) < rx_len) {
         const uint8_t fport_chk = rx[mac_hdr_end];
         const uint8_t plen_chk  = (uint8_t)(rx_len - 4U - (mac_hdr_end + 1U));
@@ -919,7 +919,7 @@ bool ISAC_LoRaWAN_ProcessDataDownlink(isac_lorawan_ctx_t *ctx, const uint8_t *rx
     if (fcnt32 < ctx->fcnt_down) {
         fcnt32 += 0x10000UL;
     }
-    /* HIGH-05 (LoRaWAN 1.0.3 §4.3.1.5): Reject downlinks exceeding MAX_FCNT_GAP (16384) */
+    /* (LoRaWAN 1.0.3 §4.3.1.5) — Reject downlinks exceeding MAX_FCNT_GAP (16384) */
     if ((fcnt32 - ctx->fcnt_down) >= ISAC_LORAWAN_MAX_FCNT_GAP) {
         return false;
     }
@@ -969,7 +969,7 @@ bool ISAC_LoRaWAN_ProcessDataDownlink(isac_lorawan_ctx_t *ctx, const uint8_t *rx
             }
         }
     }
-    /* HIGH-04: Immediately persist updated fcnt_down, pending_ack, and MAC RX timing to NVM */
+    /* Immediately persist updated fcnt_down, pending_ack, and MAC RX timing to NVM */
     if (ctx->persist_cb != NULL) {
         ctx->persist_cb(ctx);
     }
@@ -1032,7 +1032,7 @@ static bool sx1262_config_lora_frame(uint32_t freq_hz,
          ISAC_HAL_SubGhz_WriteCmd(ISAC_SUBGHZ_CMD_SET_MODULATION_PARAMS, mod_prm, 4U) &&
          ISAC_HAL_SubGhz_WriteCmd(ISAC_SUBGHZ_CMD_SET_PACKET_PARAMS, pkt_prm, 6U);
 
-    /* MED-03 fix: Apply Semtech SX1262 §15.4 Inverted-IQ (0x0736 bit 2) & §15.1 BW125 TxModulation (0x0889 bit 2) */
+    /* Apply Semtech SX1262 §15.4 Inverted-IQ (0x0736 bit 2) & §15.1 BW125 TxModulation (0x0889 bit 2) */
     if (ok && ISAC_HAL_SubGhz_ReadReg(ISAC_SUBGHZ_REG_IQ_POLARITY, &iq_pol, 1U)) {
         if (is_downlink) {
             iq_pol &= (uint8_t)~(1U << 2);
@@ -1121,7 +1121,7 @@ static isac_lorawan_status_t sx1262_tx_blocking(uint32_t freq_hz,
             break;
         }
         if ((irq & ISAC_SUBGHZ_IRQ_TX_DONE) != 0U) {
-            /* HIGH-03: Timestamp TX completion immediately upon IRQ_TX_DONE before SPI teardown */
+            /* Timestamp TX completion immediately upon IRQ_TX_DONE before SPI teardown */
             if (out_tx_done_ms != NULL) {
                 *out_tx_done_ms = ISAC_HAL_GetTickMs();
             }
@@ -1153,7 +1153,7 @@ static bool sx1262_timed_rx_slot(uint32_t t_tx_end_ms,
 {
     const uint8_t  stdby_xosc       = ISAC_SUBGHZ_STDBY_XOSC;
     const uint8_t  stdby_rc         = ISAC_SUBGHZ_STDBY_RC;
-    const uint8_t  stop_on_preamble = 0x01U; /* BLK-04: Freeze RX timer on preamble detection */
+    const uint8_t  stop_on_preamble = 0x01U; /* Freeze RX timer on preamble detection */
     const uint8_t  clr_all[2]       = { 0xFFU, 0xFFU };
     const uint32_t sym_us           = (1UL << ((sf < 7U) ? 7U : ((sf > 12U) ? 12U : sf))) * 8UL;
     const uint32_t ten_sym_ms       = (10UL * sym_us + 999UL) / 1000UL;
@@ -1182,12 +1182,12 @@ static bool sx1262_timed_rx_slot(uint32_t t_tx_end_ms,
     rx_tmo[1]  = (uint8_t)((hw_ticks >>  8U) & 0xFFU);
     rx_tmo[2]  = (uint8_t)( hw_ticks         & 0xFFU);
 
-    /* BLK-04: Software guard accommodates full max-length LoRaWAN frame after preamble lock */
+    /* Software guard accommodates full max-length LoRaWAN frame after preamble lock */
     guard_ms   = search_ms
                + ISAC_LoRaWAN_CalcTimeOnAirMs(sf, ISAC_LORAWAN_MAX_PHY_LEN)
                + 250UL;
 
-    /* HIGH-03: 1 ms polling to pre-stage XOSC + LoRa registers 25 ms before nominal slot */
+    /* 1 ms polling to pre-stage XOSC + LoRa registers 25 ms before nominal slot */
     while ((ISAC_HAL_GetTickMs() - t_tx_end_ms) < prestage_ms) {
         ISAC_HAL_DelayMs(1UL);
     }
@@ -1199,7 +1199,7 @@ static bool sx1262_timed_rx_slot(uint32_t t_tx_end_ms,
         return false;
     }
 
-    /* HIGH-03: Fine 1 ms wait and open SET_RX 15 ms early to guarantee RX1/RX2 preamble capture */
+    /* Fine 1 ms wait and open SET_RX 15 ms early to guarantee RX1/RX2 preamble capture */
     while ((ISAC_HAL_GetTickMs() - t_tx_end_ms) < open_ms) {
         ISAC_HAL_DelayMs(1UL);
     }
@@ -1294,7 +1294,7 @@ bool ISAC_LoRaWAN_JoinOTAA(isac_lorawan_ctx_t *ctx)
         return false;
     }
     now_ms = ISAC_HAL_GetTickMs();
-    /* BLK-04 / BLK-FW-01 fix: Enforce LoRaWAN 1.0.3 §7 & ETSI 1% back-off and latch once expired */
+    /* Enforce LoRaWAN 1.0.3 §7 & ETSI 1% back-off and latch once expired */
     if (ctx->join_attempts > 0U) {
         if ((int32_t)(now_ms - ctx->next_join_allowed_ms) < 0) {
             return false;
@@ -1383,8 +1383,8 @@ isac_lorawan_status_t ISAC_LoRaWAN_SendClassA(isac_lorawan_ctx_t *ctx,
         }
     }
 
-    /* BLK-04 fix: Guarantee ETSI EN 300 220-1 <= 1% g1 sub-band off-time (100 * T_JoinReq)
-     * before the first post-Join DataUp (vital when JoinAccept arrived on RX1 @ +5.06 s < 6.20 s)! */
+    /* Guarantee ETSI EN 300 220-1 <= 1% g1 sub-band off-time (100 * T_JoinReq)
+     * before the first post-Join DataUp (vital when JoinAccept arrived on RX1 @ +5.06 s < 6.20 s) */
     if (ctx->last_join_toa_ms > 0UL) {
         const uint32_t min_ul_ms = ctx->last_join_tx_end_ms
                                  + ISAC_DutyCycle_MinBackoffMs(ctx->last_join_toa_ms);

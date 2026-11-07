@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# ISAC_868 Rev E.5 — Safe Production / Pilot SWD Programming & Provisioning Tool
-#   Fixes LOW-01, BLK-05, HIGH-02 & MED-08:
+# ISAC_868 Rev E.5 — Production & Pilot SWD Programming / Provisioning Script
+#   Key safeguards:
 #     1) Validates all CLI options, firmware image, IEEE EUI-64s, and mandatory
 #        factory dry-air tare (--cal-dry-mv + optional --cal-ref-cdb 2-pt ref,
 #        or --uncalibrated-bench) BEFORE issuing `-e all` mass-erase.
@@ -214,7 +214,7 @@ if [[ -n "${DEVEUI}" || -n "${JOINEUI}" ]]; then
       UID64_HEX="0080E1150000DRY0"
     else
       UID64_HEX="$(read_swd_uid64)"
-      # HIGH-PROD-03 fix: On reworked units locked at RDP=0xBB, 0x1FFF7580 readout is blocked until
+      # On reworked units locked at RDP=0xBB, 0x1FFF7580 readout is blocked until
       # RDP regression (0xAA) + mass erase. Regress & re-read BEFORE generating vault ledger or locking RDP!
       if [[ -z "${UID64_HEX}" ]]; then
         "${CLI}" -c port=SWD mode=UR reset=HWrst -ob RDP=0xAA >/dev/null 2>&1 || true

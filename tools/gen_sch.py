@@ -3,7 +3,7 @@
 Generate the human-crafted KiCad 9 schematic + local symbol library for the
 868 MHz Dual-Function ISAC Antenna-Sensor Node (Rev E.5).
 
-Design highlights (Rev E.5 Tier-1 PCBWay Turnkey Architecture):
+Design highlights (Rev E.5 PCBWay Turnkey Hardware):
   * Clean multi-unit functional decomposition of U1 (`RAK3172LP-SiP`, LGA-73):
     - `U1A`: Digital/Analog/RF Power Conditioning (`VDD1/2`, isolated `VDDA/VREF+`,
       `VDDRF`, `VDDPA`), 15 uH internal buck SMPS (`LQH2MCN150K02L`), and LGA GND bank.
@@ -19,7 +19,7 @@ Design highlights (Rev E.5 Tier-1 PCBWay Turnkey Architecture):
     - Independent PA9 (BAT_MON_EN) high-side gated battery divider via Q2
       (Nexperia NX3008CBKS,115 complementary +/-30 V N+P MOSFET, SOT-363) +
       R_BG (470k) + R_B1/R_B2 (4.7k 0.1%) + C_BAT (1n 50V C0G): 0 nA sleep bleed.
-    - Header LiPo back-feed isolation (HIGH-05): R_VAPP (1k) on J4.1 VAPP_SENSE,
+    - Header LiPo back-feed isolation: R_VAPP (1k) on J4.1 VAPP_SENSE,
       R_VUART (DNP 0R) on J5.1 VUART_ISO, R_BHI (10k) on J3.2 BOOT_HI, D_3V3 TVS.
   * Co-optimized Elliptic Low-Pass Harmonic Pi-Network (C_M1=3.6p, L_M1=8.2n ||
     C_MZ=0.5p, C_M2=4.3p) + Parasitic-Controlled Bridge (R1=8.2R Yageo RT0402BRD078R2L,

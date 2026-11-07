@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Per-unit LoRaWAN provisioning page generator (Rev E.5 — HIGH-02 / BLK-05 / MED-08).
+"""Per-unit LoRaWAN provisioning page generator (Rev E.5 ).
 
 Creates the 2 KB provisioning page consumed by firmware/src/isac_nvm.c
 (ISAC_NVM_PROVISION_ADDR = 0x0803E000) with a fresh CSPRNG AppKey, IEEE EUI-64

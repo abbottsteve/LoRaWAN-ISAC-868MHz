@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 """
-Automated Documentation-to-Hardware, Gate 4 RF/EM & Gate 8 Pilot Parity Gate (`Rev E.5`)
-========================================================================================
+Documentation-to-Hardware & RF/EM Solver Parity Verifier (`Rev E.5`)
+====================================================================
 Prevents silent documentation or simulation drift by cross-checking:
   - `docs/ISAC_868MHz_System_Design_and_Operation_Summary.md`
   - `docs/ISAC_868MHz_System_Design_and_Operation_Summary.pdf`
   - `README.md`
   - `fab/documentation/PCBWAY_TURNKEY_FABRICATION_SPECIFICATION.md`
   - `fab/cpl/CPL_README.md`
-  - `docs/bringup_report.md` (including Mandatory Gate 8 `5–10` board Pilot Hold)
+  - `docs/bringup_report.md` (`5–10` board pilot bring-up & sign-off checklist)
   - `docs/*` visual inspection PDFs/PNGs
 against live ground truth extracted from:
-  - `rf/results/ifa_fullwave_3d.json` & `rf/results/bridge_3tone_curves.json` (Gate 4: <= 0.01 dB / 0.00 MHz)
+  - `rf/results/ifa_fullwave_3d.json` & `rf/results/bridge_3tone_curves.json` (<= 0.01 dB / 0.00 MHz)
   - `firmware/test/data/design_values.json`
   - `ISAC_868_KiCad9.kicad_pcb`
   - `firmware/include/isac_board_pins.h` & `firmware/include/isac_sensing.h`
@@ -202,7 +202,7 @@ def run_doc_parity_audit():
     if os.path.isfile(top_pdf_path):
         tp_proc = subprocess.run(["pdftotext", top_pdf_path, "-"], capture_output=True, text=True)
         if "\u00fe\u00ff" in tp_proc.stdout or "51.1R" in tp_proc.stdout:
-            errors.append("[LOW-02] ISAC_868_PCB_Top_Sheet.pdf contains UTF-16 mojibake or stale 51.1R text!")
+            errors.append("[PDF HYGIENE] ISAC_868_PCB_Top_Sheet.pdf contains UTF-16 mojibake or stale 51.1R text!")
 
     # Zero banned stale legacy tokens across all primary docs
     for doc_label, content in (
@@ -218,10 +218,10 @@ def run_doc_parity_audit():
             if bad in content:
                 errors.append(f"[LEGACY DRIFT] Stale token {bad!r} present in {doc_label}!")
 
-    # Gate 8 Pilot Hold verification in bringup_report.md
-    for g8_tok in ("Gate 8", "5–10", "VOLUME", "B-07", "B-06", "B-04", "TP1", "TP2", "TP3", "TP4", "TP5"):
-        if g8_tok not in bringup_md:
-            errors.append(f"[GATE 8 / LOW-01] Token {g8_tok!r} missing from docs/bringup_report.md!")
+    # Pilot bring-up checklist verification in bringup_report.md
+    for pilot_tok in ("5–10", "Pilot", "B-07", "B-06", "B-04", "TP1", "TP2", "TP3", "TP4", "TP5"):
+        if pilot_tok not in bringup_md:
+            errors.append(f"[BRINGUP] Token {pilot_tok!r} missing from docs/bringup_report.md!")
 
     # Live PCB & Turnkey ZIP counts and BOM table
     board = pcbnew.LoadBoard(PCB_PATH)
@@ -333,7 +333,7 @@ def run_doc_parity_audit():
 
     print(
         f"[DOC PARITY] Verified Rev E.5 Summary MD+PDF, README.md ({len(readme_bom)}/{len(bom_rows)} BOM rows), "
-        f"Gate 4 RF/EM JSONs (0.00 MHz / <=0.01 dB), Gate 8 Pilot Hold, 0 legacy tokens, "
+        f"RF/EM JSONs (0.00 MHz / <=0.01 dB), pilot bring-up checklist, 0 legacy tokens, "
         f"{len(REQUIRED_DOCS_VISUALS)}/11 fresh visual sheets, CPL={len(cpl_rows)} pure-SMD parts (0 THT)."
     )
 

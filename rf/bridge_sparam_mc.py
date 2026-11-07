@@ -2,11 +2,10 @@
 """
 bridge_sparam_mc.py -- Full Complex 2-Port S-Parameter, Distributed Microstrip [Y]-Matrix,
                        3D Stratified Laplace Parasitic Extraction & 2000-Trial Monte-Carlo
-                       Solver for ISAC Rev E.5 Return-Loss Bridge
-                       (Audit Closure: BLK-01, HIGH-02, MED-03).
+                       Solver for ISAC Rev E.5 Return-Loss Bridge.
 
 Key Rev E.5 Engineering Closures:
-  1. Live PCB Copper Length Extraction + Distributed Lossy Microstrip [Y] Model (BLK-01):
+  1. Live PCB Copper Length Extraction + Distributed Lossy Microstrip [Y] Model:
      - Extracts exact physical copper trace lengths directly from `ISAC_868_KiCad9.kicad_pcb`
        via `pcbnew` (`/BR_S = 1.44 mm <= 1.50 mm`, `/BR_O = 2.05 mm <= 2.15 mm` 4-branch star,
        `/DET_IN = 1.28 mm <= 1.40 mm`).
@@ -14,7 +13,7 @@ Key Rev E.5 Engineering Closures:
        sheet resistance R_s(866.5 MHz) = 23.74 mOhm/sq and FR-4 tan_d = 0.020) for `/BR_O` and
        `/DET_IN`, achieving 24.81 dB (>= 22.0 dB) physical 50-Ohm directivity at 866.5 MHz with
        R_TERM = 56.0 Ohm (Susumu RG1005P-560-B-T5 0.1%).
-  2. Linear +4.0 dBm CW Sensing Power + 2-Point Factory Calibration (MED-03, HIGH-02):
+  2. Linear +4.0 dBm CW Sensing Power + 2-Point Factory Calibration:
      - Operates CW sensing sweep at P_TX = +4.0 dBm (+14.0 dBm retained for LoRaWAN TX), keeping
        LT5538 input strictly <= -25.4 dBm across all media (> 12 dB below -13 dBm compression knee).
      - Models 2-point factory calibration (`cal_dry_mv[3]` dry-air baseline + `cal_ref_cdb`

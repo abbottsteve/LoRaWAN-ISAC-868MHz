@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 cpwg_2dfvm_solver.py -- Self-Contained Non-Uniform 2D Finite-Volume Laplace Cross-Sectional
-                        Solver for the ISAC Rev E.2 868 MHz CPWG Spine (Audit Finding H2).
+                        Solver for the ISAC Rev E.2 868 MHz CPWG Spine.
 
 Models the exact finished 2-layer PCBWay stackup on a graded tensor-product mesh whose node
 lines align identically with every material interface (zero staircasing):

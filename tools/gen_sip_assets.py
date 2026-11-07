@@ -47,7 +47,7 @@ def pad_table():
     """
     pads = []
     # 1..16: Left column (x = -5.650, y = -4.500 .. +4.500, step +0.600)
-    # Perimeter paste inset -0.035 mm -> 1.10 x 0.30 mm aperture (AR = 3.00 @ 0.10 mm stencil, 0.30 mm web, HIGH-07)
+    # Perimeter paste inset -0.035 mm -> 1.10 x 0.30 mm aperture (AR = 3.00 @ 0.10 mm stencil, 0.30 mm web)
     for idx in range(16):
         n = idx + 1
         y = round(-4.500 + idx * 0.600, 4)
@@ -235,7 +235,7 @@ def write_footprint():
         f'(uuid "{u("fab:ref")}") (effects (font (size 1.0 1.0) (thickness 0.15))))'
     )
 
-    # 73 SMD LGA Pads (25% corner radius, +0.025 mm local NSMD mask margin -> 0.180 mm Green LPI dam, MED-01)
+    # 73 SMD LGA Pads (25% corner radius, +0.025 mm local NSMD mask margin -> 0.180 mm Green LPI dam)
     for num, x, y, w, h, shape, pm in pads:
         rr = "\n\t\t(roundrect_rratio 0.25)" if shape == "roundrect" else ""
         mm_s = f"\n\t\t(solder_mask_margin {u1_mask_margin})"
@@ -450,7 +450,7 @@ def write_sma_j1_footprint():
     Generate `ISAC.pretty/SMA_Molex_73251-1153_EdgeMount_Horizontal_HandSolder.kicad_mod`:
       * Exact Molex 73251-1153 edge-launch SMA pad/fab/courtyard/3D geometry (`732511150_sd.pdf`).
       * `(attr through_hole exclude_from_pos_files)` matching the 2 PTH ground vias (`0.46 mm` drill)
-        and secondary post-reflow hand-solder assembly flow (`F-02`, `F-12`, `F-13`).
+        and secondary post-reflow hand-solder assembly flow.
       * ZERO `F.Paste` and ZERO `B.Paste` apertures so single-sided top SMT reflow never prints
         solder pillows onto edge-straddle fingers or triggers a 2nd bottom stencil (`B_Paste.gbp` empty).
       * All `F.SilkS` strokes upgraded to `0.15 mm` width.
@@ -554,7 +554,7 @@ def write_sma_j1_footprint():
     )
 
     # Edge-straddle copper/mask pads WITHOUT F.Paste or B.Paste (DNP on enclosed field SKU; secondary hand-solder on bench VNA units)
-    # Pad 1 narrowed to 1.15 mm width x 4.32 mm length (-57.3% shunt C_pad, matched to 1.08 mm 50R CPWG, HIGH-08)
+    # Pad 1 narrowed to 1.15 mm width x 4.32 mm length (-57.3% shunt C_pad, matched to 1.08 mm 50R CPWG)
     smd_pads = [
         ("1", -2.10, 0.00, 4.32, 1.15, '"F.Cu" "F.Mask"', "pad:1"),
         ("2", -1.72, -4.38, 5.08, 2.42, '"F.Cu" "F.Mask"', "pad:2:f1"),
@@ -612,9 +612,9 @@ def write_ae1_ifa_footprint():
         bare-ENIG interdigitated capacitive sensing comb (`x_tap = 6.60 mm`, `y_short = 7.00 mm`,
         `l_finger = 5.00 mm`, `w_finger = 1.30 mm`, `g = 1.20 mm`, wide `3.00 mm` low-inductance
         return bar at `y_fp = 14.50 mm`).
-      * HIGH-01: ZERO F.SilkS primitives in X_gbr >= 50.0 mm (`Reference "AE1"` at `(-1.85, -4.20)` ->
+      * ZERO F.SilkS primitives in X_gbr >= 50.0 mm (`Reference "AE1"` at `(-1.85, -4.20)` ->
         `X_gbr = 48.15 mm < 50.0 mm`, `<= 1.31 mm` from courtyard!).
-      * HIGH-01: Single continuous rectangular F.Mask opening `x_fp = [23.40..37.80]`,
+      * Single continuous rectangular F.Mask opening `x_fp = [23.40..37.80]`,
         `y_fp = [-0.80..13.35]` -> exact Gerber `[73.40..87.80] x [6.65..20.80] mm` (`0.20 mm`
         wider on all 4 sides than the `14.00 x 13.75 mm` ASA/PETG flush boss, zero LPI ridge!).
     """
@@ -704,7 +704,7 @@ def write_ae1_ifa_footprint():
 
 def write_dnp_nopaste_footprints():
     """
-    Generate DNP zero-paste footprints in `ISAC.pretty` (BLK-07):
+    Generate DNP zero-paste footprints in `ISAC.pretty`:
       * `R_0402_1005Metric_DNP_NoPaste` (clones KiCad `R_0402_1005Metric` with `F.Paste` stripped)
       * `D_SOD-523_DNP_NoPaste` (clones KiCad `D_SOD-523` with `F.Paste` stripped)
     Guarantees 0 solder-paste flashes on DNP footprints (`D_RF`, `R_DIV1`, `R_DIV2`, `R_VUART`)

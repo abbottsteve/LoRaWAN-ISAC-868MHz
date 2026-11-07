@@ -13,15 +13,15 @@ firmware HIL/NVM/SysTick, negative-mutation, and documentation parity gate:
   [05] export_turnkey_pkg     : Full CAD regen + --use-drill-file-origin RevE5 Turnkey ZIP
   [06] verify_u1_overlay      : 1:1 RAK3172LP-SiP LGA-73 datasheet overlay (0.0000 mm)
   [07] rules_isac --verify    : Cryptographic SHA-256 DRC rule-deck & stackup lock
-  [08] kicad-cli sch erc      : Gate 1 Strict --severity-all schematic ERC (0 violations)
-  [09] kicad-cli pcb drc      : Gate 2 Strict --all-track-errors --schematic-parity (0 violations)
-  [10] check_dfm              : Gate 3 Gerber, 0.10mm Stencil (B_Paste omitted), DNP=0 & Silk
-  [11] check_bom_cpl          : Gate 7 Turnkey BOM/CPL/Centroids/SHA256/BoxBuild/FW Pin Parity
-  [12] enclosure_watertight   : Gate 5 Trimesh 2-Manifold Watertightness, O-Ring & 0.80mm Window
-  [13] firmware_all_systick   : Gate 6 Host C11 HIL (350) + NVM (1092) + ELF SysTick & Vault
+  [08] kicad-cli sch erc      : Schematic ERC (--severity-all, 0 violations)
+  [09] kicad-cli pcb drc      : PCB DRC (--all-track-errors --schematic-parity, 0 violations)
+  [10] check_dfm              : Gerber, 0.10mm Stencil (B_Paste omitted), DNP=0 & Silkscreen DFM
+  [11] check_bom_cpl          : Turnkey BOM/CPL/Centroids/SHA256/BoxBuild/FW Pin Parity
+  [12] enclosure_watertight   : Trimesh 2-Manifold Watertightness, O-Ring & 0.80mm Window
+  [13] firmware_all_systick   : Host C11 HIL + NVM Tests + Target ELF SysTick & Vault
   [14] test_seeded_defects    : Negative Mutation Suite Asserting 8/8 Seeded Defects Caught
-  [15] check_doc_parity       : Gate 4 & Gate 8 Doc-to-Hardware, BOM & Visual Parity Gate
-  [16] audit_cross_check_e2   : Independent 92-Symbol Sch/PCB/BOM/CPL/Gerber/Drill/FW Cross-Check
+  [15] check_doc_parity       : Doc-to-Hardware, RF/EM JSON, BOM & Visual Sheet Parity
+  [16] verify_design_consist. : 92-Symbol Sch/PCB/BOM/CPL/Gerber/Drill/FW Consistency Check
 """
 
 import hashlib
@@ -200,7 +200,7 @@ def main():
                 lambda: run_cmd_stage([PY, "tools/rules_isac.py", "--verify"], cwd=ROOT),
             ),
             (
-                "08. Gate 1: Schematic ERC (--severity-all --exit-code-violations)",
+                "08. Schematic ERC (--severity-all --exit-code-violations)",
                 lambda: run_cmd_stage(
                     [
                         "kicad-cli", "sch", "erc",
@@ -212,7 +212,7 @@ def main():
                 ),
             ),
             (
-                "09. Gate 2: PCB DRC + All-Track + Parity (--schematic-parity)",
+                "09. PCB DRC + All-Track + Parity (--schematic-parity)",
                 lambda: run_cmd_stage(
                     [
                         "kicad-cli", "pcb", "drc",
@@ -225,19 +225,19 @@ def main():
                 ),
             ),
             (
-                "10. Gate 3: Post-DRC Gerber, Stencil, Mask & Silk Forensics (check_dfm.py)",
+                "10. Post-DRC Gerber, Stencil, Mask & Silk DFM Check (check_dfm.py)",
                 lambda: run_cmd_stage([PY, "tools/check_dfm.py"], cwd=ROOT),
             ),
             (
-                "11. Gate 7: Turnkey BOM / CPL / SHA256 / BoxBuild / FW Parity (check_bom_cpl.py)",
+                "11. Turnkey BOM / CPL / SHA256 / BoxBuild / FW Parity (check_bom_cpl.py)",
                 lambda: run_cmd_stage([PY, "tools/check_bom_cpl.py"], cwd=ROOT),
             ),
             (
-                "12. Gate 5: Watertight 2-Manifold ASA/PETG Enclosure & 0.80 mm Window",
+                "12. Watertight 2-Manifold ASA/PETG Enclosure & 0.80 mm Window",
                 _verify_enclosure_watertight,
             ),
             (
-                "13. Gate 6: Firmware HIL (350) + NVM (1092) + SysTick->CVR Disassembly",
+                "13. Firmware HIL (370) + NVM (1092) + SysTick->CVR Disassembly",
                 _verify_firmware_and_systick,
             ),
             (
@@ -245,12 +245,12 @@ def main():
                 lambda: run_cmd_stage([PY, "tools/test_seeded_defects.py"], cwd=ROOT),
             ),
             (
-                "15. Gate 4 & Gate 8: RF/EM JSON, Doc, BOM & Pilot-Hold Parity (check_doc_parity.py)",
+                "15. RF/EM JSON, Doc, BOM & Bring-Up Parity (check_doc_parity.py)",
                 lambda: run_cmd_stage([PY, "tools/check_doc_parity.py"], cwd=ROOT),
             ),
             (
-                "16. Independent 92-Symbol Multi-Domain Cross-Check (audit_cross_check_e2.py)",
-                lambda: (_purge_pycache(), run_cmd_stage([PY, "tools/audit_cross_check_e2.py"], cwd=ROOT))[1],
+                "16. 92-Symbol Multi-Domain Consistency Check (verify_design_consistency.py)",
+                lambda: (_purge_pycache(), run_cmd_stage([PY, "tools/verify_design_consistency.py"], cwd=ROOT))[1],
             ),
         ]
 

@@ -3,7 +3,7 @@
 Generate the manufacturing-ready 2-layer KiCad 9 PCB layout for the 868 MHz
 ISAC Antenna-Sensor Node (`ISAC_868_KiCad9.kicad_pcb`, Rev E.5).
 
-Engineering highlights (Rev E.5 Tier-1 PCBWay Turnkey Architecture):
+Engineering highlights (Rev E.5 PCBWay Turnkey Hardware):
   * Centered on A4 landscape drawing sheet (`X0 = 103.5 mm, Y0 = 80.0 mm` ->
     exact sheet horizontal center `148.5 mm`, vertical `100.0 mm`, clear of
     title block) with populated title block, auxiliary drill/fab origin, and
@@ -61,7 +61,7 @@ W, H = 90.0, 40.0
 R_CORNER = 2.0
 X0, Y0 = 103.5, 80.0  # Spans (103.5..193.5, 80.0..120.0), center (148.5, 100.0)
 
-# Intentional 2.20 x 2.20 mm F.Cu + B.Cu parasitic cutout beneath /BR_S (BLK-02)
+# Intentional 2.20 x 2.20 mm F.Cu + B.Cu parasitic cutout beneath /BR_S
 BR_S_VOID_BOX = (33.40, 24.18, 35.60, 26.38)
 
 F = pcbnew.F_Cu
@@ -126,8 +126,8 @@ PLACE = {
     "H2":   (86.50, 3.50, 0),
     "H3":   (3.50, 36.50, 0),
     "H4":   (86.50, 36.50, 0),
-    "FID1": (4.50, 8.00, 0),       # Global #1 (>= 4.50 mm center / 3.50 mm mask from West rail, LOW-01)
-    "FID2": (46.50, 4.50, 0),      # Global #2 (>= 4.50 mm center / 3.50 mm mask from North rail, LOW-01)
+    "FID1": (4.50, 8.00, 0),       # Global #1 (>= 4.50 mm center / 3.50 mm mask from West rail)
+    "FID2": (46.50, 4.50, 0),      # Global #2 (>= 4.50 mm center / 3.50 mm mask from North rail)
     "FID3": (30.50, 33.20, 0),     # Global #3 (6.80 mm center / 5.80 mm mask from South rail)
     "FID4": (10.30, 10.90, 0),     # Local #1 (1mm Cu / 2mm Mask) outside U1 top-left LGA-73 courtyard
     "FID5": (23.20, 25.80, 0),     # Local #2 (1mm Cu / 2mm Mask) outside U1 bottom-right LGA-73 courtyard
@@ -187,7 +187,7 @@ PLACE = {
     "J5":      (22.54, 37.00, 90), # UART 1x4 along bottom-left edge (1=VUART_ISO..4=GND)
     "D_3V3":   (33.20, 35.80, 270),# PESD5V0S1BA SOD-323 ESD clamp on 3V3: Pad 1 (3V3) top, Pad 2 (GND) bottom
 
-    # 4. Zero-Stub 50R CPWG VNA Calibration Port & Orthogonal Mux Diverters (BLK-02)
+    # 4. Zero-Stub 50R CPWG VNA Calibration Port & Orthogonal Mux Diverters
     "J1":     (34.50, 4.76, 270),  # Edge-mount SMA protruding off dy = 0 top edge
     "D_RF":   (35.95, 11.50, 0),   # ESD9B5.0ST5G SOD-523 ultra-low-C RF ESD option (DNP, zero-stub tap)
     "R_DIV1": (33.48, 18.88, 0),   # Orthogonal DNP 0R: Pad 1 (BR_P) left, Pad 2 (SMA_C) right
@@ -766,7 +766,7 @@ def route_all(board, fps, n):
         P(fps, "Q3", 1), (15.99, 5.45), P(fps, "D_VBAT", 2)
     ], width=0.35, layer=F, chamfer=0.25)
 
-    # VBAT: Q3.2 (Source) -> R_BG.1 & Q2.4 (left) + C_IN1/2, C_BULK1/2, TP3, U3.1/3 + Q1.1/C_Q1 (BLK-04)
+    # VBAT: Q3.2 (Source) -> R_BG.1 & Q2.4 (left) + C_IN1/2, C_BULK1/2, TP3, U3.1/3 + Q1.1/C_Q1
     p_q3_s = P(fps, "Q3", 2)
     p_rbg1 = P(fps, "R_BG", 1)
     add_track(board, n["VBAT"], p_q3_s, (p_q3_s[0], 6.75), width=0.35, layer=F)
@@ -933,7 +933,7 @@ def route_all(board, fps, n):
     add_track(board, gnd, p_d3v3_2, (p_d3v3_2[0], 37.95), width=0.40, layer=F)
     add_via(board, gnd, p_d3v3_2[0], 37.95)
 
-    # Protected Header Target-Sense & Isolated UART Pins (HIGH-05):
+    # Protected Header Target-Sense & Isolated UART Pins:
     add_track(board, n["VAPP_SENSE"], P(fps, "R_VAPP", 2), P(fps, "J4", 1), width=0.25, layer=F)
     route_45(board, n["VAPP_SENSE"], [
         P(fps, "J4", 1), (8.50, 38.25), (19.95, 38.25), (19.95, 34.45), P(fps, "R_VUART", 1)
@@ -1155,7 +1155,7 @@ def add_zones_and_stitching(board, gnd):
         kpoly.Append(G(dx, dy))
     board.Add(kz)
 
-    # 1b. 2.20 x 2.20 mm Parasitic Cutout Void on BOTH F.Cu and B.Cu Directly Beneath /BR_S (BLK-02)
+    # 1b. 2.20 x 2.20 mm Parasitic Cutout Void on BOTH F.Cu and B.Cu Directly Beneath /BR_S
     #     Reduces /BR_S ground-coupled pad/trace capacitance from 1.54 pF to 0.1305 pF (< 0.15 pF)!
     vx0, vy0, vx1, vy1 = BR_S_VOID_BOX
     bv = pcbnew.ZONE(board)
@@ -1566,7 +1566,7 @@ def _rounded_board_poly(inset_mm=0.0):
 
 def place_clean_references(board, max_crtyd_dist_mm=1.95):
     """Deterministically place visible F.SilkS reference designators within <= 1.80 mm
-    (<= 2.0 mm IPC-2221B / HIGH-02 limit) of each component's courtyard in X_gbr < 50.0 mm
+    (<= 2.0 mm IPC-2221B / limit) of each component's courtyard in X_gbr < 50.0 mm
     with ZERO pad, F.Mask, drill, via, footprint silk, or legend collisions.
     Ultra-dense 0402 passives that have no collision-free 0.80 mm silkscreen slot within
     1.80 mm hide F.SilkS and rely on crisp centered 0.50 mm F.Fab assembly references."""
@@ -1781,7 +1781,7 @@ def verify_layout_geometry(board):
                 f"Via at ({vx:.2f}, {vy:.2f}) too close/overlapping pad {ref}.{pnum} (gap={gap:.3f} mm < 0.14 mm)!"
             )
 
-    # 2. Verify /BR_S <= 1.50 mm, /BR_O <= 2.10 mm & /DET_IN <= 1.40 mm trace lengths (BLK-01/BLK-02)
+    # 2. Verify /BR_S <= 1.50 mm, /BR_O <= 2.10 mm & /DET_IN <= 1.40 mm trace lengths
     br_s_len_mm = sum(
         pcbnew.ToMM(t.GetLength())
         for t in board.GetTracks()
@@ -1857,7 +1857,7 @@ def verify_layout_geometry(board):
     ]
     for fx, fy in g_pts:
         assert 4.4 <= fx < 49.0 and 4.4 <= fy <= H - 4.4, (
-            f"Global fiducial out of 0..49mm / 4.4mm rail-clearance margin (LOW-01): {(fx, fy)}"
+            f"Global fiducial out of 0..49mm / 4.4mm rail-clearance margin: {(fx, fy)}"
         )
     tri_area = 0.5 * abs(
         (g_pts[1][0] - g_pts[0][0]) * (g_pts[2][1] - g_pts[0][1])

@@ -12,7 +12,7 @@ with exact root-cause diagnostic match)** without touching workspace files:
   2. Untented via on `F.Mask` + `0.05 mm` solder-mask dam sliver (`< 0.10 mm`)
   3. `.gbrjob` `"Finish": "None"` (missing mandatory ENIG specification)
   4. `0.15 mm` narrow `F_Paste.gtp` stencil aperture (`AR = 0.531 < 0.66`)
-  5. `B.Cu` clearance slot carved directly beneath `/DET_IN` (`AUD20-01` regression)
+  5. `B.Cu` clearance slot carved directly beneath `/DET_IN`
   6. `DNP` calibration diverter `R_DIV1` leaked into Turnkey `CPL` CSV
   7. `CPL` `PosY` shifted by `+80.0 mm` sheet offset (Gerber-vs-CPL origin mismatch)
   8. Firmware `isac_board_pins.h` `DET_ADC` pin mutated from `PA15` to `PA10`
@@ -213,7 +213,7 @@ def defect_5_bcu_slot_under_det_in(tmpdir):
     board = pcbnew.LoadBoard(pcb_dst)
 
     # Locate midpoint of an F.Cu /DET_IN track and carve a perpendicular B.Cu signal trace
-    # across it, then refill zones so B.Cu GND plane splits right beneath /DET_IN (AUD20-01!).
+    # across it, then refill zones so B.Cu GND plane splits right beneath /DET_IN.
     det_tracks = [
         t for t in board.GetTracks()
         if not isinstance(t, pcbnew.PCB_VIA)
@@ -308,7 +308,7 @@ def main():
         ("2. Untented Via + 0.05 mm Solder-Mask Dam Sliver", defect_2_untented_via_and_0p05mm_mask_sliver),
         ("3. .gbrjob Surface Finish Mutated to 'None'", defect_3_gbrjob_finish_none),
         ("4. 0.15 mm Narrow F_Paste.gtp Aperture (AR < 0.66)", defect_4_narrow_0p15mm_paste_aperture),
-        ("5. B.Cu Clearance Slot Under /DET_IN (AUD20-01)", defect_5_bcu_slot_under_det_in),
+        ("5. B.Cu Clearance Slot Under /DET_IN", defect_5_bcu_slot_under_det_in),
         ("6. DNP Part R_DIV1 Leaked into Turnkey CPL CSV", defect_6_dnp_r_div1_leaked_into_cpl),
         ("7. CPL PosY Shifted by +80.0 mm Sheet Offset", defect_7_cpl_posy_shifted_plus_80mm),
         ("8. Firmware isac_board_pins.h DET_ADC PA15 -> PA10", defect_8_fw_det_adc_changed_pa15_to_pa10),

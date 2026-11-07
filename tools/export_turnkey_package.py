@@ -117,7 +117,7 @@ def compute_fcu_pad_centroids_aux(pcb_path):
     """
     Compute exact F.Cu copper pad-array bounding-box centroids in AuxOrigin (Gerber/Drill)
     coordinates `(X_gbr, Y_gbr)` [mm] for populated SMD components (`smd_centroids`) and
-    populated THT components (`tht_info`, `HIGH-01` split).
+    populated THT components (`tht_info`).
     """
     board = pcbnew.LoadBoard(pcb_path)
     aux = board.GetDesignSettings().GetAuxOrigin()
@@ -498,7 +498,7 @@ def build_turnkey_package(skip_regen=False):
         ],
         desc="Exporting PCB Top Sheet PDF",
     )
-    top_pdf_txt = run_cmd(["pdftotext", top_pdf, "-"], desc="Auditing PCB Top Sheet PDF text hygiene (LOW-02)")
+    top_pdf_txt = run_cmd(["pdftotext", top_pdf, "-"], desc="Auditing PCB Top Sheet PDF text hygiene")
     if "\u00fe\u00ff" in top_pdf_txt or "51.1R" in top_pdf_txt:
         raise RuntimeError("ISAC_868_PCB_Top_Sheet.pdf contains UTF-16 mojibake ('þÿ') or stale '51.1R' text!")
     run_cmd(

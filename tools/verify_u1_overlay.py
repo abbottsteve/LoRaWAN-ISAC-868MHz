@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-tools/verify_u1_overlay.py — Independent Vendor-Datasheet Overlay & Pin-Table Verifier for U1 (Audit B1)
+tools/verify_u1_overlay.py — Vendor-Datasheet Land-Pattern & Pin-Table Verifier for U1
 
 Verifies `ISAC.pretty/RAK3172LP-SiP_LGA-73_12x12mm_P0.6mm.kicad_mod` and `ISAC.kicad_sym` (`RAK3172LP-SiP`)
 against the official vendor documents archived in `docs/datasheet/`:
@@ -14,9 +14,9 @@ against the official vendor documents archived in `docs/datasheet/`:
        (`PB3=ADC_IN2`, `PB4=ADC_IN3`, `PB2=ADC_IN4`, `PA10=ADC_IN6`, `PA15=ADC_IN11`).
 
 Outputs:
-  - `docs/reports/B1_u1_pad_verification.csv`
-  - `docs/reports/B1_u1_footprint_overlay.png`
-  - `docs/reports/B1_u1_overlay.md`
+  - `docs/reports/u1_pad_verification.csv`
+  - `docs/reports/u1_footprint_overlay.png`
+  - `docs/reports/u1_footprint_verification.md`
 """
 from __future__ import annotations
 
@@ -181,7 +181,7 @@ def verify_and_generate() -> None:
 
     assert set(k_pads.keys()) == set(range(1, 74)), f"Missing/extra pads: {set(k_pads) ^ set(range(1, 74))}"
 
-    csv_path = os.path.join(REPORT_DIR, "B1_u1_pad_verification.csv")
+    csv_path = os.path.join(REPORT_DIR, "u1_pad_verification.csv")
     max_err_mm = 0.0
     rows = []
     for pnum in range(1, 74):
@@ -272,16 +272,16 @@ def verify_and_generate() -> None:
         axes[1].set_title("Official Vendor Reference: `RAK3172LP-SiP_Datasheet.pdf`\nPage 10, Figure 4 — Recommended Footprint",
                           fontsize=10.5, fontweight="bold")
 
-    fig.suptitle(f"Audit B1 & BLK-07 Closure — RAK3172LP-SiP (LGA-73) Footprint & Paste Verification (Max Error = {max_err_mm:.4f} mm)",
+    fig.suptitle(f"U1 (RAK3172LP-SiP, LGA-73) Land-Pattern & Stencil Paste Verification — Max Error: {max_err_mm:.4f} mm",
                  fontsize=11.5, fontweight="bold", y=0.985)
     fig.tight_layout(rect=[0.0, 0.0, 1.0, 0.94])
-    overlay_png = os.path.join(REPORT_DIR, "B1_u1_footprint_overlay.png")
+    overlay_png = os.path.join(REPORT_DIR, "u1_footprint_overlay.png")
     fig.savefig(overlay_png, dpi=180, bbox_inches="tight", pad_inches=0.12)
     plt.close(fig)
 
     # Write Markdown report
     md_lines = [
-        "# Audit B1 Closure Report — `U1` (`RAK3172LP-SiP`) Footprint, Symbol & Pinout Verification",
+        "# `U1` (`RAK3172LP-SiP`) Footprint, Symbol & Pinout Verification",
         "",
         "## 1. Primary Vendor Sources",
         f"- **SiP Datasheet:** `docs/datasheet/RAK3172LP-SiP_Datasheet.pdf` (`SHA-256: {rak_sha}`)",
@@ -301,15 +301,15 @@ def verify_and_generate() -> None:
         f"| Maximum Coordinate / Size Error | — | — | **`{max_err_mm:.4f} mm`** | `0.050 mm` | **PASS** |",
         "| Pin-1 Corner & Numbering | Top-left (`-5.65, -4.50`), CCW `1..64` | Top-left (`-5.65, -4.50`), oval Pad 1, CCW | Exact match | Exact | **PASS** |",
         "| Solder-Mask Expansion & Dam | `0.000–0.035 mm` NSMD (`>=0.100 mm` Green LPI dam) | `+0.025 mm` local NSMD (`0.180 mm >= 0.100 mm`) | Exact | `>= 0.100 mm` | **PASS** |",
-        "| Stencil Paste Apertures (`HIGH-07`) | Windowed (`50–65%` EP + `AR>=3.0` perim) | `-0.035 mm` perim (`0.30×1.10 mm`, `AR=3.00`, `25%` rad) & `-0.200 mm` EP (`1.20×1.20 mm` = `56.3%`) | Optimal | `50–65%` | **PASS** |",
+        "| Stencil Paste Apertures | Windowed (`50–65%` EP + `AR>=3.0` perim) | `-0.035 mm` perim (`0.30×1.10 mm`, `AR=3.00`, `25%` rad) & `-0.200 mm` EP (`1.20×1.20 mm` = `56.3%`) | Within window | `50–65%` | **PASS** |",
         "| Courtyard Envelope | Clears `12.47 mm` copper + placement margin | `13.00 × 13.00 mm` (`±6.50 mm`) | `+0.265 mm/side` | `>= 0.25 mm` | **PASS** |",
         "",
-        "![U1 Footprint Overlay](B1_u1_footprint_overlay.png)",
+        "![U1 Footprint Overlay](u1_footprint_overlay.png)",
         "",
-        "## 3. Resolution of Symbol vs. Firmware ADC Channel Naming (`B1` / `M4`)",
+        "## 3. Symbol vs. Firmware ADC Channel Mapping",
         "The RAKwireless datasheet (pp. 4–7) labels analog-capable pins using RUI3 software aliases (`PIN_A0`..`PIN_A4`), whereas bare-metal STM32WLE5JC firmware programs the hardware `ADC_CHSELR` bitmask (`DS13105 Rev 12` Table 20):",
         "",
-        "| SiP Pin | GPIO | RAK RUI3 Alias | STM32WL Hardware ADC (`DS13105 Table 20`) | Board Net | Rev E.2 Symbol Pin Name |",
+        "| SiP Pin | GPIO | RAK RUI3 Alias | STM32WL Hardware ADC (`DS13105 Table 20`) | Board Net | KiCad Symbol Pin Name |",
         "| :---: | :---: | :--- | :--- | :--- | :--- |",
         "| `8` | `PA15` | `PIN_A4` | **`ADC_IN11`** | `DET_ADC` | `PA15/ADC_IN11` |",
         "| `14` | `PB3` | `PIN_A0` | **`ADC_IN2`** | `NC` | `PB3/ADC_IN2` |",
@@ -317,15 +317,15 @@ def verify_and_generate() -> None:
         "| `58` | `PB2` | `PIN_A2` | **`ADC_IN4`** | `NC` | `PB2/ADC_IN4` |",
         "| `62` | `PA10` | `PIN_A3` | **`ADC_IN6`** | `NC` | `PA10/I2C_SDA/ADC_IN6` |",
         "",
-        "Both hardware routing (`Pin 8 = DET_ADC`, `Pin 15 = BAT_SENSE`) and firmware (`ISAC_ADC_CH_DET_ADC = 11U`, `ISAC_ADC_CH_BAT_SENSE = 3U`) were already wired to the exact hardware channels; `ISAC.kicad_sym` pin labels are updated in Rev E.2 so schematic, symbol, and firmware use identical ST hardware names.",
+        "Both PCB routing (`Pin 8 = DET_ADC`, `Pin 15 = BAT_SENSE`) and firmware (`ISAC_ADC_CH_DET_ADC = 11U`, `ISAC_ADC_CH_BAT_SENSE = 3U`) use the hardware ST channel indices, and `ISAC.kicad_sym` uses matching ST pin labels.",
         "",
         "## 4. 3D STEP Model Provenance",
-        "RAKwireless publishes 2D mechanical drawings (`Fig. 2` p. 3 & `Fig. 3` p. 9: `12.00 × 12.00 × 1.22 mm`) rather than an official `.step` CAD solid for SKU `305049`. `3dmodels/RAK3172LP-SiP.step` is an envelope-verified parametric model (`12.00 × 12.00 × 1.22 mm`) marked explicitly in `ISAC.pretty/RAK3172LP-SiP_LGA-73_12x12mm_P0.6mm.kicad_mod` and `docs/SOURCES.md` as an envelope-accurate CAD representation.",
+        "RAKwireless publishes 2D mechanical drawings (`Fig. 2` p. 3 & `Fig. 3` p. 9: `12.00 × 12.00 × 1.22 mm`) rather than an official `.step` CAD solid for SKU `305049`. `3dmodels/RAK3172LP-SiP.step` is an envelope-verified parametric model (`12.00 × 12.00 × 1.22 mm`) referenced in `ISAC.pretty/RAK3172LP-SiP_LGA-73_12x12mm_P0.6mm.kicad_mod` and `docs/SOURCES.md`.",
         "",
-        "## 5. Complete 73-Pin Verification Table",
-        "Full machine-readable coordinate comparison is archived in `docs/reports/B1_u1_pad_verification.csv` (`0.0000 mm` max error across all 73 pads).",
+        "## 5. Complete 73-Pin Coordinate Comparison",
+        "Machine-readable pad coordinate verification is saved in `docs/reports/u1_pad_verification.csv` (`0.0000 mm` max error across all 73 pads).",
     ]
-    md_path = os.path.join(REPORT_DIR, "B1_u1_overlay.md")
+    md_path = os.path.join(REPORT_DIR, "u1_footprint_verification.md")
     with open(md_path, "w", encoding="utf-8") as fh:
         fh.write("\n".join(md_lines) + "\n")
 
