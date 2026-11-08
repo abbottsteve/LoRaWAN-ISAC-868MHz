@@ -1,14 +1,18 @@
 #!/usr/bin/env python3
 """
-Documentation-to-Hardware & RF/EM Solver Parity Verifier (`Rev E.5`)
+Documentation-to-Hardware, Link & MathML Parity Verifier (`Rev E.5`)
 ====================================================================
-Prevents silent documentation or simulation drift by cross-checking:
-  - `docs/ISAC_868MHz_System_Design_and_Operation_Summary.md`
-  - `docs/ISAC_868MHz_System_Design_and_Operation_Summary.pdf`
-  - `README.md`
-  - `fab/documentation/PCBWAY_TURNKEY_FABRICATION_SPECIFICATION.md`
-  - `fab/cpl/CPL_README.md`
+Prevents silent documentation, link, MathML, or simulation drift across the
+two-tier open-hardware documentation graph by cross-checking:
+  - `README.md` (executive scientific landing page, <= 280 lines)
+  - `docs/ISAC_868MHz_System_Design_and_Operation_Summary.md` & `.pdf`
+  - `docs/rf_design_and_simulation.md`
+  - `docs/firmware_and_pinmap.md` (`U1` LGA-73 pinout & `FPort = 10` payload)
+  - `docs/bom_and_enclosure.md` (46-line Turnkey BOM & `TP1..TP5`)
+  - `docs/power_budget.md` & `docs/rf_link_budget.md`
   - `docs/bringup_report.md` (`5–10` board pilot bring-up & sign-off checklist)
+  - `cst_studio/README.md` & `CITATION.cff`
+  - `fab/documentation/PCBWAY_TURNKEY_FABRICATION_SPECIFICATION.md` & `fab/cpl/CPL_README.md`
   - `docs/*` visual inspection PDFs/PNGs
 against live ground truth extracted from:
   - `rf/results/ifa_fullwave_3d.json` & `rf/results/bridge_3tone_curves.json` (<= 0.01 dB / 0.00 MHz)
@@ -35,10 +39,17 @@ DOCS_DIR = os.path.join(ROOT, "docs")
 SUMMARY_MD = os.path.join(DOCS_DIR, "ISAC_868MHz_System_Design_and_Operation_Summary.md")
 SUMMARY_PDF = os.path.join(DOCS_DIR, "ISAC_868MHz_System_Design_and_Operation_Summary.pdf")
 README_MD = os.path.join(ROOT, "README.md")
+RF_SIM_MD = os.path.join(DOCS_DIR, "rf_design_and_simulation.md")
+FW_PIN_MD = os.path.join(DOCS_DIR, "firmware_and_pinmap.md")
+BOM_ENC_MD = os.path.join(DOCS_DIR, "bom_and_enclosure.md")
+POWER_MD = os.path.join(DOCS_DIR, "power_budget.md")
+LINK_BUDGET_MD = os.path.join(DOCS_DIR, "rf_link_budget.md")
+BRINGUP_MD = os.path.join(DOCS_DIR, "bringup_report.md")
+OPEN_ITEMS_MD = os.path.join(DOCS_DIR, "OPEN_ITEMS.md")
+CST_MD = os.path.join(ROOT, "cst_studio", "README.md")
+CITATION_CFF = os.path.join(ROOT, "CITATION.cff")
 TURNKEY_SPEC_MD = os.path.join(ROOT, "fab", "documentation", "PCBWAY_TURNKEY_FABRICATION_SPECIFICATION.md")
 CPL_README_MD = os.path.join(ROOT, "fab", "cpl", "CPL_README.md")
-BRINGUP_MD = os.path.join(DOCS_DIR, "bringup_report.md")
-LINK_BUDGET_MD = os.path.join(DOCS_DIR, "rf_link_budget.md")
 
 DESIGN_JSON = os.path.join(ROOT, "firmware", "test", "data", "design_values.json")
 IFA_JSON = os.path.join(ROOT, "rf", "results", "ifa_fullwave_3d.json")
@@ -108,9 +119,9 @@ def _split_refs(s):
     return sorted(tok.strip(" `*") for tok in re.split(r"[,;\s]+", s.strip(" `*")) if tok.strip(" `*"))
 
 
-def _parse_readme_bom_rows(readme_text):
+def _parse_markdown_bom_rows(md_text):
     rows = []
-    for line in readme_text.splitlines():
+    for line in md_text.splitlines():
         s = line.strip()
         if not s.startswith("|"):
             continue
@@ -130,12 +141,65 @@ def _parse_readme_bom_rows(readme_text):
     return rows
 
 
+def _audit_markdown_links_and_math(md_path, md_text, errors):
+    rel_label = os.path.relpath(md_path, ROOT)
+    base_dir = os.path.dirname(md_path)
+    in_code = False
+    in_math_block = False
+
+    for idx, line in enumerate(md_text.splitlines(), 1):
+        if line.strip().startswith("```"):
+            in_code = not in_code
+            continue
+        if in_code:
+            continue
+        if line.strip() == "$$":
+            in_math_block = not in_math_block
+            continue
+
+        if in_math_block:
+            for bad in (r"\!", r"\,", r"\%", r"\_", r"\|"):
+                if bad in line:
+                    errors.append(f"[MATHML ESCAPE] {rel_label}:{idx} contains CommonMark-stripped '{bad}'")
+            if re.search(r"[^A-Za-z0-9\\]_", line):
+                errors.append(f"[MATHML SUBSCRIPT] {rel_label}:{idx} has non-alnum before '_' inside display math")
+            continue
+
+        line_nocode = re.sub(r"`[^`]*`", "CODE", line)
+
+        # Check relative file/directory links [text](target)
+        for m_lnk in re.finditer(r"!?\[[^\]]*\]\(([^)]+)\)", line_nocode):
+            target = m_lnk.group(1).strip().split()[0]
+            if target.startswith(("http://", "https://", "mailto:", "#")):
+                continue
+            file_part = target.split("#", 1)[0]
+            if not file_part:
+                continue
+            resolved = os.path.normpath(os.path.join(base_dir, file_part))
+            if not os.path.exists(resolved):
+                errors.append(f"[BROKEN LINK] {rel_label}:{idx} -> {target!r} (missing {resolved})")
+
+        # Check inline math CommonMark hazards
+        for m_math in re.finditer(r"\$\$?([^$]+)\$\$?", line_nocode):
+            expr = m_math.group(1)
+            for bad in (r"\!", r"\,", r"\%", r"\_", r"\|"):
+                if bad in expr:
+                    errors.append(f"[MATHML ESCAPE] {rel_label}:{idx} contains CommonMark-stripped '{bad}'")
+            if re.search(r"[^A-Za-z0-9\\]_", expr):
+                errors.append(f"[MATHML SUBSCRIPT] {rel_label}:{idx} has non-alnum before '_' in {m_math.group(0)!r}")
+
+        if re.search(r"\)\$\)", line_nocode):
+            errors.append(f"[MATHML DELIM] {rel_label}:{idx} contains ')$)' delimiter hazard")
+
+
 def run_doc_parity_audit():
     errors = []
 
     req_files = (
-        SUMMARY_MD, SUMMARY_PDF, README_MD, TURNKEY_SPEC_MD, CPL_README_MD,
-        BRINGUP_MD, LINK_BUDGET_MD, DESIGN_JSON, IFA_JSON, BR_JSON, PCB_PATH, ZIP_PATH, FW_PINS_H, FW_SENSING_H,
+        SUMMARY_MD, SUMMARY_PDF, README_MD, RF_SIM_MD, FW_PIN_MD, BOM_ENC_MD,
+        POWER_MD, LINK_BUDGET_MD, BRINGUP_MD, OPEN_ITEMS_MD, CST_MD, CITATION_CFF,
+        TURNKEY_SPEC_MD, CPL_README_MD, DESIGN_JSON, IFA_JSON, BR_JSON,
+        PCB_PATH, ZIP_PATH, FW_PINS_H, FW_SENSING_H,
     )
     for req_path in req_files:
         if not os.path.isfile(req_path):
@@ -147,14 +211,32 @@ def run_doc_parity_audit():
 
     sum_md = open(SUMMARY_MD, "r", encoding="utf-8").read()
     readme_md = open(README_MD, "r", encoding="utf-8").read()
+    rf_sim_md = open(RF_SIM_MD, "r", encoding="utf-8").read()
+    fw_pin_md = open(FW_PIN_MD, "r", encoding="utf-8").read()
+    bom_enc_md = open(BOM_ENC_MD, "r", encoding="utf-8").read()
+    power_md = open(POWER_MD, "r", encoding="utf-8").read()
+    link_md = open(LINK_BUDGET_MD, "r", encoding="utf-8").read()
+    bringup_md = open(BRINGUP_MD, "r", encoding="utf-8").read()
+    open_items_md = open(OPEN_ITEMS_MD, "r", encoding="utf-8").read()
+    cst_md = open(CST_MD, "r", encoding="utf-8").read()
+    citation_cff = open(CITATION_CFF, "r", encoding="utf-8").read()
     spec_md = open(TURNKEY_SPEC_MD, "r", encoding="utf-8").read()
     cpl_md = open(CPL_README_MD, "r", encoding="utf-8").read()
-    bringup_md = open(BRINGUP_MD, "r", encoding="utf-8").read()
-    link_md = open(LINK_BUDGET_MD, "r", encoding="utf-8").read()
+
     dv = json.load(open(DESIGN_JSON, "r", encoding="utf-8"))
     ifa_j = json.load(open(IFA_JSON, "r", encoding="utf-8"))
     br_j = json.load(open(BR_JSON, "r", encoding="utf-8"))
     fw_pins = open(FW_PINS_H, "r", encoding="utf-8").read()
+
+    # Executive README conciseness check (open-hardware layered pattern: <= 280 lines)
+    readme_lines = len(readme_md.splitlines())
+    if readme_lines > 280 or readme_lines < 160:
+        errors.append(f"[README LENGTH] Expected concise 160..280-line executive README.md, found {readme_lines} lines!")
+
+    # CITATION.cff metadata check
+    for cff_tok in ("cff-version: 1.2.0", "Boachie", "Stephen K.", "Apache-2.0", "E.5"):
+        if cff_tok not in citation_cff:
+            errors.append(f"[CITATION.CFF] Missing expected metadata token {cff_tok!r}!")
 
     # Gate 4 RF & EM Single-Source-of-Truth Verification (0.00 MHz / <= 0.01 dB)
     if br_j["c_par_brs_pf"] >= 0.15 or abs(dv["C_PAR_BRS_PF"] - br_j["c_par_brs_pf"]) > 1e-4:
@@ -204,19 +286,41 @@ def run_doc_parity_audit():
         if "\u00fe\u00ff" in tp_proc.stdout or "51.1R" in tp_proc.stdout:
             errors.append("[PDF HYGIENE] ISAC_868_PCB_Top_Sheet.pdf contains UTF-16 mojibake or stale 51.1R text!")
 
-    # Zero banned stale legacy tokens across all primary docs
+    # Zero banned stale legacy tokens across all primary & modular docs
     for doc_label, content in (
+        ("README.md", readme_md),
         ("docs/ISAC_868MHz_System_Design_and_Operation_Summary.md", sum_md),
         ("docs/ISAC_868MHz_System_Design_and_Operation_Summary.pdf", sum_pdf_txt),
-        ("README.md", readme_md),
+        ("docs/rf_design_and_simulation.md", rf_sim_md),
+        ("docs/firmware_and_pinmap.md", fw_pin_md),
+        ("docs/bom_and_enclosure.md", bom_enc_md),
+        ("docs/power_budget.md", power_md),
+        ("docs/rf_link_budget.md", link_md),
+        ("docs/bringup_report.md", bringup_md),
+        ("docs/OPEN_ITEMS.md", open_items_md),
+        ("cst_studio/README.md", cst_md),
+        ("CITATION.cff", citation_cff),
         ("PCBWAY_TURNKEY_FABRICATION_SPECIFICATION.md", spec_md),
         ("CPL_README.md", cpl_md),
-        ("docs/bringup_report.md", bringup_md),
-        ("docs/rf_link_budget.md", link_md),
     ):
         for bad in BANNED_LEGACY_TOKENS:
             if bad in content:
                 errors.append(f"[LEGACY DRIFT] Stale token {bad!r} present in {doc_label}!")
+
+    # Link & GitHub MathML hygiene audit across active Markdown files
+    for md_path, md_txt in (
+        (README_MD, readme_md),
+        (SUMMARY_MD, sum_md),
+        (RF_SIM_MD, rf_sim_md),
+        (FW_PIN_MD, fw_pin_md),
+        (BOM_ENC_MD, bom_enc_md),
+        (POWER_MD, power_md),
+        (LINK_BUDGET_MD, link_md),
+        (BRINGUP_MD, bringup_md),
+        (OPEN_ITEMS_MD, open_items_md),
+        (CST_MD, cst_md),
+    ):
+        _audit_markdown_links_and_math(md_path, md_txt, errors)
 
     # Pilot bring-up checklist verification in bringup_report.md
     for pilot_tok in ("5–10", "Pilot", "B-07", "B-06", "B-04", "TP1", "TP2", "TP3", "TP4", "TP5"):
@@ -247,65 +351,68 @@ def run_doc_parity_audit():
             f"found SMD={len(cpl_rows)}!"
         )
 
-    mandatory_readme_tokens = [
+    # 1. Executive tokens required in BOTH README.md and Summary MD
+    exec_tokens = [
         f"Rev {dv['revision']}",
         gbrjob["GeneralSpecs"]["Finish"],
         "RAK3172LP-SIP-8-SM-NI",
         "RT0402BRD078R2L",
         "LT5538IDD#TRPBF",
-        "LQH2MCN150K02L",
-        "TPS7A0233DBVR",
-        "TPS22919DCKR",
-        "NX3008CBKS,115",
         "AO3401A",
-        "GJM1555C1H3R6WB01D",
-        "LQW15AN8N2G00D",
-        "GJM1555C1HR50WB01D",
-        "GJM1555C1H4R3WB01D",
         "ASA/PETG",
         "467MP",
-        f"`{n_footprints}`",
-        f"`{n_pop_parts}`",
-        f"`{n_dnp_parts}`",
-        f"`{n_board_only}`",
-        f"`{n_vias}`",
         f"{dv['air_to_ice_sensitivity_MHz_per_RIU']:.2f} MHz/RIU",
         f"{dv['mc_air_to_ice_contrast_p01_dB']:.2f} dB",
-        "state_flags",
-        "tilt_db_x100",
-        "level_dbm_x100",
-        "eps_est_x100",
-        "vbat_mv",
-        "notch_db_x10",
     ]
     for row_m in dv["table"]:
-        mandatory_readme_tokens.extend([
+        exec_tokens.extend([
             f"{row_m['f_res_MHz']:.1f}",
             f"{row_m['tilt_dB']:+.2f}",
             f"{row_m['level_dBm']:.2f}",
         ])
-
-    for tok in mandatory_readme_tokens:
+    for tok in exec_tokens:
         if tok not in readme_md:
-            errors.append(f"[PARITY MISMATCH] Token {tok!r} missing from README.md!")
-        if tok.startswith("`") or tok in ("state_flags", "tilt_db_x100", "level_dbm_x100", "eps_est_x100", "vbat_mv", "notch_db_x10"):
-            continue
+            errors.append(f"[README PARITY] Token {tok!r} missing from README.md!")
         if tok not in sum_md:
-            errors.append(f"[PARITY MISMATCH] Token {tok!r} missing from Summary MD!")
+            errors.append(f"[SUMMARY PARITY] Token {tok!r} missing from Summary MD!")
 
-    # Verify firmware pin-number parity inside README.md
+    for count_tok in (f"`{n_footprints}`", f"`{n_pop_parts}`", f"`{n_dnp_parts}`", f"`{n_board_only}`", f"`{n_vias}`"):
+        if count_tok not in readme_md:
+            errors.append(f"[README COUNT] Footprint/via token {count_tok!r} missing from README.md!")
+
+    # 2. Subsystem component MPNs verified in Summary MD and modular docs/bom_and_enclosure.md
+    for mpn_tok in (
+        "LQH2MCN150K02L",
+        "TPS7A0233DBVR",
+        "TPS22919DCKR",
+        "NX3008CBKS,115",
+        "GJM1555C1H3R6WB01D",
+        "LQW15AN8N2G00D",
+        "GJM1555C1HR50WB01D",
+        "GJM1555C1H4R3WB01D",
+    ):
+        if mpn_tok not in sum_md:
+            errors.append(f"[SUMMARY MPN] Token {mpn_tok!r} missing from Summary MD!")
+        if mpn_tok not in bom_enc_md:
+            errors.append(f"[BOM DOC MPN] Token {mpn_tok!r} missing from docs/bom_and_enclosure.md!")
+
+    # 3. FPort = 10 wire contract & U1 pin-number parity inside docs/firmware_and_pinmap.md
+    for fport_tok in ("state_flags", "tilt_db_x100", "level_dbm_x100", "eps_est_x100", "vbat_mv", "notch_db_x10"):
+        if fport_tok not in fw_pin_md:
+            errors.append(f"[FW DOC PAYLOAD] Field {fport_tok!r} missing from docs/firmware_and_pinmap.md!")
+
     for m_pin in re.finditer(r"^\s*#define\s+ISAC_SIP_PIN_([A-Z0-9_]+)\s+(\d+)U?\b", fw_pins, re.M):
         sig, pnum = m_pin.group(1), m_pin.group(2)
         if sig in ("SWDIO", "SWCLK", "DET_ADC", "BAT_SENSE", "RF_OUT", "BOOT0", "NRST", "DET_EN", "BAT_MON_EN"):
-            if f"**`{pnum}`**" not in readme_md:
-                errors.append(f"[README PIN PARITY] U1 Pin {pnum} ({sig}) missing from README.md pin table!")
+            if f"**`{pnum}`**" not in fw_pin_md:
+                errors.append(f"[FW PIN PARITY] U1 Pin {pnum} ({sig}) missing from docs/firmware_and_pinmap.md!")
 
-    # Verify 1:1 43-row BOM table parity between README.md and Turnkey BOM CSV
-    readme_bom = _parse_readme_bom_rows(readme_md)
-    if len(readme_bom) != len(bom_rows):
-        errors.append(f"[README BOM] Expected {len(bom_rows)} BOM rows in README.md, found {len(readme_bom)}")
+    # 4. 1:1 46-row BOM table parity between docs/bom_and_enclosure.md and Turnkey BOM CSV
+    md_bom = _parse_markdown_bom_rows(bom_enc_md)
+    if len(md_bom) != len(bom_rows):
+        errors.append(f"[BOM DOC] Expected {len(bom_rows)} BOM rows in docs/bom_and_enclosure.md, found {len(md_bom)}")
     else:
-        for csv_r, md_r in zip(bom_rows, readme_bom):
+        for csv_r, md_r in zip(bom_rows, md_bom):
             item_no = int(csv_r["Item"])
             csv_refs = _split_refs(csv_r["Designators"])
             if (
@@ -316,9 +423,9 @@ def run_doc_parity_audit():
                 or md_r["LCSC"] != csv_r["LCSC"].strip()
                 or md_r["DNP"] != csv_r["DNP"].strip()
             ):
-                errors.append(f"[README BOM] Item {item_no} mismatch: README={md_r} vs CSV={csv_r}")
+                errors.append(f"[BOM DOC] Item {item_no} mismatch: MD={md_r} vs CSV={csv_r}")
 
-    # Verify all 7 visual inspection sheets in docs/ exist, are non-empty, and up-to-date
+    # 5. Verify all 11 visual inspection sheets in docs/ exist, are non-empty, and up-to-date
     pcb_mtime = os.path.getmtime(PCB_PATH)
     for vname in REQUIRED_DOCS_VISUALS:
         vpath = os.path.join(DOCS_DIR, vname)
@@ -332,9 +439,10 @@ def run_doc_parity_audit():
             errors.append(f"[DOCS STALE] {vname} is stale relative to .kicad_pcb!")
 
     print(
-        f"[DOC PARITY] Verified Rev E.5 Summary MD+PDF, README.md ({len(readme_bom)}/{len(bom_rows)} BOM rows), "
-        f"RF/EM JSONs (0.00 MHz / <=0.01 dB), pilot bring-up checklist, 0 legacy tokens, "
-        f"{len(REQUIRED_DOCS_VISUALS)}/11 fresh visual sheets, CPL={len(cpl_rows)} pure-SMD parts (0 THT)."
+        f"[DOC PARITY] Verified Rev E.5 Summary MD+PDF, executive README.md ({readme_lines} lines), "
+        f"3 modular docs/ manuals ({len(md_bom)}/{len(bom_rows)} BOM rows), CITATION.cff, "
+        f"RF/EM JSONs (0.00 MHz / <=0.01 dB), links/MathML, 0 legacy tokens, "
+        f"{len(REQUIRED_DOCS_VISUALS)}/11 visual sheets, CPL={len(cpl_rows)} pure-SMD parts."
     )
 
     if errors:
@@ -343,7 +451,7 @@ def run_doc_parity_audit():
             sys.stderr.write(f"  - {err}\n")
         return 1
 
-    print("[DOC PARITY PASS] 100% Rev E.5 documentation-to-hardware & RF/EM parity confirmed.")
+    print("[DOC PARITY PASS] 100% Rev E.5 layered documentation, link, MathML & hardware parity confirmed.")
     return 0
 
 
