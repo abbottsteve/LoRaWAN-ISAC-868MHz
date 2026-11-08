@@ -187,6 +187,10 @@ def _audit_markdown_links_and_math(md_path, md_text, errors):
                     errors.append(f"[MATHML ESCAPE] {rel_label}:{idx} contains CommonMark-stripped '{bad}'")
             if re.search(r"[^A-Za-z0-9\\]_", expr):
                 errors.append(f"[MATHML SUBSCRIPT] {rel_label}:{idx} has non-alnum before '_' in {m_math.group(0)!r}")
+            if (m_math.start() > 0 and line_nocode[m_math.start() - 1].isalnum()) or (
+                m_math.end() < len(line_nocode) and line_nocode[m_math.end()].isalnum()
+            ):
+                errors.append(f"[MATHML DELIM] {rel_label}:{idx} has alphanumeric touching '$' in {m_math.group(0)!r}")
 
         if re.search(r"\)\$\)", line_nocode):
             errors.append(f"[MATHML DELIM] {rel_label}:{idx} contains ')$)' delimiter hazard")
