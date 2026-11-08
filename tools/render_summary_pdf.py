@@ -83,28 +83,28 @@ def _latex_to_html(expr, display=False):
             "<span class='frac'>"
             "<span class='num'><i>S</i><sub>21</sub>(<i>f<sub>k</sub></i>)<i>S</i><sub>32</sub>(<i>f<sub>k</sub></i>)&thinsp;&Gamma;<sub>in</sub>(<i>f<sub>k</sub></i>)</span>"
             "<span class='den'>1 &minus; <i>S</i><sub>22</sub>(<i>f<sub>k</sub></i>)&thinsp;&Gamma;<sub>in</sub>(<i>f<sub>k</sub></i>)</span>"
-            "</span>&#124;"
+            "</span>&#124; &emsp; (1)"
         )
         return f'<div class="math-display">{inner}</div>'
     if display and "V_{\\text{DDA,true}}" in s:
         inner = (
             "<i>V</i><sub>DDA,true</sub> = 3000&nbsp;mV &times; "
-            "<span class='frac'><span class='num'>16 &times; VREFINT_CAL</span>"
-            "<span class='den'>ADC16<sub>VREFINT</sub></span></span>"
+            "<span class='frac'><span class='num'>16 &times; <i>V</i><sub>REFINT,cal</sub></span>"
+            "<span class='den'><i>D</i><sub>VREFINT</sub></span></span> &emsp; (2)"
         )
         return f'<div class="math-display">{inner}</div>'
     if display and "\\Delta L_{13} =" in s and "\\frac{V(f_1)" in s:
         inner = (
             "&Delta;<i>L</i><sub>13</sub> = "
             "<span class='frac'><span class='num'><i>V</i>(<i>f</i><sub>1</sub>) &minus; <i>V</i>(<i>f</i><sub>3</sub>)</span>"
-            "<span class='den'>19.0&nbsp;mV/dB</span></span>"
+            "<span class='den'>19.0&nbsp;mV/dB</span></span> &emsp; (3)"
         )
         return f'<div class="math-display">{inner}</div>'
     if display and "\\Delta N_2 =" in s:
         inner = (
             "&Delta;<i>N</i><sub>2</sub> = "
             "<span class='frac'><span class='num'>&frac12;[<i>V</i>(<i>f</i><sub>1</sub>) + <i>V</i>(<i>f</i><sub>3</sub>)] &minus; <i>V</i>(<i>f</i><sub>2</sub>)</span>"
-            "<span class='den'>19.0&nbsp;mV/dB</span></span>"
+            "<span class='den'>19.0&nbsp;mV/dB</span></span> &emsp; (4)"
         )
         return f'<div class="math-display">{inner}</div>'
     if display and "\\bar{L} =" in s:
@@ -112,7 +112,7 @@ def _latex_to_html(expr, display=False):
             "<span style='text-decoration:overline;'><i>L</i></span> = "
             "<span class='frac'><span class='num'><i>P</i><sub>refl</sub>(<i>f</i><sub>1</sub>) + "
             "<i>P</i><sub>refl</sub>(<i>f</i><sub>2</sub>) + <i>P</i><sub>refl</sub>(<i>f</i><sub>3</sub>)</span>"
-            "<span class='den'>3</span></span>"
+            "<span class='den'>3</span></span> &emsp; (5)"
         )
         return f'<div class="math-display">{inner}</div>'
 

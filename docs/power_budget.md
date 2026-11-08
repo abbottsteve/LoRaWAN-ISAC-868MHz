@@ -7,7 +7,7 @@
 | :--- | :--- | :--- |
 | Radio / TCXO & Buck Supply | 3.0 V `DIO3` TCXO (`0x06` per `RAK3172LP-SiP` spec); `L_SMPS` = `LQH2MCN150K02L` (15 µH wirewound, $I_{\text{sat}} = 300\text{ mA}$); +4 dBm CW sensing vs. +14 dBm LoRaWAN TX | [`docs/datasheet/`](datasheet/) & [`docs/SOURCES.md`](SOURCES.md) |
 | Detector Power Path | `Q1` (`TPS22919DCKR`) fed directly from `VBAT` (3.0–4.35 V), offloading `LT5538`'s 28 mA pulse from the 3.3 V `U3` LDO (8.3× current margin on `U3`) | TI `SLVSF86` & ADI `LT5538` Rev A |
-| Battery Input (`J2` = DNP) | 1S Li-ion/LiPo (3.00–4.20 V, 302535 pouch) or 3.6 V $\text{Li-SOCl}_2$ (`ER14335M`), 24–26 AWG silicone leads soldered from `B.Cu` to `J2` (Pad 1 Square = `GND`, Pad 2 Round = `+VBAT_RAW`, 4.35 V DC max) | `DOWSIL 3145` RTV strain relief |
+| Battery Input (`J2` = DNP) | 1S Li-ion/LiPo (3.00–4.20 V, 302535 pouch) or 3.6 V Li-SOCl<sub>2</sub> (`ER14335M`), 24–26 AWG silicone leads soldered from `B.Cu` to `J2` (Pad 1 Square = `GND`, Pad 2 Round = `+VBAT_RAW`, 4.35 V DC max) | `DOWSIL 3145` RTV strain relief |
 | Reverse-Polarity Stage | `Q3` (`AO3401A` SOT-23 P-MOSFET ideal diode: Drain=`VBAT_RAW`, Source=`VBAT`, Gate=`GND`, $R_{DS(\text{on})} \le 85\text{ m}\Omega$ at $V_{GS}=-2.5\text{ V}$) | 3.0–5.5 mV forward drop under TX pulse |
 | Debug Pogo Isolation | `J3, J4, J5` = DNP; `R_VAPP` = 1.0 kΩ (`3V3 -> J4.1`), `R_VUART` = DNP (`J5.1` isolated), `R_BHI` = 10 kΩ (`3V3 -> J3.2`), `D_3V3` (`PESD5V0S1BA,115`) | Prevents bench 3.3 V debuggers from back-charging `VBAT` |
 
@@ -47,15 +47,15 @@ J2 = DNP (Bottom-Side Soldered 1S LiPo / 3.6 V Li-SOCl2 Leads: Pad 1 Square = GN
 
 ## 3. `Q1` (`TPS22919DCKR`) Turn-On Timing vs. 3.0 ms Firmware Guard
 
-From TI `TPS22919` (`SLVSF86B` §6.6, $V_{\text{IN}} = 3.0\text{–}4.2\text{ V}$, $C_L = 1.1\,\mu\text{F}$ across `C_DET2 + C_DET1`, `C_Q1` = 100 nF input bypass):
-- Typical turn-on delay plus rise time is $t_d + t_r = 520\,\mu\text{s} + 540\,\mu\text{s} = 1.06\text{ ms}$ (1.60 ms max over temperature), with $V_{\text{IH}} = 1.0\text{ V}$ driven cleanly by 3.3 V `PA8` (`DET_EN`).
+From TI `TPS22919` (`SLVSF86B` §6.6, $V_{\text{IN}} = 3.0\text{–}4.2\text{ V}$, $C_L = 1.1\ \mu\text{F}$ across `C_DET2 + C_DET1`, `C_Q1` = 100 nF input bypass):
+- Typical turn-on delay plus rise time is $t_d + t_r = 520\ \mu\text{s} + 540\ \mu\text{s} = 1.06\text{ ms}$ (1.60 ms max over temperature), with $V_{\text{IH}} = 1.0\text{ V}$ driven cleanly by 3.3 V `PA8` (`DET_EN`).
 - Because `LT5538IDD#TRPBF` operates directly across $V_{\text{CC}} = 3.0\text{–}5.25\text{ V}$ with PSRR $> 45\text{ dB}$, feeding `Q1.1` from `VBAT` avoids LDO dropout during cold battery pulses while holding `3V3` near 3.26 V for `RAK3172LP-SiP`'s internal 3.0 V `DIO3` TCXO regulator (`0x06`).
 
 ---
 
 ## 4. `STM32WLE5JC` Dual-`SMPR` ADC Timing & LDO Output Capacitance
 
-1. **`U1` Pin 8 (`PA15 / ADC_IN11`, `/DET_ADC`, `TP4`):** Routed 4.04 mm clear of `L_SMPS`. The post-detector RC filter ($R_{\text{LPF}} = 1.00\text{ k}\Omega$, $C_{\text{LPF}} = 100\text{ nF}$, $\tau = 100\,\mu\text{s}$) settles to 99.6% within the 550 µs ($5.5\tau$) per-tone dwell. Sampled using `SMP1 = 12.5` ADC cycles (6.25 µs at 2 MHz `PCLK/2`), completing 16× hardware oversampling in 200 µs.
+1. **`U1` Pin 8 (`PA15 / ADC_IN11`, `/DET_ADC`, `TP4`):** Routed 4.04 mm clear of `L_SMPS`. The post-detector RC filter ($R_{\text{LPF}} = 1.00\text{ k}\Omega$, $C_{\text{LPF}} = 100\text{ nF}$, $\tau = 100\ \mu\text{s}$) settles to 99.6% within the 550 µs ($5.5\tau$) per-tone dwell. Sampled using `SMP1 = 12.5` ADC cycles (6.25 µs at 2 MHz `PCLK/2`), completing 16× hardware oversampling in 200 µs.
 2. **`ADC_IN13` (`VREFINT`) & `ADC_IN12` (`TSEN` Die Temperature):** Sampled using `SMP2 = 39.5` ADC cycles (19.75 µs $\ge$ 12 µs `DS13105` minimum) for per-tone ratiometric `VDDA` tracking and 0.015 dB/°C residual thermal slope compensation (`Tilt` and `Notch` cancel common-mode intercept drift directly).
-3. **`U3` (`TPS7A0233DBVR`) Effective Output Capacitance (`SBVS345H` §6.3, 0.47–22 µF Window):** Accounting for 3.30 V DC-bias derating on Murata `GRM` X5R/X7R MLCCs across `3V3` and the `BLM15AG121SN1D` ferrite branches (18.7 µF nominal), total derated effective capacitance is $C_{\text{OUT,eff}} \approx 13.8\,\mu\text{F}$, leaving 37% margin below TI's 22 µF stability ceiling.
-4. **`U1` Pin 50 (`PA9 / BAT_MON_EN`) $\to$ Pin 15 (`PB4 / ADC_IN3`):** `ISAC_HAL_ReadBatteryMv()` asserts `PA9 = 1` for 150 µs ($> 7 \times 21.2\,\mu\text{s}$ RC time constants on $R_{\text{Th}} = 2.35\text{ k}\Omega, C_{\text{BAT}} = 1.0\text{ nF}$), acquires 16× oversampled `PB4` and `VREFINT`, and immediately returns `PA9` low (`R_BPD` = 100 kΩ).
+3. **`U3` (`TPS7A0233DBVR`) Effective Output Capacitance (`SBVS345H` §6.3, 0.47–22 µF Window):** Accounting for 3.30 V DC-bias derating on Murata `GRM` X5R/X7R MLCCs across `3V3` and the `BLM15AG121SN1D` ferrite branches (18.7 µF nominal), total derated effective capacitance is $C_{\text{OUT,eff}} \approx 13.8\ \mu\text{F}$, leaving 37% margin below TI's 22 µF stability ceiling.
+4. **`U1` Pin 50 (`PA9 / BAT_MON_EN`) $\to$ Pin 15 (`PB4 / ADC_IN3`):** `ISAC_HAL_ReadBatteryMv()` asserts `PA9 = 1` for 150 µs ($> 7 \times 21.2\ \mu\text{s}$ RC time constants on $R_{\text{Th}} = 2.35\text{ k}\Omega, C_{\text{BAT}} = 1.0\text{ nF}$), acquires 16× oversampled `PB4` and `VREFINT`, and immediately returns `PA9` low (`R_BPD` = 100 kΩ).

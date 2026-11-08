@@ -1,7 +1,7 @@
 # ISAC 868 MHz LoRaWAN Antenna-Sensor — System Design & Manufacturing Summary (`Rev E.5`)
 
 **Author:** Stephen K. Boachie  
-**Hardware Revision:** Hardware Revision E.5 (`Rev E.5`, `fab/ISAC_868_RevE5_PCBWay_Turnkey.zip`)  
+**Revision:** Hardware Revision E.5 (`Rev E.5`, `fab/ISAC_868_RevE5_PCBWay_Turnkey.zip`)  
 **Target Radio / MCU:** RAKwireless `RAK3172LP-SIP-8-SM-NI` (`STM32WLE5JC` + `SX1262` `RFO_LP`, 3.0 V `DIO3` TCXO `0x06`, EU868)  
 **License:** Apache License 2.0
 
@@ -12,14 +12,14 @@
 `ISAC_868_KiCad9` (`Rev E.5`) integrates **868 MHz LoRaWAN Class A telemetry** (+14.0 dBm uplink with adaptive SF7/SF9/SF12 wet-radome link recovery) and **near-field dielectric reflectometry** (+4.0 dBm 3-tone CW probing at 863.1, 866.5, and 869.5 MHz; < 1.25 ms dwell per tone) onto a single 90.00 × 40.00 × 1.60 mm 2-layer FR-4 PCBA (1.51 mm core, 1 oz ENIG finish, 67 populated top-side SMD parts, 0 THT parts). The board mounts inside a flat-roof UV-stabilized ASA/PETG housing (95.7 × 45.7 × 16.1 mm) sealed by a perimeter Parker ORD 5700 EPDM face-seal O-ring and laminated across its thinned 0.80 mm open-East sensing window with 25 µm 3M 467MP acrylic transfer adhesive.
 
 ### 1.1 Shared IFA + Interdigital Evanescent-Field Antenna (`AE1`) & Elliptic Harmonic Filter
-- Synthesized with an OpenMP 3D Yee-grid FDTD solver (`rf/fdtd_3d_ant.c` and `rf/ifa_enclosure_mom.py`) incorporating IPC-4552 ENIG (`NiP/Au`) surface resistance ($R_s = 23.74\text{ m}\Omega/\square$) and substrate/radome dielectric loss. Under unloaded Dry Air inside the enclosure, resonance occurs at $f_0 = 869.0\text{ MHz}$ with standalone $\lvert\Gamma_{\text{ant}}(866.5\text{ MHz})\rvert = -23.69\text{ dB}$ at `AE1` Pad 1, filter-cascaded $\lvert\Gamma_{\text{in}}(866.5\text{ MHz})\rvert = -20.83\text{ dB}$ at `/BR_Q`, worst-case $\lvert\Gamma_{\text{in}}\rvert \le -10.21\text{ dB}$ across 863–870 MHz over FR-4 $\varepsilon_r \in \{4.2, 4.4, 4.6\}$, total efficiency $\eta_{\text{tot}} = 45.5\%$ ($\eta_{\text{rad}} = 50.0\%$), and 43.73 MHz/RIU Air-to-Ice resonant sensitivity (869.0 MHz $\to$ 834.5 MHz).
+- Synthesized with an OpenMP 3D Yee-grid FDTD solver (`rf/fdtd_3d_ant.c` and `rf/ifa_enclosure_mom.py`) incorporating IPC-4552 ENIG (`NiP/Au`) surface resistance ($R_s = 23.74\text{ m}\Omega/\square$) and substrate/radome dielectric loss. Under unloaded Dry Air inside the enclosure, resonance occurs at $f_0 = 869.0\text{ MHz}$ with standalone $\lvert\Gamma_{\text{ant}}(f_2)\rvert = -23.69\text{ dB}$ at `AE1` Pad 1, filter-cascaded $\lvert\Gamma_{\text{in}}(f_2)\rvert = -20.83\text{ dB}$ at `/BR_Q` ($f_2 = 866.5\text{ MHz}$), worst-case $\lvert\Gamma_{\text{in}}\rvert \le -10.21\text{ dB}$ across 863–870 MHz over FR-4 $\varepsilon_r \in \{4.2, 4.4, 4.6\}$, total efficiency $\eta_{\text{tot}}$ = 45.5% ($\eta_{\text{rad}}$ = 50.0%), and 43.73 MHz/RIU Air-to-Ice resonant sensitivity (869.0 MHz $\to$ 834.5 MHz).
 - A 3rd-order elliptic low-pass Pi-filter (`C_M1` = 3.6 pF `GJM1555C1H3R6WB01D`, `L_M1` = 8.2 nH `LQW15AN8N2G00D` $\parallel$ `C_MZ` = 0.5 pF `GJM1555C1HR50WB01D`, `C_M2` = 4.3 pF `GJM1555C1H4R3WB01D`) suppresses $2f_0$ (1.733 GHz) by $\ge 37.2\text{ dB}$ and $3f_0$ (2.600 GHz) by $\ge 60.1\text{ dB}$ across dry and water-loaded VSWR states (ETSI EN 300 220-1 limit $\le -36\text{ dBm}$).
 - A solder-mask-free bare-ENIG opening (`X_gbr = [73.40..87.80] mm, Y_gbr = [6.65..20.80] mm`, with silkscreen excluded from `X_gbr >= 50.0 mm`) keeps LPI mask ridges out of the bonded 0.80 mm sensing window.
 
 ### 1.2 Asymmetric Microstrip Return-Loss Bridge & 2-Point Calibrated Reflectometer
 - Built around a Yageo `RT0402BRD078R2L` (8.2 Ω ±0.1%) inline sense resistor `R1`, 0.1% Susumu `RG1005P` reference arms (`R2` = 681 Ω, `R3` = 3.57 kΩ, `R_TERM` = 56 Ω), ±2% Murata `LQW15AN` inductors (`L_Q` = 27 nH, `L_S` = 30 nH), ±0.05 pF `GJM1555C1H` capacitors (`C_S = C_S2` = 1.0 pF), and an Analog Devices `LT5538IDD#TRPBF` logarithmic detector ($Z_{\text{IN+}} = 291.65\ \Omega \parallel 1.194\text{ pF}$ at 866.5 MHz).
 - Opening a 2.20 × 2.20 mm `F.Cu`/`B.Cu` ground cutout beneath `/BR_S` ($C_{\text{par}} = 0.1305\text{ pF} < 0.15\text{ pF}$) achieves -0.802 dB main-path insertion loss, 24.81 dB 50 Ω directivity at 866.5 MHz, and 17.60 dB 1st-percentile (`P01`) Air-to-Ice contrast across 2,000 Monte-Carlo trials.
-- Probing at +4.0 dBm keeps `LT5538IDD#TRPBF` (`U2`) input power $\le -25.40\text{ dBm}$ (12.4 dB below its -13 dBm compression point), while unpowered +14 dBm LoRaWAN transmissions induce $\le 39.5\text{ mV}_{\text{pk}}$ at `U2 IN+` up to 6:1 VSWR. Two-point calibration (Dry-Air tare + sintered $\text{Al}_2\text{O}_3$ reference offset `cal_ref_cdb`, combined with 0.015 dB/°C residual thermal slope trim and TX-off Listen-Before-Sense blanking) yields 99.72% Water-vs-IPA separation (`P01` margin 0.65 dB $\ge$ 0.50 dB) in simulation.
+- Probing at +4.0 dBm keeps `LT5538IDD#TRPBF` (`U2`) input power $\le -25.40\text{ dBm}$ (12.4 dB below its -13 dBm compression point), while unpowered +14 dBm LoRaWAN transmissions induce $\le 39.5\text{ mV}$ peak at `U2 IN+` up to 6:1 VSWR. Two-point calibration (Dry-Air tare + sintered Al<sub>2</sub>O<sub>3</sub> reference offset `cal_ref_cdb`, combined with 0.015 dB/°C residual thermal slope trim and TX-off Listen-Before-Sense blanking) yields 99.72% Water-vs-IPA separation (`P01` margin 0.65 dB $\ge$ 0.50 dB) in simulation.
 
 ### 1.3 Split-Rail Power Tree & Freestanding C11 Firmware
 - `J2` (`B2B-PH-K-S`) and bench headers `J1, J3, J4, J5` are marked `DNP = Yes` for single-pass top SMT assembly; silicone 24–26 AWG battery leads solder from `B.Cu` into `J2` (`Pad 1` = `GND`, `Pad 2` = `+VBAT_RAW`, 4.35 V DC max).
@@ -30,23 +30,33 @@
 
 ## 2. Analytical Reflectometer & Ratiometric Signal Model
 
-For an input reflection coefficient $\Gamma_{\text{in}}(f_k)$ at `/BR_Q` across probe tones $f_k \in \{863.1, 866.5, 869.5\}\text{ MHz}$, the coupled power delivered to `LT5538` (`Port 3`) is governed by bridge directivity leakage $S_{31}$ and reflection tracking $S_{21}S_{32}$:
+For an input reflection coefficient $\Gamma_{\text{in}}$ at `/BR_Q` across probe tones $f_k \in \{863.1, 866.5, 869.5\}\text{ MHz}$, the coupled power delivered to `LT5538` (`Port 3`) is governed by bridge directivity leakage $S_{31}$ and reflection tracking $S_{21}S_{32}$:
 
-$$P_{\text{refl}}(f_k) = P_{\text{TX}} + 20\log_{10}\!\left|S_{31}(f_k) + \frac{S_{21}(f_k)S_{32}(f_k)\,\Gamma_{\text{in}}(f_k)}{1 - S_{22}(f_k)\,\Gamma_{\text{in}}(f_k)}\right|$$
+$$
+P_{\text{refl}}(f_k) = P_{\text{TX}} + 20\log_{10}\left\lvert S_{31}(f_k) + \frac{S_{21}(f_k)S_{32}(f_k)\thinspace\Gamma_{\text{in}}(f_k)}{1 - S_{22}(f_k)\thinspace\Gamma_{\text{in}}(f_k)}\right\rvert \qquad \text{(1)}
+$$
 
-The logarithmic detector converts $P_{\text{refl}}(f_k)$ into baseband voltage $V(f_k) = K_{\text{det}}[P_{\text{refl}}(f_k) - P_0(T)]$ with nominal slope $K_{\text{det}} = 19.0\text{ mV/dB}$ and temperature-dependent log-intercept $P_0(T)$. Firmware scales each 16× oversampled ADC reading ratiometrically against the factory-trimmed `STM32WLE5JC` internal bandgap (`VREFINT_CAL` at 3.000 V):
+The logarithmic detector converts $P_{\text{refl}}(f_k)$ into baseband voltage $V(f_k) = K_{\text{det}}[P_{\text{refl}}(f_k) - P_0(T)]$ with nominal slope $K_{\text{det}} = 19.0\text{ mV/dB}$ and temperature-dependent log-intercept $P_0(T)$. Firmware scales each 16× oversampled ADC reading ratiometrically against the factory-trimmed `STM32WLE5JC` internal bandgap ($V_{\text{REFINT,cal}}$ at 3.000 V, 16-sample oversampled code sum $D_{\text{VREFINT}}$):
 
-$$V_{\text{DDA,true}} = 3000\text{ mV} \times \frac{16 \times \text{VREFINT\_CAL}}{\text{ADC16}_{\text{VREFINT}}}$$
+$$
+V_{\text{DDA,true}} = 3000\text{ mV} \times \frac{16 \times V_{\text{REFINT,cal}}}{D_{\text{VREFINT}}} \qquad \text{(2)}
+$$
 
 After subtracting the Point-1 Dry-Air baseline tare, firmware forms three features—band-edge slope (`Tilt`, $\Delta L_{13}$), in-band curvature (`Notch`, $\Delta N_2$), and mean coupled power (`Level`, $\bar{L}$):
 
-$$\Delta L_{13} = \frac{V(f_1) - V(f_3)}{19.0\text{ mV/dB}}$$
+$$
+\Delta L_{13} = \frac{V(f_1) - V(f_3)}{19.0\text{ mV/dB}} \qquad \text{(3)}
+$$
 
-$$\Delta N_2 = \frac{\frac{1}{2}[V(f_1) + V(f_3)] - V(f_2)}{19.0\text{ mV/dB}}$$
+$$
+\Delta N_2 = \frac{\tfrac{1}{2}[V(f_1) + V(f_3)] - V(f_2)}{19.0\text{ mV/dB}} \qquad \text{(4)}
+$$
 
-$$\bar{L} = \frac{P_{\text{refl}}(f_1) + P_{\text{refl}}(f_2) + P_{\text{refl}}(f_3)}{3}$$
+$$
+\bar{L} = \frac{P_{\text{refl}}(f_1) + P_{\text{refl}}(f_2) + P_{\text{refl}}(f_3)}{3} \qquad \text{(5)}
+$$
 
-Because $P_{\text{TX}}$ and $P_0(T)$ enter $V(f_1)$, $V(f_2)$, and $V(f_3)$ additively, common-mode PA output variations ($\Delta P_{\text{TX}}$) and first-order detector intercept drift ($\Delta P_0(T)$) cancel identically in $\Delta L_{13}$ and $\Delta N_2$, leaving only residual slope drift ($\approx 0.015\text{ dB/}^\circ\text{C}$) compensated on $\bar{L}$ via `ADC_IN12` die temperature.
+Because $P_{\text{TX}}$ and $P_0(T)$ enter $V(f_1)$, $V(f_2)$, and $V(f_3)$ additively, common-mode PA output variations $\Delta P_{\text{TX}}$ and first-order detector intercept drift $\Delta P_0(T)$ cancel identically in (3) and (4), leaving only residual slope drift ($\approx 0.015\text{ dB/}^\circ\text{C}$) compensated on $\bar{L}$ in (5) via `ADC_IN12` die temperature.
 
 ---
 
@@ -58,20 +68,20 @@ Because $P_{\text{TX}}$ and $P_0(T)$ enter $V(f_1)$, $V(f_2)$, and $V(f_3)$ addi
 | Surface Finish, Mask & CPWG $Z_0$ | IPC-4552 ENIG; 0.035 mm global / 0.025 mm `U1,U2` NSMD ($\ge 0.180\text{ mm}$ dams); $Z_0 = 51.90\ \Omega$ (51.2–57.1 Ω, RL $\ge 26.8\text{ dB}$) | `ImpedanceControlled = False` |
 | Bridge Through Loss & Directivity | $\lvert S_{21}\rvert = -0.802\text{ dB}$, Directivity(866.5 MHz) = 24.81 dB ($C_{\text{par}} = 0.1305\text{ pF}$) | $\ge 22.0\text{ dB}$ ($< 0.15\text{ pF}$) |
 | 2-Point Calibrated 2,000-Trial MC | Air-to-Ice `P01` = 17.60 dB (100% yield); Water-vs-IPA `P01` = 0.65 dB (99.72% yield) | `P01` $\ge 8.0\text{ dB}$ / $\ge 0.50\text{ dB}$ |
-| Enclosed `AE1` Match & Efficiency | $f_0 = 869.0\text{ MHz}$, $\lvert\Gamma_{\text{ant}}\rvert_{866.5} = -23.69\text{ dB}$ (`AE1`), $\lvert\Gamma_{\text{in}}\rvert_{866.5} = -20.83\text{ dB}$ (`/BR_Q`), $\eta_{\text{tot}} = 45.5\%$ | $\lvert\Gamma_{\text{in}}\rvert \le -10.0\text{ dB}$ all $\varepsilon_r$ |
+| Enclosed `AE1` Match & Efficiency | $f_0 = 869.0\text{ MHz}$, $\lvert\Gamma_{\text{ant}}(f_2)\rvert = -23.69\text{ dB}$ (`AE1`), $\lvert\Gamma_{\text{in}}(f_2)\rvert = -20.83\text{ dB}$ (`/BR_Q`), $\eta_{\text{tot}}$ = 45.5% | $\lvert\Gamma_{\text{in}}\rvert \le -10.0\text{ dB}$ all $\varepsilon_r$ |
 | Harmonic Pi-Filter ($2f_0$ / $3f_0$) | 37.20 dB (1.733 GHz) / 60.08 dB (2.600 GHz) enclosed (37.46 / 60.65 dB water) | $\ge 28\text{ dB}$ / $\ge 45\text{ dB}$ |
 | Weatherproof Enclosure (95.7 × 45.7 × 16.1 mm) | Flat +8.50 mm roof + 0.80 mm open-East ASA/PETG window + 25 µm 3M 467MP + Parker ORD 5700 O-ring (M2.5 × 22 mm corner screws) | Watertight 2-manifold (0 clashes) |
 
 ### 3D-FDTD 3-Tone Benchmark Table (+4.0 dBm CW Sensing, $h_{\text{sup}} = 2.0\text{ mm}$, 2-Point Calibrated)
 
-*(Reference planes: $\lvert\Gamma_{\text{ant}}\rvert$ is standalone at `AE1` Pad 1; $\lvert\Gamma_{\text{in}}\rvert$ is cascaded with the elliptic Pi-filter at `/BR_Q`.)*
+> **Reference Planes:** $\lvert\Gamma_{\text{ant}}(f_2)\rvert$ is standalone at `AE1` Pad 1 ($f_2 = 866.5\text{ MHz}$); $\lvert\Gamma_{\text{in}}\rvert$ is cascaded with the elliptic Pi-filter at `/BR_Q`.
 
-| External Superstrate (2.0 mm on 0.80 mm ASA/PETG) | $\varepsilon_r^*$ (868 MHz) | $f_{\text{res}}$ [MHz] | $\lvert\Gamma_{\text{ant}}\rvert_{866.5}$ [dB] | Cascaded $\lvert\Gamma_{\text{in}}\rvert$ ($f_1 / f_2 / f_3$) [dB] | Tilt $\Delta L_{13}$ [dB] | Notch $\Delta N_2$ [dB] | Level $\bar{L}$ [dBm] | `FPort 10` State |
+| External Superstrate (2.0 mm on 0.80 mm ASA/PETG) | $\varepsilon_r^*$ (868 MHz) | $f_{\text{res}}$ [MHz] | $\lvert\Gamma_{\text{ant}}(f_2)\rvert$ [dB] | Cascaded $\lvert\Gamma_{\text{in}}\rvert$ ($f_1 / f_2 / f_3$) [dB] | Tilt $\Delta L_{13}$ [dB] | Notch $\Delta N_2$ [dB] | Level $\bar{L}$ [dBm] | `FPort 10` State |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
 | Dry Air | $1.00 - j0.000$ | 869.0 | -23.69 | -18.79 / -20.83 / -18.33 | -3.44 | +4.88 | -45.66 | `0 = DRY_AIR` |
 | PTFE / Oil | $2.10 - j0.0002$ | 849.0 | -7.04 | -8.72 / -7.14 / -5.99 | -1.23 | +0.15 | -33.26 | `1 = OIL` |
 | Glaze Ice | $3.20 - j0.003$ | 834.5 | -2.55 | -3.65 / -2.89 / -2.32 | -0.01 | +0.06 | -28.63 | `2 = GLAZE_ICE` |
-| Alumina ($\text{Al}_2\text{O}_3$) | $9.80 - j0.002$ | 783.0 | -0.36 | -0.36 / -0.53 / -0.69 | +1.56 | +0.03 | -26.19 | `3 = IPA` (Cal Ref) |
+| Alumina (Al<sub>2</sub>O<sub>3</sub>) | $9.80 - j0.002$ | 783.0 | -0.36 | -0.36 / -0.53 / -0.69 | +1.56 | +0.03 | -26.19 | `3 = IPA` (Cal Ref) |
 | IPA (868 MHz) | $6.29 - j6.090$ | 794.0 | -1.63 | -2.27 / -2.19 / -2.12 | +1.45 | +0.04 | -27.75 | `3 = IPA` |
 | Water Film | $79.9 - j3.810$ | 776.0 | -0.46 | -0.71 / -0.72 / -0.71 | +1.22 | +0.04 | -26.35 | `4 = LIQUID_WATER` |
 

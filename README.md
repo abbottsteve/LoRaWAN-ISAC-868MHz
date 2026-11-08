@@ -4,7 +4,7 @@
 [![Hardware Revision](https://img.shields.io/badge/Hardware-Rev%20E.5%20(Pilot%20Fab)-0A66C2?style=flat-square)](#motivation--project-status)
 [![EDA Tool](https://img.shields.io/badge/KiCad-9.0.8%20%7C%200%20DRC%20%2F%200%20ERC-314CB0?style=flat-square)](#11-manufacturing-package-build--bench-bring-up)
 [![MCU & Radio](https://img.shields.io/badge/SiP-RAK3172LP--SiP%20(STM32WLE5JC%20%2B%20SX1262)-2E7D32?style=flat-square)](#6-rak3172lp-sip-u1-lga-73-pin-map)
-[![RF Band](https://img.shields.io/badge/EU868-LoRaWAN%201.0.3%20%2B%203--Tone%20CW%20ISAC-6A1B9A?style=flat-square)](#2-operating-principle--rf-front-end)
+[![RF Band](https://img.shields.io/badge/EU868-LoRaWAN%201.0.3%20%2B%203--Tone%20CW%20ISAC-6A1B9A?style=flat-square)](#2-operating-principle-analytical-model--rf-front-end)
 [![Firmware Tests](https://img.shields.io/badge/Host%20HIL%20%26%20NVM%20Tests-1%2C462%20Passing-2E7D32?style=flat-square)](#5-bare-metal-firmware--lorawan-103-stack)
 
 An open-hardware Integrated Sensing and Communications (ISAC) sensor node operating in the European 863–870 MHz (EU868) band [6]. Rather than pairing an auxiliary microwave resonator with a separate telemetry radio, the board shares a single Inverted-F + Interdigital Evanescent-Field Antenna (`AE1`) and a single `STM32WLE5JC` / `SX1262` System-in-Package (`RAK3172LP-SIP-8-SM-NI`) to measure near-field surface permittivity through a 0.80 mm radome and transmit Class A LoRaWAN uplinks over the same physical aperture.
@@ -49,7 +49,7 @@ Detecting glaze ice, standing water films, or hydrocarbon spills on remote infra
 
 - **Shared-Aperture 868 MHz Sensing & Telemetry:** Reuses the `SX1262` `RFO_LP` synthesizer for +4.0 dBm 3-tone CW reflectometry (863.1, 866.5, and 869.5 MHz; < 1.25 ms dwell per tone) and +14.0 dBm LoRaWAN Class A uplinks. Full-wave 3D-FDTD modeling predicts 43.73 MHz/RIU Air-to-Ice resonant sensitivity and 17.60 dB (`P01` 1st-percentile Monte-Carlo floor) 2-point calibrated Air-to-Ice contrast.
 - **Differential Log-Ratio Reflectometry:** Samples coupled reflection power through an Analog Devices `LT5538IDD#TRPBF` (40 MHz–3.8 GHz, 19.0 mV/dB) logarithmic detector to compute band-edge slope (`Tilt`), in-band curvature (`Notch`), and calibrated mean reflection (`Level`). Common-mode PA power drift and detector log-intercept temperature drift cancel analytically in `Tilt` and `Notch`, while per-tone `VREFINT` (`ADC_IN13`) scaling removes supply-voltage error across 3.00–3.30 V.
-- **Ambient Ingress Blanking & Harmonic Filtering:** Firmware executes a TX-off Listen-Before-Sense (`LBS`) check ($\le$ 320 mV / ~ -72 dBm threshold with `PA8`-gated backoff retries and a post-sweep discharge verification) and ramps CW power down to -9 dBm (40 µs) before `STDBY_XOSC`. On the PCB, a 3rd-order elliptic low-pass Pi-filter attenuates harmonic emissions ($2f_0 \ge 37.2\text{ dB}$, $3f_0 \ge 60.1\text{ dB}$).
+- **Ambient Ingress Blanking & Harmonic Filtering:** Firmware executes a TX-off Listen-Before-Sense (`LBS`) check ($\le 320\text{ mV}$ / $\approx -72\text{ dBm}$ threshold with `PA8`-gated backoff retries and post-sweep discharge verification) and ramps CW power down to -9 dBm (40 µs) before `STDBY_XOSC`. On the PCB, a 3rd-order elliptic low-pass Pi-filter attenuates harmonic emissions ($2f_0 \ge 37.2\text{ dB}$, $3f_0 \ge 60.1\text{ dB}$).
 - **Dielectric-Aware Data-Rate Adaptation:** When ice or water detunes the antenna ($f_0$: 869.0 MHz $\to$ 776.0 MHz), firmware promotes LoRaWAN uplinks from SF7BW125 (DR5) to SF9 (DR3 for glaze ice) or SF12BW125 (DR0, +12.5 dB processing gain), maintaining a 136.6–139.6 dB maximum coupling loss (MCL) link budget within rolling 1-hour ETSI EN 300 220-1 duty-cycle limits ($\le$ 0.1% on 863.1 MHz Sub-band `g1`, $\le$ 1.0% on EU868).
 - **Split-Rail Low-Power Architecture:** Feeding the pulsed 28 mA RF detector load switch (`Q1` = `TPS22919DCKR`) directly from `VBAT` keeps the always-on 3.3 V nanopower LDO (`U3` = `TPS7A0233DBVR`, $I_Q = 25\text{ nA}$) lightly loaded (24.1 mA peak, 36.2 mV dropout), preserving 3.0 V `DIO3` TCXO regulation down to 3.00 V cell cutoff with a predicted 2.85–3.25 µA `STOP2` sleep current.
 - **Single-Sided SMT PCBA & Self-Draining Housing:** 92 footprints total (67 populated top-side SMD parts, 10 DNP, 15 board-only features; 0 THT parts in automated reflow), housed in a flat-roof (+8.50 mm), open-East self-draining 0.80 mm ASA/PETG O-ring enclosure.
@@ -58,14 +58,14 @@ Detecting glaze ice, standing water films, or hydrocarbon spills on remote infra
 | :--- | :--- | :--- |
 | **Hardware Revision & DRC Rules** | `Rev E.5` (`Hardware Revision E.5`, rule hash `ff1d145fc6dc1ce6...`, 57/57 KiCad 9 DRC rules set to `error`) | `tools/rules_isac.py --verify` |
 | **PCB Dimensions & Stackup** | 90.00 × 40.00 × 1.60 mm (+0.03/-0.10 mm finished 1.50–1.63 mm, R = 2.00 mm corners), 2-layer 1 oz (35 µm) FR-4 ($\varepsilon_r = 4.4 \pm 0.2$, 1.51 mm core) | `tools/check_dfm.py` |
-| **Surface Finish, Mask & Stencil** | IPC-4552 ENIG (1–3 µin Au over 120–240 µin Ni); Green LPI (0.035 mm global / 0.025 mm `U1,U2` NSMD / 0.00 mm `AE1` bare-ENIG window, $\ge$ 0.180 mm dams, tented vias); 0.10 mm electropolished top SS stencil (`B_Paste.gbp` omitted) | `ISAC_868_KiCad9-job.gbrjob` & `tools/check_dfm.py` |
-| **Manufacturing Origin (`AuxOrigin`)** | (103.500, 120.000) mm = bottom-left PCB corner ($X_{\text{gbr}}: 0..90\text{ mm}$, $Y_{\text{gbr}}: 0..40\text{ mm}$) across Gerbers, Drills, CPL & STEP | `tools/check_bom_cpl.py` |
+| **Surface Finish, Mask & Stencil** | IPC-4552 ENIG (1–3 µin Au over 120–240 µin Ni); Green LPI (0.035 mm global / 0.025 mm `U1,U2` NSMD / 0.00 mm `AE1` bare-ENIG window, $\ge 0.180\text{ mm}$ dams, tented vias); 0.10 mm electropolished top SS stencil (`B_Paste.gbp` omitted) | `ISAC_868_KiCad9-job.gbrjob` & `tools/check_dfm.py` |
+| **Manufacturing Origin (`AuxOrigin`)** | (103.500, 120.000) mm = bottom-left PCB corner ($X_{\text{gbr}} \in [0, 90]\text{ mm}$, $Y_{\text{gbr}} \in [0, 40]\text{ mm}$) across Gerbers, Drills, CPL & STEP | `tools/check_bom_cpl.py` |
 | **Footprint & Via Count** | `92` footprints = `67` populated SMD (0 THT) + `10` DNP (`C_SMPS3, D_RF, J1..J5, R_DIV1, R_DIV2, R_VUART`) + `15` `BOARD_ONLY` (`AE1, FID1..5, H1..4, TP1..5`); `131` tented vias | `tools/verify_design_consistency.py` |
 | **Wireless MCU SiP & SMPS (`U1`)** | `RAK3172LP-SIP-8-SM-NI` (`STM32WLE5JC` Cortex-M4 + `SX1262` `RFO_LP`, 3.0 V `DIO3` TCXO `0x06`, internal SPDT `PA0/PA1`) + 15 µH wirewound `L_SMPS` (`LQH2MCN150K02L`, $I_{\text{sat}} = 300\text{ mA}$) + `C_SMPS1` = 4.7 µF, `C_SMPS2` = 470 nF | [`u1_footprint_verification.md`](docs/reports/u1_footprint_verification.md) & [`SOURCES.md`](docs/SOURCES.md) |
-| **CPWG 50 Ω Spine** | `F.Cu` W = 1.08 mm, gap S = 0.28 mm over continuous `B.Cu` $\to Z_0 = 51.90\ \Omega$ (51.2–57.1 Ω tolerance envelope, RL $\ge$ 26.8 dB, max segment 11.18 mm = $0.056\lambda_g$) | `rf/cpwg_2dfvm_solver.py` |
+| **CPWG 50 Ω Spine** | `F.Cu` W = 1.08 mm, gap S = 0.28 mm over continuous `B.Cu` $\to Z_0 = 51.90\ \Omega$ (51.2–57.1 Ω tolerance envelope, RL $\ge 26.8\text{ dB}$, max segment 11.18 mm = $0.056\lambda_g$) | `rf/cpwg_2dfvm_solver.py` |
 | **Return-Loss Bridge & Detector (`U2`)** | Asymmetric resistive-reactive bridge (`R1` = 8.2 Ω `RT0402BRD078R2L` 0.1%, `R2` = 681 Ω, `R3` = 3.57 kΩ, `R_TERM` = 56 Ω 0.1%, `L_Q` = 27 nH, `L_S` = 30 nH, `C_S = C_S2` = 1.0 pF) over 2.20 × 2.20 mm `F.Cu`/`B.Cu` relief ($C_{\text{par}} = 0.1305\text{ pF}$) $\to$ IL = -0.802 dB, 50 Ω directivity = 24.81 dB, feeding `LT5538IDD#TRPBF` | `rf/bridge_sparam_mc.py` & `rf/bridge_loss.py` |
-| **Elliptic Harmonic Filter & `AE1`** | `C_M1` = 3.6 pF (`GJM1555C1H3R6WB01D`), `L_M1` = 8.2 nH (`LQW15AN8N2G00D`) $\parallel$ `C_MZ` = 0.5 pF (`GJM1555C1HR50WB01D`), `C_M2` = 4.3 pF (`GJM1555C1H4R3WB01D`) ($2f_0 \ge 37.2\text{ dB}$, $3f_0 \ge 60.1\text{ dB}$) + `AE1` laminated via 25 µm 3M 467MP to 0.80 mm ASA/PETG window ($f_0 = 869.0\text{ MHz}$, $\lvert\Gamma_{\text{in}}\rvert_{866.5} = -20.83\text{ dB}$, $\eta_{\text{tot}} = 45.5\%$, 43.73 MHz/RIU, 17.60 dB `P01` ice contrast) | `rf/ifa_enclosure_mom.py` |
-| **Power Supply & Sleep Budget** | 1S Li-ion/LiPo or 3.6 V $\text{Li-SOCl}_2$ (3.00–4.20 V, 4.35 V DC max on `J2` = DNP bottom solder pads) $\to$ `AO3401A` (`Q3`, < 6 mV drop) $\to$ `TPS7A0233DBVR` (`U3`, 3.3 V), `TPS22919DCKR` (`Q1`, `PA8` 3.0 ms `VBAT` switch), `NX3008CBKS,115` (`Q2`, `PA9` 150 µs battery sense) | [`power_budget.md`](docs/power_budget.md) |
+| **Elliptic Harmonic Filter & `AE1`** | `C_M1` = 3.6 pF (`GJM1555C1H3R6WB01D`), `L_M1` = 8.2 nH (`LQW15AN8N2G00D`) $\parallel$ `C_MZ` = 0.5 pF (`GJM1555C1HR50WB01D`), `C_M2` = 4.3 pF (`GJM1555C1H4R3WB01D`) ($2f_0 \ge 37.2\text{ dB}$, $3f_0 \ge 60.1\text{ dB}$) + `AE1` laminated via 25 µm 3M 467MP to 0.80 mm ASA/PETG window ($f_0 = 869.0\text{ MHz}$, $\lvert\Gamma_{\text{in}}(f_2)\rvert = -20.83\text{ dB}$, $\eta_{\text{tot}}$ = 45.5%, 43.73 MHz/RIU, 17.60 dB `P01` ice contrast) | `rf/ifa_enclosure_mom.py` |
+| **Power Supply & Sleep Budget** | 1S Li-ion/LiPo or 3.6 V Li-SOCl<sub>2</sub> (3.00–4.20 V, 4.35 V DC max on `J2` = DNP bottom solder pads) $\to$ `AO3401A` (`Q3`, < 6 mV drop) $\to$ `TPS7A0233DBVR` (`U3`, 3.3 V), `TPS22919DCKR` (`Q1`, `PA8` 3.0 ms `VBAT` switch), `NX3008CBKS,115` (`Q2`, `PA9` 150 µs battery sense) | [`power_budget.md`](docs/power_budget.md) |
 
 ---
 
@@ -74,52 +74,72 @@ Detecting glaze ice, standing water films, or hydrocarbon spills on remote infra
 ### 2.1 Signal Chain
 
 ```mermaid
-flowchart LR
-    subgraph SIP["U1: RAK3172LP-SiP (STM32WLE5JC + SX1262)"]
-        MCU["Cortex-M4 @ 4 MHz\n12-bit SAR ADC + NVM"]
-        SYN["SX1262 RFO_LP\n+4 dBm CW / +14 dBm LoRa\n3.0 V DIO3 TCXO"]
-        SPDT["Internal SPDT\nPA0 / PA1"]
-        SYN --> SPDT
+flowchart TB
+    subgraph TXRX["U1: RAK3172LP-SiP (STM32WLE5JC + SX1262)"]
+        direction LR
+        MCU["Cortex-M4 @ 4 MHz<br/>12-bit SAR ADC + Flash NVM"]
+        SYN["SX1262 RFO_LP (+4 dBm CW / +14 dBm LoRa)<br/>3.0 V DIO3 TCXO + Internal SPDT"]
     end
 
-    subgraph RFF["50 Ohm CPWG, Return-Loss Bridge & Harmonic Filter"]
-        CRF["C_RF\n100 pF"]
-        BRG["Asymmetric Bridge\nR1=8.2R | R2=681R | R3=3.57k\nC_S=C_S2=1pF | L_Q=27n | L_S=30n\nIL = -0.80 dB, Dir = 24.8 dB"]
-        ELL["3rd-Order Elliptic LPF\nC_M1=3.6p | L_M1=8.2n || C_MZ=0.5p | C_M2=4.3p\n2f0 >= 37.2 dB, 3f0 >= 60.1 dB"]
-        AE1["AE1: Shared IFA + IDE Comb\nBare-ENIG Window + 25 um 467MP\n0.80 mm ASA/PETG Radome"]
-        SPDT --> CRF --> BRG --> ELL --> AE1
+    subgraph RFF["50 Ω CPWG Spine, Return-Loss Bridge & Elliptic Filter"]
+        direction LR
+        CRF["C_RF (100 pF)<br/>DC Block"]
+        BRG["Asymmetric Bridge (R1 = 8.2 Ω)<br/>IL = -0.80 dB | Dir = 24.8 dB"]
+        ELL["3rd-Order Elliptic Pi-LPF<br/>2f0 ≥ 37.2 dB | 3f0 ≥ 60.1 dB"]
+        AE1["AE1: Shared IFA + 5-Finger IDE<br/>25 µm 467MP + 0.80 mm ASA/PETG"]
+        CRF --> BRG --> ELL --> AE1
     end
 
-    subgraph DET["Gated Logarithmic Reflectometer"]
-        LT["U2: LT5538IDD#TRPBF\n19.0 mV/dB, -88.8 dBm Int."]
-        LPF["Video LPF\nR_LPF=1k, C_LPF=100nF\ntau = 100 us"]
-        Q1["Q1: TPS22919DCKR\nVBAT Load Switch"]
-        BRG -- "Coupled |Gamma_in(f)|" --> LT --> LPF
-        Q1 --> LT
+    subgraph DET["VBAT-Gated Logarithmic Reflectometer"]
+        direction LR
+        Q1["Q1: TPS22919 Load Switch<br/>VBAT → 3V3_DET (3.0 ms guard)"]
+        LT["U2: LT5538IDD#TRPBF<br/>19.0 mV/dB | -88.8 dBm intercept"]
+        LPF["RC Video LPF (1 kΩ, 100 nF)<br/>τ = 100 µs → TP4"]
+        Q1 --> LT --> LPF
     end
 
-    LPF -- "PA15 / ADC_IN11" --> MCU
+    SYN --> CRF
+    BRG -- "Coupled |Γ_in(f)|" --> LT
     MCU -- "PA8 (DET_EN)" --> Q1
+    LPF -- "PA15 (ADC_IN11)" --> MCU
 ```
 
 ### 2.2 Electromagnetic Sensing Mechanism
 1. **Evanescent Fringing-Field Coupling (`AE1`):** The high-impedance open end of the 868 MHz Inverted-F Antenna (`IFA_868MHz_ISAC_40x20mm`) terminates in a 5-finger interdigital electrode (IDE) comb ($w = 1.30\text{ mm}$ fingers, $g = 1.20\text{ mm}$ gaps, $1/e$ spatial decay length $\delta_E \approx (w + g)/\pi \approx 0.80\text{ mm}$ [1]). Left free of solder mask as a bare-ENIG window ($X_{\text{gbr}} \in [73.40, 87.80]\text{ mm}$, $Y_{\text{gbr}} \in [6.65, 20.80]\text{ mm}$), the comb is laminated against the thinned 0.80 mm ASA/PETG lid window with 25 µm 3M 467MP acrylic transfer adhesive to wet out FDM layer micro-roughness and prevent an internal air gap from masking external permittivity shifts.
-2. **Permittivity-Driven Detuning:** Under unloaded Dry Air ($\varepsilon_r' = 1.00$), the enclosed antenna and elliptic Pi-filter resonate at 869.0 MHz ($|\Gamma_{\text{ant}}| = -23.69\text{ dB}$ at `AE1` Pad 1; $|\Gamma_{\text{in}}| = -20.83\text{ dB}$ at `/BR_Q` for 866.5 MHz), placing a sharp return-loss null inside EU868. When oil ($\varepsilon_r' \approx 2.1$), glaze ice ($\varepsilon_r' \approx 3.20$), lossy polar fluid ($\varepsilon_r^* = 6.29 - j6.09$), or liquid water ($\varepsilon_r^* = 79.9 - j3.81$ [5]) covers the outer window, superstrate capacitance pulls $f_0$ downward (849.0 $\to$ 776.0 MHz) and reshapes $|\Gamma_{\text{in}}(f)|$ across the three CW probe tones:
+2. **Permittivity-Driven Detuning:** Under unloaded Dry Air ($\varepsilon_r' = 1.00$), the enclosed antenna resonates at $f_0 = 869.0\text{ MHz}$ ($\lvert\Gamma_{\text{ant}}(f_2)\rvert = -23.69\text{ dB}$ standalone at `AE1` Pad 1; $\lvert\Gamma_{\text{in}}(f_2)\rvert = -20.83\text{ dB}$ filter-cascaded at `/BR_Q` for $f_2 = 866.5\text{ MHz}$), placing a sharp return-loss null inside EU868. When oil ($\varepsilon_r' \approx 2.1$), glaze ice ($\varepsilon_r' \approx 3.20$), lossy polar fluid ($\varepsilon_r^* = 6.29 - j6.09$), or liquid water ($\varepsilon_r^* = 79.9 - j3.81$ [5]) covers the outer window, superstrate capacitance pulls $f_0$ downward (849.0 $\to$ 776.0 MHz) and reshapes $\lvert\Gamma_{\text{in}}(f)\rvert$ across the three CW probe tones:
    - $f_1 = 863.100\text{ MHz}$ (EU868 lower band edge, ERC/REC 70-03 Sub-band `g1`)
    - $f_2 = 866.500\text{ MHz}$ (in-band resonance probe)
    - $f_3 = 869.500\text{ MHz}$ (EU868 upper `g3` sub-band)
 3. **Low-Loss Asymmetric Bridge & Unpowered TX Linearity:** A classical symmetric Wheatstone bridge would sacrifice 6.0 dB round-trip in LoRaWAN link margin. Instead, an inline `R1` = 8.2 Ω (0.1% thin-film) series resistor paired with 1.0 pF capacitive taps (`C_S`, `C_S2`) holds main-path insertion loss to -0.802 dB while achieving 24.81 dB nominal 50 Ω directivity over a 2.20 × 2.20 mm dual-layer ground cutout ($C_{\text{par}} = 0.1305\text{ pF} < 0.15\text{ pF}$). During +14 dBm LoRaWAN uplinks (`U2` unpowered via `PA8 = 0`), capacitive division limits `U2` Pin 2 (`IN+`) swing to 39.5 mV peak even into a 6:1 water VSWR—nearly an order of magnitude below the ~350 mV ESD-diode forward knee—avoiding passive harmonic generation on the transmit path.
 
 ### 2.3 Analytical Reflectometer & Common-Mode Drift Cancellation
-Representing the asymmetric bridge between `/BR_P` (Port 1), `/BR_Q` (Port 2, terminated in the filter-cascaded antenna reflection $\Gamma_{\text{in}}(f_k)$), and `LT5538` `IN+` (Port 3) by its 3-port scattering parameters, the coupled RF power delivered to the detector at tone $f_k$ is:
+Representing the asymmetric bridge between `/BR_P` (Port 1), `/BR_Q` (Port 2, terminated in the filter-cascaded antenna reflection $\Gamma_{\text{in}}$ at tone $f_k$), and `LT5538` `IN+` (Port 3) by its 3-port scattering matrix, the coupled RF power delivered to the detector at tone $f_k$ ($k \in \{1, 2, 3\}$) is:
 
-$$P_{\text{det}}(f_k) = P_{\text{TX}} + 20\log_{10}\!\left|S_{31}(f_k) + \frac{S_{21}(f_k)S_{32}(f_k)\,\Gamma_{\text{in}}(f_k)}{1 - S_{22}(f_k)\,\Gamma_{\text{in}}(f_k)}\right| \quad [\text{dBm}]$$
+$$
+P_{\text{det}}(f_k) = P_{\text{TX}} + 20\log_{10}\left\lvert S_{31}(f_k) + \frac{S_{21}(f_k)S_{32}(f_k)\thinspace\Gamma_{\text{in}}(f_k)}{1 - S_{22}(f_k)\thinspace\Gamma_{\text{in}}(f_k)}\right\rvert \quad [\text{dBm}] \qquad \text{(1)}
+$$
 
-Within its linear-in-dB dynamic range (-75 dBm to -13 dBm), `LT5538IDD#TRPBF` produces DC output voltage $V(f_k) = K_{\text{det}}\,[P_{\text{det}}(f_k) - P_0(T)]$, where $K_{\text{det}} \approx 19.0\text{ mV/dB}$ is the logarithmic slope and $P_0(T) \approx -88.8\text{ dBm}$ is the temperature-dependent log-intercept. Each tone sample is converted ratiometrically against the factory-calibrated `STM32WLE5JC` internal reference (`VREFINT_CAL` at 3.000 V) so `VDDA` variation cancels prior to feature extraction. Subtracting the per-unit Dry-Air baseline tare $\Delta V_{\text{cal},k}$ yields three features:
+Within its linear-in-dB dynamic range (-75 dBm to -13 dBm), `LT5538IDD#TRPBF` outputs a baseband DC voltage proportional to log power, which firmware normalizes ratiometrically against the factory-calibrated `STM32WLE5JC` internal bandgap ($V_{\text{REFINT,cal}}$ at 3.000 V, 16-sample oversampled code sum $D_{\text{VREFINT}}$) so `VDDA` supply droop cancels prior to feature extraction:
 
-$$\text{Tilt } (\Delta L_{13}) = \frac{V(f_1) - V(f_3)}{K_{\text{det}}}, \qquad \text{Notch } (\Delta N_2) = \frac{\frac{1}{2}[V(f_1) + V(f_3)] - V(f_2)}{K_{\text{det}}}, \qquad \text{Level } (\bar{L}) = \frac{1}{3}\sum_{k=1}^{3} P_{\text{det}}(f_k)$$
+$$
+V(f_k) = K_{\text{det}}\left[P_{\text{det}}(f_k) - P_0(T)\right], \qquad V_{\text{DDA,true}} = 3000\text{ mV} \times \frac{16 \times V_{\text{REFINT,cal}}}{D_{\text{VREFINT}}} \qquad \text{(2)}
+$$
 
-Because additive PA power offsets $\Delta P_{\text{TX}}$ and common-mode detector intercept shifts $\Delta P_0(T)$ shift $V(f_1)$, $V(f_2)$, and $V(f_3)$ equally across the 3.6 ms sweep, **both error terms cancel identically in $\Delta L_{13}$ and $\Delta N_2$**. Only the residual temperature dependence of $K_{\text{det}}$ (~0.015 dB/°C) affects $\bar{L}$, which firmware compensates using the `ADC_IN12` die temperature reading alongside Point-2 ($\text{Al}_2\text{O}_3$) high-reflection gain calibration.
+where $K_{\text{det}} \approx 19.0\text{ mV/dB}$ is the detector logarithmic slope and $P_0(T) \approx -88.8\text{ dBm}$ is the temperature-dependent log-intercept. Subtracting the per-unit Point-1 Dry-Air baseline tare $\Delta V_{\text{cal},k}$ produces three classification features—band-edge slope (`Tilt`, $\Delta L_{13}$), in-band curvature (`Notch`, $\Delta N_2$), and calibrated mean reflection (`Level`, $\bar{L}$):
+
+$$
+\Delta L_{13} = \frac{V(f_1) - V(f_3)}{K_{\text{det}}} \qquad \text{(3)}
+$$
+
+$$
+\Delta N_2 = \frac{\tfrac{1}{2}\left[V(f_1) + V(f_3)\right] - V(f_2)}{K_{\text{det}}} \qquad \text{(4)}
+$$
+
+$$
+\bar{L} = \frac{P_{\text{det}}(f_1) + P_{\text{det}}(f_2) + P_{\text{det}}(f_3)}{3} \qquad \text{(5)}
+$$
+
+Because additive PA power offsets $\Delta P_{\text{TX}}$ and common-mode detector intercept shifts $\Delta P_0(T)$ enter $V(f_1)$, $V(f_2)$, and $V(f_3)$ identically across the 3.6 ms sweep, **both error terms cancel analytically in (3) and (4)**. Only the residual temperature sensitivity of $K_{\text{det}}$ ($\approx 0.015\text{ dB/}^\circ\text{C}$) affects $\bar{L}$ in (5), which firmware compensates using the `ADC_IN12` die temperature reading alongside Point-2 (Al<sub>2</sub>O<sub>3</sub>) high-reflection gain calibration.
 
 ---
 
@@ -133,7 +153,7 @@ Because additive PA power offsets $\Delta P_{\text{TX}}$ and common-mode detecto
 - **Reverse-Polarity Protection (`Q3` = `AO3401A`):** P-MOSFET ideal diode holds forward drop below 6 mV during TX bursts, buffered by 2 × 47 µF (`C_BULK1`, `C_BULK2`) and 10 µF (`C_IN1`) MLCCs.
 - **Direct `VBAT` Detector Gating (`Q1` = `TPS22919DCKR` on `PA8`):** `LT5538IDD#TRPBF` ($V_{\text{CC}} = 3.0\text{–}5.25\text{ V}$, $I_{\text{CC}} \approx 28\text{ mA}$) draws power directly from `VBAT` via controlled-slew load switch `Q1` ($t_{\text{ON}} \le 1.6\text{ ms}$, firmware settle guard 3.0 ms, 250 Ω active discharge when disabled). Bypassing `U2`'s 28 mA pulse around `U3` limits peak `3V3` LDO load to 24.1 mA (36.2 mV dropout, 8.3× margin below `U3`'s 200 mA rating), keeping `RAK3172LP-SiP`'s internal 3.0 V `DIO3` TCXO rail (`0x06`) in regulation down to 3.00 V cell end-of-life at -20 °C.
 - **Switched Battery Divider (`Q2` = `NX3008CBKS,115` on `PA9`):** Dual N/P TrenchMOS high-side switch enables the 4.7 kΩ / 4.7 kΩ (0.1%) divider (`PB4 / ADC_IN3`) for 150 µs once per wakeup cycle, eliminating continuous divider bleed in `STOP2`.
-- **Pogo-Fixture Isolation & ESD Clamping:** `J4.1` (`SWD` target sense via `R_VAPP` = 1.0 kΩ), `J5.1` (`UART` isolated via `R_VUART` = DNP), `J3.2` (`BOOT0` via `R_BHI` = 10 kΩ), and bidirectional TVS diodes (`D_VBAT, D_3V3, D_RST` = `PESD5V0S1BA,115`; `D_SWD, D_UART` = `PESD5V0U2BT,215`) provide IEC 61000-4-2 Level 4 ESD protection and prevent bench debug probes from back-feeding rechargeable LiPo or primary $\text{Li-SOCl}_2$ cells.
+- **Pogo-Fixture Isolation & ESD Clamping:** `J4.1` (`SWD` target sense via `R_VAPP` = 1.0 kΩ), `J5.1` (`UART` isolated via `R_VUART` = DNP), `J3.2` (`BOOT0` via `R_BHI` = 10 kΩ), and bidirectional TVS diodes (`D_VBAT, D_3V3, D_RST` = `PESD5V0S1BA,115`; `D_SWD, D_UART` = `PESD5V0U2BT,215`) provide IEC 61000-4-2 Level 4 ESD protection and prevent bench debug probes from back-feeding rechargeable LiPo or primary Li-SOCl<sub>2</sub> cells.
 
 ### 3.2 DC Test-Point Map (`TP1..TP5`)
 All test pads sit on DC or baseband nodes so probe capacitance (~1.5 pF) never loads the 868 MHz bridge or CPWG spine:
@@ -141,7 +161,7 @@ All test pads sit on DC or baseband nodes so probe capacitance (~1.5 pF) never l
 | Test Point | Schematic Net | Gerber $(X_{\text{gbr}}, Y_{\text{gbr}})$ [mm] | Bring-Up / Fixture Measurement Role |
 | :---: | :--- | :---: | :--- |
 | **`TP1`** | `3V3` | (28.200, 28.750) | Regulated 3.30 V always-on LDO output (`U3.5`) |
-| **`TP2`** | `3V3_DET` | (42.100, 3.800) | `VBAT`-switched `U2` (`LT5538IDD#TRPBF`) supply rail (`Q1.6`, verify $\le$ 1.6 ms rise) |
+| **`TP2`** | `3V3_DET` | (42.100, 3.800) | `VBAT`-switched `U2` (`LT5538IDD#TRPBF`) supply rail (`Q1.6`, verify $\le 1.6\text{ ms}$ rise) |
 | **`TP3`** | `VBAT` | (15.350, 30.200) | Post-`Q3` (`AO3401A`) reverse-protected 1S battery rail |
 | **`TP4`** | `/DET_ADC` | (45.300, 4.200) | Filtered `LT5538` analog log-detector output (`PA15 / ADC_IN11`, 4.04 mm clear of `L_SMPS`) |
 | **`TP5`** | `GND` | (31.200, 28.750) | Low-inductance DMM / oscilloscope ground reference |
@@ -157,15 +177,23 @@ Two complementary EM modeling environments are maintained in this repository—o
 3. **CST Studio Suite 3D FIT & Curved-Element FEM Package ([`cst_studio/`](cst_studio/)):** Parameterized CST Microwave Studio (`ISAC_868_Complete_Antenna_MWS.bas`) and Design Studio macros modeling conformal PBA subcells, 1st-order Debye water/IPA relaxation [5], 3D lumped filter parasitics, and 3D farfield patterns across 0.70–3.00 GHz.
 4. **2,000-Trial Bridge Monte-Carlo ([`rf/bridge_sparam_mc.py`](rf/bridge_sparam_mc.py)):** Sweeps $3\sigma$ passive tolerances (0.1% thin-film resistors, ±0.05 pF `GJM` C0G capacitors, ±2% `LQW15AN` wirewound inductors, and ADI `LT5538` Table 1 $291.65\ \Omega \parallel 1.194\text{ pF}$ input impedance), predicting 99.72% Water-vs-IPA separation yield (`P01` margin 0.65 dB $\ge$ 0.50 dB) under 2-point calibration (`h_sup = 2.0 mm`).
 
-| Standalone `AE1` 3D-FDTD $\lvert\Gamma_{\text{ant}}\rvert$ & Cascaded $\eta_{\text{tot}}$ (`ifa_enclosure_mom.png`) | 2,000-Trial Bridge Monte-Carlo (`bridge_sparam_mc.png`) |
-| :---: | :---: |
-| ![3D FDTD IFA and Harmonic Filter](rf/results/ifa_enclosure_mom.png) | ![Bridge S-Parameter Monte Carlo](rf/results/bridge_sparam_mc.png) |
+**Figure 4.1 — Standalone `AE1` 3D-FDTD Return Loss $\lvert\Gamma_{\text{ant}}(f)\rvert$ and Filter-Cascaded Total Efficiency $\eta_{\text{tot}}(f)$ (`rf/results/ifa_enclosure_mom.png`):**
 
-*(Reference-plane note on `ifa_enclosure_mom.png`: Panel A plots **standalone** antenna reflection $|\Gamma_{\text{ant}}(f)|$ directly at `AE1` Pad 1 (`/ANT_FEED`), where Enclosed Dry Air reaches -32.69 dB at 869.0 MHz and -23.69 dB at 866.5 MHz; Panel B and Table 7.1 evaluate the **Pi-filter-cascaded** input reflection $|\Gamma_{\text{in}}(f)|$ at `/BR_Q`, which equals -20.83 dB at 866.5 MHz.)*
+![3D FDTD IFA and Harmonic Filter](rf/results/ifa_enclosure_mom.png)
 
-| 2D-FVM 51.90 Ω CPWG Cross-Section (`cpwg_2dfvm_cross_section.png`) | `U1` `RAK3172LP-SiP` LGA-73 Pad Overlay (0.0000 mm Error) |
-| :---: | :---: |
-| ![2D-FVM CPWG Solver](rf/results/cpwg_2dfvm_cross_section.png) | ![U1 LGA-73 Pad Verification Overlay](docs/reports/u1_footprint_overlay.png) |
+> **Reference-Plane Note:** Panel A above plots **standalone** antenna reflection $\lvert\Gamma_{\text{ant}}(f)\rvert$ directly at `AE1` Pad 1 (`/ANT_FEED`), where Enclosed Dry Air reaches -32.69 dB at $f_0 = 869.0\text{ MHz}$ and -23.69 dB at $f_2 = 866.5\text{ MHz}$. Panel B and Section 7.1 evaluate the **Pi-filter-cascaded** input reflection $\lvert\Gamma_{\text{in}}(f)\rvert$ at `/BR_Q`, which equals -20.83 dB at $f_2 = 866.5\text{ MHz}$.
+
+**Figure 4.2 — Asymmetric Return-Loss Bridge S-Parameters & 2,000-Trial Tolerance Monte-Carlo (`rf/results/bridge_sparam_mc.png`):**
+
+![Bridge S-Parameter Monte Carlo](rf/results/bridge_sparam_mc.png)
+
+**Figure 4.3 — 2D-FVM 51.90 Ω CPWG Cross-Section & Conformal Solder-Mask Pull-Down (`rf/results/cpwg_2dfvm_cross_section.png`):**
+
+![2D-FVM CPWG Solver](rf/results/cpwg_2dfvm_cross_section.png)
+
+**Figure 4.4 — `U1` (`RAK3172LP-SiP`, LGA-73) Land-Pattern & Paste Verification Overlay (`docs/reports/u1_footprint_overlay.png`):**
+
+![U1 LGA-73 Pad Verification Overlay](docs/reports/u1_footprint_overlay.png)
 
 ---
 
@@ -174,18 +202,22 @@ Two complementary EM modeling environments are maintained in this repository—o
 The target firmware ([`firmware/`](firmware/)) is written in freestanding ISO C11 (`-Wall -Wextra -Werror -Wstack-usage=2048 -ffreestanding -nostdlib`), compiling into 15,948 B Flash and 408 B RAM on `STM32WLE5JC` without external HAL dependencies.
 
 ```mermaid
-stateDiagram-v2
-    [*] --> BootSelfTest: POR / NRST
-    BootSelfTest --> Stop2Sleep: CLKDE + 15 uH SMPS + 3.0V TCXO + SX1262 15.2 Fix + NVM Load
-    Stop2Sleep --> RailGuard: RTC Wakeup (900 s)
-    RailGuard --> Stop2Sleep: VBAT < 3.00 V or Duty Throttled (0 RF TX)
-    RailGuard --> LBSPreCheck: PA8=1 (3.0 ms), ADC Cal + Die Temp
-    LBSPreCheck --> Stop2Sleep: Jammer > 320 mV after 2x 20 ms Backoffs -> Report FAULT
-    LBSPreCheck --> Sweep3Tone: Quiet RF Floor (<= 320 mV)
-    Sweep3Tone --> LBSPostCheck: f1, f2, f3 @ +4 dBm (550 us Settle + -9 dBm Soft Quench)
-    LBSPostCheck --> Classify: 650 us C_LPF Decay -> Verify No Mid-Sweep Collision
-    Classify --> AdaptiveUplink: 2-Pt Cal + Die-Temp Gate -> Select SF7 / SF9 / SF12
-    AdaptiveUplink --> Stop2Sleep: Encrypted FPort 10 TX + RX1/RX2 + ECC-Safe NVM Commit
+flowchart LR
+    BOOT["1. POR / BootSelfTest<br/>CLKDE + 15 µH SMPS + 3.0 V TCXO<br/>SX1262 §15.2 Fix + NVM Load"]
+    SLP["2. STOP2 Sleep<br/>RTC Wakeup (900 s)<br/>~2.85–3.25 µA typ"]
+    GRD["3. Rail & Duty Guard<br/>PA9 VBAT ≥ 3.00 V<br/>ETSI 0.1% / 1.0% Check"]
+    LBS1["4. Pre-Sweep LBS<br/>PA8 = 1 (3.0 ms), CW Off<br/>Floor ≤ 320 mV (2× Retry)"]
+    SWP["5. 3-Tone CW Sweep<br/>f1, f2, f3 @ +4 dBm (550 µs)<br/>-9 dBm Soft Quench + Post-LBS"]
+    TX["6. Classify & Class A TX<br/>2-Pt Cal + Die-Temp Gate<br/>SF7 / SF9 / SF12 + ECC NVM"]
+
+    BOOT --> SLP
+    SLP -- "900 s Wake" --> GRD
+    GRD -- "VBAT < 3 V / Duty Cap" --> SLP
+    GRD -- "Rail OK" --> LBS1
+    LBS1 -- "Jammer → FAULT" --> TX
+    LBS1 -- "Quiet Floor" --> SWP
+    SWP --> TX
+    TX -- "RX1 / RX2 Done" --> SLP
 ```
 
 ### Firmware Design Notes
@@ -224,27 +256,28 @@ Cross-checked automatically by `tools/check_bom_cpl.py` and `tools/verify_u1_ove
 ## 7. 3-Tone Dielectric Benchmarks & `FPort = 10` Payload
 
 ### 7.1 Simulated 3D-FDTD Benchmark Table
-*(Conditions: +4.0 dBm CW sensing TX, $h_{\text{sup}} = 2.00\text{ mm}$ uniform superstrate over the 0.80 mm self-draining ASA/PETG window + 25 µm 3M 467MP, ADI `LT5538IDD#TRPBF` $Z_{\text{IN+}} = 291.65\ \Omega \parallel 1.194\text{ pF}$, 2-point calibrated & `VREFINT`/`TSEN` compensated; nominal 3.30 V, 25 °C 12-bit ADC codes shown. Both standalone $|\Gamma_{\text{ant}}|_{866.5}$ at `AE1` Pad 1 and Pi-filter-cascaded $|\Gamma_{\text{in}}|_{866.5}$ at `/BR_Q` are listed.)*
 
-| Medium ($h_{\text{sup}} = 2.0\text{ mm}$) | $\varepsilon_r^*$ (868 MHz) | $f_0$ [MHz] | $\lvert\Gamma_{\text{ant}}\rvert_{866.5}$ [dB] | $\lvert\Gamma_{\text{in}}\rvert_{866.5}$ [dB] | $\eta_{\text{tot}}$ [%] | ADC (863.1 / 866.5 / 869.5) | Tilt [dB] | Notch [dB] | Level [dBm] | Adaptive SF | Classified State |
+> **Benchmark Conditions:** +4.0 dBm CW sensing TX ($f_1 = 863.1$, $f_2 = 866.5$, $f_3 = 869.5\text{ MHz}$), $h_{\text{sup}} = 2.00\text{ mm}$ uniform superstrate over the 0.80 mm self-draining ASA/PETG window + 25 µm 3M 467MP, ADI `LT5538IDD#TRPBF` ($Z_{\text{IN+}} = 291.65\ \Omega \parallel 1.194\text{ pF}$), 2-point calibrated and `VREFINT`/`TSEN` compensated; nominal 3.30 V, 25 °C 12-bit ADC codes shown. Both standalone $\lvert\Gamma_{\text{ant}}(f_2)\rvert$ at `AE1` Pad 1 and Pi-filter-cascaded $\lvert\Gamma_{\text{in}}(f_2)\rvert$ at `/BR_Q` are reported.
+
+| Medium (2.0 mm) | $\varepsilon_r^*$ (868 MHz) | $f_0$ [MHz] | $\lvert\Gamma_{\text{ant}}(f_2)\rvert$ [dB] | $\lvert\Gamma_{\text{in}}(f_2)\rvert$ [dB] | $\eta_{\text{tot}}$ | ADC ($f_1/f_2/f_3$) | Tilt [dB] | Notch [dB] | Level [dBm] | SF | State (`FPort 10`) |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
-| **Dry Air** | $1.00 - j0.000$ | 869.0 | -23.69 | -20.83 | 45.5% | 1015 / 940 / 1096 | -3.44 | +4.88 | -45.66 | SF7 (DR5) | `0 = DRY_AIR` |
-| **PTFE / Oil** | $2.10 - j0.0002$ | 849.0 | -7.04 | -7.14 | 35.4% | 1296 / 1307 / 1325 | -1.23 | +0.15 | -33.26 | SF7 (DR5) | `1 = OIL` |
-| **Glaze Ice** | $3.20 - j0.003$ | 834.5 | -2.55 | -2.89 | 13.4% | 1419 / 1418 / 1419 | -0.01 | +0.06 | -28.63 | SF9 (DR3) | `2 = GLAZE_ICE` |
-| **Alumina ($\text{Al}_2\text{O}_3$)** | $9.80 - j0.002$ | 783.0 | -0.36 | -0.53 | 5.1% | 1495 / 1476 / 1458 | +1.56 | +0.03 | -26.19 | SF12 (DR0) | `3 = IPA` (Cal Ref) |
-| **IPA (868 MHz)** | $6.29 - j6.090$ | 794.0 | -1.63 | -2.19 | 4.8% | 1457 / 1439 / 1423 | +1.45 | +0.04 | -27.75 | SF12 (DR0) | `3 = IPA` |
-| **Water Film** | $79.9 - j3.810$ | 776.0 | -0.46 | -0.72 | 9.6% | 1487 / 1472 / 1458 | +1.22 | +0.04 | -26.35 | SF12 (DR0) | `4 = LIQUID_WATER` |
+| **Dry Air** | $1.00 - j0.000$ | 869.0 | -23.69 | -20.83 | 45.5% | 1015/940/1096 | -3.44 | +4.88 | -45.66 | SF7 | `0=DRY_AIR` |
+| **PTFE / Oil** | $2.10 - j0.0002$ | 849.0 | -7.04 | -7.14 | 35.4% | 1296/1307/1325 | -1.23 | +0.15 | -33.26 | SF7 | `1=OIL` |
+| **Glaze Ice** | $3.20 - j0.003$ | 834.5 | -2.55 | -2.89 | 13.4% | 1419/1418/1419 | -0.01 | +0.06 | -28.63 | SF9 | `2=GLAZE_ICE` |
+| **Alumina** (Al<sub>2</sub>O<sub>3</sub>) | $9.80 - j0.002$ | 783.0 | -0.36 | -0.53 | 5.1% | 1495/1476/1458 | +1.56 | +0.03 | -26.19 | SF12 | `3=IPA` (Cal) |
+| **IPA** | $6.29 - j6.090$ | 794.0 | -1.63 | -2.19 | 4.8% | 1457/1439/1423 | +1.45 | +0.04 | -27.75 | SF12 | `3=IPA` |
+| **Water Film** | $79.9 - j3.810$ | 776.0 | -0.46 | -0.72 | 9.6% | 1487/1472/1458 | +1.22 | +0.04 | -26.35 | SF12 | `4=LIQUID_WATER` |
 
 ### 7.2 10-Byte Big-Endian LoRaWAN `FPort = 10` Payload (`firmware/src/isac_sensing.c`)
 
 | Byte(s) | Field Name | Type & Endianness | Resolution & Encoding |
 | :---: | :--- | :---: | :--- |
 | **0** | `state_flags` | `uint8` | `[7]=1 (RevE_Frame)`, `[6]=Duty_Throttled`, `[5]=Low_Battery (<3100 mV)`, `[4]=SMPS_DCDC_Active`, `[3:0]=SurfaceState` (`0=DRY_AIR`, `1=OIL`, `2=GLAZE_ICE`, `3=IPA`, `4=LIQUID_WATER`, `15=FAULT`) |
-| **1..2** | `tilt_db_x100` | `int16 BE` | 0.01 dB — $(V(f_1) - V(f_3)) / (19.0\text{ mV/dB})$ |
-| **3..4** | `level_dbm_x100` | `int16 BE` | 0.01 dBm — Mean coupled reflection power across $f_1..f_3$ (die-temp compensated) |
-| **5..6** | `eps_est_x100` | `uint16 BE` | 0.01 RIU — Piecewise-monotonic estimated real permittivity $\hat{\varepsilon}_r' \times 100$ (`0` on `FAULT`, assuming $h_{\text{sup}} \ge 2\text{ mm}$) |
+| **1..2** | `tilt_db_x100` | `int16 BE` | 0.01 dB — $[V(f_1) - V(f_3)] / K_{\text{det}}$ from Eq. (3) |
+| **3..4** | `level_dbm_x100` | `int16 BE` | 0.01 dBm — Mean coupled reflection power $\bar{L}$ across $f_1, f_2, f_3$ from Eq. (5) (die-temp compensated) |
+| **5..6** | `eps_est_x100` | `uint16 BE` | 0.01 RIU — Piecewise-monotonic estimated real permittivity $\varepsilon_{r,\text{est}}' \times 100$ (`0` on `FAULT`, valid for $h_{\text{sup}} \ge 2\text{ mm}$) |
 | **7..8** | `vbat_mv` | `uint16 BE` | 1 mV — `PA9`-gated post-`Q3` battery voltage (3000–4200 mV nominal) |
-| **9** | `notch_db_x10` | `int8` | 0.1 dB clamped `[-128..+127]` — $((V(f_1) + V(f_3))/2 - V(f_2)) / (19.0\text{ mV/dB})$ |
+| **9** | `notch_db_x10` | `int8` | 0.1 dB clamped `[-128..+127]` — $\Delta N_2$ curvature feature from Eq. (4) |
 
 ---
 
@@ -253,13 +286,19 @@ Cross-checked automatically by `tools/check_bom_cpl.py` and `tools/verify_u1_ove
 The parametric enclosure generator ([`enclosure/gen_enclosure.py`](enclosure/gen_enclosure.py)) outputs watertight 2-manifold STL solids (95.7 × 45.7 × 16.1 mm outer envelope) verified with `trimesh`:
 - **Flat Electronics Roof ($z_{\text{top}} = +8.50\text{ mm}$) & Open-East Window:** No connector cutouts penetrate the electronics bay (`J1..J5` = DNP), and the thinned $0.80 \pm 0.02\text{ mm}$ sensing window extends flush through the East perimeter wall (0.00 mm retaining lip) so rainwater sheds off the edge rather than pooling over `AE1`.
 - **Parker ORD 5700 EPDM Face-Seal O-Ring:** Continuous perimeter 1.80 × 0.76 mm groove with 0.16 mm skirt clearance (0.92 mm compressed gland depth for Ø1.20 mm Shore 50A cord), clamped by four M2.5 × 22 mm corner screws situated outside the dry seal perimeter.
-- **Interchangeable Base Trays:** **Option A** (`ISAC_868_Base_Tray.stl` for a flat 302535 1S LiPo pouch cell) and **Option B** (`ISAC_868_Base_Tray_Battery.stl` for a stepped `ER14335M` 2/3 AA 3.6 V primary $\text{Li-SOCl}_2$ cell), each incorporating a recessed internal wire channel beneath `J2`.
+- **Interchangeable Base Trays:** **Option A** (`ISAC_868_Base_Tray.stl` for a flat 302535 1S LiPo pouch cell) and **Option B** (`ISAC_868_Base_Tray_Battery.stl` for a stepped `ER14335M` 2/3 AA 3.6 V primary Li-SOCl<sub>2</sub> cell), each incorporating a recessed internal wire channel beneath `J2`.
+
+**Figure 8.1 — Exploded & Cross-Sectional 3D CAD Views (`docs/ISAC_868_Enclosure_3D_Exploded.png`):**
 
 ![ISAC_868 Rev E.5 3D Enclosure Exploded and Cutaway Views](docs/ISAC_868_Enclosure_3D_Exploded.png)
 
-| Option A (302535 Slim 1S LiPo Base Tray Blueprint) | Option B (`ER14335M` 2/3 AA Stepped Battery Bay Blueprint) |
-| :---: | :---: |
-| ![Option A Enclosure Blueprint](docs/ISAC_868_Enclosure_0p80mm_Blueprint.png) | ![Option B Stepped Battery Blueprint](docs/ISAC_868_Enclosure_Battery_Blueprint.png) |
+**Figure 8.2 — Option A (302535 Slim 1S LiPo Base Tray) Mechanical Blueprint (`docs/ISAC_868_Enclosure_0p80mm_Blueprint.png`):**
+
+![Option A Enclosure Blueprint](docs/ISAC_868_Enclosure_0p80mm_Blueprint.png)
+
+**Figure 8.3 — Option B (`ER14335M` 2/3 AA Stepped Battery Bay) Mechanical Blueprint (`docs/ISAC_868_Enclosure_Battery_Blueprint.png`):**
+
+![Option B Stepped Battery Blueprint](docs/ISAC_868_Enclosure_Battery_Blueprint.png)
 
 ---
 
@@ -267,8 +306,8 @@ The parametric enclosure generator ([`enclosure/gen_enclosure.py`](enclosure/gen
 
 Both for academic transparency and before scaling beyond the pilot batch, six physical and architectural boundary conditions of `Rev E.5` should be kept in mind:
 
-1. **Film-Thickness vs. Permittivity Degeneracy ($\varepsilon_r' \times h_{\text{film}}$):** Planar interdigital sensors probe an exponentially weighted near-field region of characteristic depth $\delta_E \approx 0.80\text{ mm}$ above the radome [1]. While a continuous layer thicker than $2\delta_E$ ($\approx 1.6\text{–}2.0\text{ mm}$, as modeled in Table 7.1) approaches the half-space asymptote, a sub-millimeter condensation film ($h < 0.3\text{ mm}$) or isolated droplets only partially load the fringing field and can traverse $(\text{Tilt}, \text{Level})$ trajectories similar to thicker oil or ice layers. Field deployments should combine `FPort = 10` features with thermal gating ($\le +4.0\ ^\circ\text{C}$ for `GLAZE_ICE`) and multi-frame temporal persistence.
-2. **Narrowband EU868 Skirt Compression (6.4 MHz Probing Span):** Regulatory confinement to 863.1–869.5 MHz (0.74% fractional bandwidth) means that once a high-permittivity medium ($\varepsilon_r' \ge 6$) pulls $f_0$ below 800 MHz, all three CW tones sample the high-reflection upper skirt ($|\Gamma_{\text{in}}| \approx -0.5\text{ to }-2.2\text{ dB}$). Distinguishing Water from lossy polar fluids such as IPA relies on ~0.23 dB of `Tilt` and ~1.4 dB of calibrated `Level`—practical in controlled settings after 2-point calibration, but sensitive to non-uniform wetting in outdoor service.
+1. **Film-Thickness vs. Permittivity Degeneracy ($\varepsilon_r' \times h_{\text{film}}$):** Planar interdigital sensors probe an exponentially weighted near-field region of characteristic depth $\delta_E \approx 0.80\text{ mm}$ above the radome [1]. While a continuous layer thicker than $2\delta_E$ ($\approx 1.6\text{–}2.0\text{ mm}$, as modeled in Section 7.1) approaches the half-space asymptote, a sub-millimeter condensation film ($h < 0.3\text{ mm}$) or isolated droplets only partially load the fringing field and can traverse $(\Delta L_{13}, \bar{L})$ trajectories similar to thicker oil or ice layers. Field deployments should combine `FPort = 10` features with thermal gating ($\le +4.0\ ^\circ\text{C}$ for `GLAZE_ICE`) and multi-frame temporal persistence.
+2. **Narrowband EU868 Skirt Compression (6.4 MHz Probing Span):** Regulatory confinement to 863.1–869.5 MHz (0.74% fractional bandwidth) means that once a high-permittivity medium ($\varepsilon_r' \ge 6$) pulls $f_0$ below 800 MHz, all three CW tones sample the high-reflection upper skirt ($\lvert\Gamma_{\text{in}}\rvert \approx -0.5\text{ to }-2.2\text{ dB}$). Distinguishing Water from lossy polar fluids such as IPA relies on ~0.23 dB of `Tilt` and ~1.4 dB of calibrated `Level`—practical in controlled settings after 2-point calibration, but sensitive to non-uniform wetting in outdoor service.
 3. **Electrically Small Counterpoise (50 × 40 mm = $0.145\lambda_0$) & Mounting Surface Coupling:** On a sub-wavelength ground plane, `B.Cu` counterpoise currents radiate a substantial fraction of total power [2]. Bolting the housing directly onto structural steel (bridge girders, turbine nacelles) vs. concrete or timber alters ground-plane image currents and input impedance. Either space the enclosure $\ge 10\text{–}15\text{ mm}$ off metallic surfaces on a dielectric bracket or execute the Point-1 Dry-Air tare (`--cal-dry-mv`) on the target mounting material.
 4. **2-Layer FR-4 Tolerance ($\varepsilon_r = 4.4 \pm 0.2$), CPWG Etch Factor & `C_MZ` Pad Parasitics:** Uncontrolled 2-layer 1.60 mm FR-4 shifts unloaded $f_0$ by roughly ±8–12 MHz across laminate lots, the 0.28 mm CPWG gap is sensitive to 1 oz copper etch tolerance (mitigated by keeping the longest line to $0.056\lambda_g$), and 0402 pad fringing (~0.1 pF across `L_M1`) can pull the `C_MZ = 0.5 pF` $2f_0$ notch slightly low (checked in bring-up step `O-02`). Migrating to a controlled-impedance 4-layer stackup with mitered $45^\circ$ antenna bends is planned for `Rev F.0`.
 5. **Broadband `LT5538` Detector Selectivity (40 MHz–3.8 GHz):** While Listen-Before-Sense (`LBS`) pre/post blanking rejects intermittent LoRa/LTE bursts, continuous strong out-of-band emitters near an industrial site will trigger repeated `FAULT` deferrals. Adding an 868 MHz SAW bandpass filter ahead of `U2` Pin 2 (`IN+`) is planned for `Rev F.0`.
@@ -278,58 +317,58 @@ Both for academic transparency and before scaling beyond the pilot batch, six ph
 
 ## 10. Complete `Rev E.5` Turnkey Bill of Materials
 
-- **Populated Assembly (`DNP = No`):** 38 BOM lines = 67 placed components (single-sided top SMT placements in `fab/cpl/ISAC_868_Turnkey_CPL_Top.csv`, 0 THT parts; `NO SUBSTITUTION` specified on `U1, U2, U3, Q1, Q2, J1`).
+- **Populated Assembly (`DNP = No`):** 38 BOM lines = 67 placed components (single-sided top SMT placements in [`fab/cpl/ISAC_868_Turnkey_CPL_Top.csv`](fab/cpl/ISAC_868_Turnkey_CPL_Top.csv), 0 THT parts; `NO SUBSTITUTION` specified on `U1, U2, U3, Q1, Q2, J1`). Exact KiCad footprint identifiers are archived in [`fab/bom/ISAC_868_Turnkey_BOM.csv`](fab/bom/ISAC_868_Turnkey_BOM.csv).
 - **Do-Not-Populate (`DNP = Yes`):** 8 BOM lines = 10 unpopulated footprints (`C_SMPS3, D_RF, J1, J2, J3, J4, J5, R_DIV1, R_DIV2, R_VUART`) with 0 paste apertures in `F_Paste.gtp` (`J2` provides bare-ENIG Ø0.75 mm PTH battery wire pads from `B.Cu`; `J3..J5` provide bare-ENIG pogo-pin pads for SWD/UART/BOOT bench access).
 - **Board-Only Features (15 footprints, excluded from BOM & CPL):** `AE1` (`IFA_868MHz_ISAC_40x20mm`), `FID1..FID5` (5 × Ø1.00/2.00 mm bare-ENIG optical fiducials), `H1..H4` (4 × Ø2.70 mm ISO 273 M2.5 NPTH mounting holes), `TP1..TP5` (Ø1.00 mm DC test points).
 
-| Item | Designators | Qty | Value | Footprint | MPN | Manufacturer | LCSC / Sourcing | DNP |
+| Item | Designators | Qty | Value | Package | MPN | Manufacturer | LCSC / Sourcing | DNP |
 | :---: | :--- | :---: | :--- | :--- | :--- | :--- | :--- | :---: |
-| 1 | `C_BAT, C_CAPM, C_CAPP, C_INN` | 4 | `1n` | `C_0402_1005Metric` | `GRM1555C1H102JA01D` | Murata | `C76947` | No |
-| 2 | `C_BLK, C_RF` | 2 | `100p` | `C_0402_1005Metric` | `GJM1555C1H101JB01D` | Murata | `Authorized: DigiKey/Mouser` | No |
-| 3 | `C_BULK1, C_BULK2` | 2 | `47u` | `C_0805_2012Metric` | `GRM21BR61A476ME15L` | Murata | `C124129` | No |
-| 4 | `C_DET1, C_IN2, C_LPF, C_OUT2, C_Q1, C_RST, C_U1B, C_U1C, C_VREF` | 9 | `100n` | `C_0402_1005Metric` | `GRM155R71C104KA88D` | Murata | `C71629` | No |
-| 5 | `C_DET2, C_OUT1` | 2 | `1u` | `C_0603_1608Metric` | `GRM188R71E105KA12D` | Murata | `C86020` | No |
-| 6 | `C_IN1` | 1 | `10u` | `C_0603_1608Metric` | `GRM188R61E106MA73D` | Murata | `C91606` | No |
-| 7 | `C_M1` | 1 | `3.6p` | `C_0402_1005Metric` | `GJM1555C1H3R6WB01D` | Murata | `Authorized: DigiKey/Mouser` | No |
-| 8 | `C_M2` | 1 | `4.3p` | `C_0402_1005Metric` | `GJM1555C1H4R3WB01D` | Murata | `Authorized: DigiKey/Mouser` | No |
-| 9 | `C_MZ` | 1 | `0.5p` | `C_0402_1005Metric` | `GJM1555C1HR50WB01D` | Murata | `Authorized: DigiKey/Mouser` | No |
-| 10 | `C_PAV, C_RFV, C_VBAT, C_VDDA2` | 4 | `1u` | `C_0402_1005Metric` | `GRM155R61E105KA12D` | Murata | `C77009` | No |
-| 11 | `C_S, C_S2` | 2 | `1.0p` | `C_0402_1005Metric` | `GJM1555C1H1R0WB01D` | Murata | `C161339` | No |
-| 12 | `C_SMPS1` | 1 | `4.7u` | `C_0402_1005Metric` | `GRM155R61A475MEAAD` | Murata | `C335105` | No |
-| 13 | `C_SMPS2` | 1 | `470n` | `C_0402_1005Metric` | `GRM155R71C474KA01D` | Murata | `C52923` | No |
-| 14 | `C_U1A, C_VDDA1` | 2 | `4.7u` | `C_0603_1608Metric` | `GRM188R61E475KE11D` | Murata | `C90057` | No |
-| 15 | `D_3V3, D_RST, D_VBAT` | 3 | `PESD5V0S1BA` | `D_SOD-323` | `PESD5V0S1BA,115` | Nexperia | `C19224` | No |
-| 16 | `D_SWD, D_UART` | 2 | `PESD5V0U2BT` | `SOT-23` | `PESD5V0U2BT,215` | Nexperia | `Authorized: DigiKey/Mouser` | No |
-| 17 | `FB_PA, FB_RF, FB_VDDA` | 3 | `120R@100M` | `L_0402_1005Metric` | `BLM15AG121SN1D` | Murata | `C85812` | No |
-| 18 | `FB_SMPS` | 1 | `0R` | `R_0402_1005Metric` | `RC0402JR-070RL` | Yageo | `C60485` | No |
-| 19 | `L_M1` | 1 | `8.2n` | `L_0402_1005Metric` | `LQW15AN8N2G00D` | Murata | `Authorized: DigiKey/Mouser` | No |
-| 20 | `L_Q` | 1 | `27n` | `L_0402_1005Metric` | `LQW15AN27NG00D` | Murata | `Authorized: DigiKey/Mouser` | No |
-| 21 | `L_S` | 1 | `30n` | `L_0402_1005Metric` | `LQW15AN30NG00D` | Murata | `Authorized: DigiKey/Mouser` | No |
-| 22 | `L_SMPS` | 1 | `15u` | `L_0805_2012Metric` | `LQH2MCN150K02L` | Murata | `C86089` | No |
-| 23 | `Q1` | 1 | `TPS22919DCKR` | `SOT-363_SC-70-6` | `TPS22919DCKR` | Texas Instruments | `Authorized: DigiKey/Mouser` | No |
-| 24 | `Q2` | 1 | `NX3008CBKS` | `SOT-363_SC-70-6` | `NX3008CBKS,115` | Nexperia | `C456076` | No |
-| 25 | `Q3` | 1 | `AO3401A` | `SOT-23` | `AO3401A` | Alpha & Omega | `C15127` | No |
-| 26 | `R1` | 1 | `8.2 (0.1%)` | `R_0402_1005Metric` | `RT0402BRD078R2L` | Yageo | `Authorized: DigiKey/Mouser` | No |
-| 27 | `R2` | 1 | `681 (0.1%)` | `R_0402_1005Metric` | `RG1005P-6810-B-T5` | Susumu | `Authorized: DigiKey/Mouser` | No |
-| 28 | `R3` | 1 | `3.57k (0.1%)` | `R_0402_1005Metric` | `RG1005P-3571-B-T5` | Susumu | `Authorized: DigiKey/Mouser` | No |
-| 29 | `R_B1, R_B2` | 2 | `4.7k (0.1%)` | `R_0402_1005Metric` | `RG1005P-472-B-T5` | Susumu | `Authorized: DigiKey/Mouser` | No |
-| 30 | `R_BG` | 1 | `470k` | `R_0402_1005Metric` | `RC0402FR-07470KL` | Yageo | `C482181` | No |
-| 31 | `R_BHI, R_BOOT, R_RST` | 3 | `10k` | `R_0402_1005Metric` | `RC0402FR-0710KL` | Yageo | `C60490` | No |
-| 32 | `R_BPD, R_PD` | 2 | `100k` | `R_0402_1005Metric` | `RC0402FR-07100KL` | Yageo | `C60491` | No |
-| 33 | `R_LPF, R_VAPP` | 2 | `1k` | `R_0402_1005Metric` | `RC0402FR-071KL` | Yageo | `C106235` | No |
-| 34 | `R_TERM` | 1 | `56 (0.1%)` | `R_0402_1005Metric` | `RG1005P-560-B-T5` | Susumu | `Authorized: DigiKey/Mouser` | No |
-| 35 | `SW1` | 1 | `RESET` | `SW_SPST_B3U-1000P` | `B3U-1000P` | Omron | `C231329` | No |
-| 36 | `U1` | 1 | `RAK3172LP-SiP` | `RAK3172LP-SiP_LGA-73_12x12mm_P0.6mm` | `RAK3172LP-SIP-8-SM-NI` | RAKwireless | `Authorized: RAKwireless/Mouser/DigiKey` | No |
-| 37 | `U2` | 1 | `LT5538IDD#TRPBF` | `LT5538IDD_DFN-8-1EP_3x3mm_P0.5mm` | `LT5538IDD#TRPBF` | Analog Devices | `Authorized: DigiKey/Mouser` | No |
-| 38 | `U3` | 1 | `TPS7A0233DBVR` | `SOT-23-5` | `TPS7A0233DBVR` | Texas Instruments | `C2873330` | No |
-| 39 | `C_SMPS3` | 1 | `DNP 100n` | `ISAC:C_0402_1005Metric_DNP_NoPaste` | `GRM155R71C104KA88D` | Murata | `C71629` | **Yes** |
-| 40 | `D_RF` | 1 | `DNP` | `ISAC:D_SOD-523_DNP_NoPaste` | `ESD9B5.0ST5G` | onsemi | `Authorized: DigiKey/Mouser` | **Yes** |
-| 41 | `J1` | 1 | `DNP SMA_VNA` | `ISAC:SMA_Molex_73251-1153_EdgeMount_Horizontal_HandSolder` | `73251-1153` | Molex | `Authorized: Mouser/DigiKey` | **Yes** |
-| 42 | `J2` | 1 | `DNP 1S_BATT` | `JST_PH_B2B-PH-K_1x02` | `B2B-PH-K-S` | JST | `C131337` | **Yes** |
-| 43 | `J3` | 1 | `DNP BOOT` | `PinHeader_1x02_P2.54mm` | `PZ254V-11-02P` | XFCN | `C492401` | **Yes** |
-| 44 | `J4` | 1 | `DNP SWD` | `PinHeader_1x05_P2.54mm` | `PZ254V-11-05P` | XFCN | `C492404` | **Yes** |
-| 45 | `J5` | 1 | `DNP UART` | `PinHeader_1x04_P2.54mm` | `PZ254V-11-04P` | XFCN | `C492403` | **Yes** |
-| 46 | `R_DIV1, R_DIV2, R_VUART` | 3 | `DNP 0R` | `ISAC:R_0402_1005Metric_DNP_NoPaste` | `RC0402JR-070RL` | Yageo | `C60485` | **Yes** |
+| 1 | `C_BAT, C_CAPM, C_CAPP, C_INN` | 4 | 1 nF | 0402 | `GRM1555C1H102JA01D` | Murata | `C76947` | No |
+| 2 | `C_BLK, C_RF` | 2 | 100 pF | 0402 | `GJM1555C1H101JB01D` | Murata | Authorized: DigiKey/Mouser | No |
+| 3 | `C_BULK1, C_BULK2` | 2 | 47 µF | 0805 | `GRM21BR61A476ME15L` | Murata | `C124129` | No |
+| 4 | `C_DET1, C_IN2, C_LPF, C_OUT2, C_Q1, C_RST, C_U1B, C_U1C, C_VREF` | 9 | 100 nF | 0402 | `GRM155R71C104KA88D` | Murata | `C71629` | No |
+| 5 | `C_DET2, C_OUT1` | 2 | 1 µF | 0603 | `GRM188R71E105KA12D` | Murata | `C86020` | No |
+| 6 | `C_IN1` | 1 | 10 µF | 0603 | `GRM188R61E106MA73D` | Murata | `C91606` | No |
+| 7 | `C_M1` | 1 | 3.6 pF | 0402 | `GJM1555C1H3R6WB01D` | Murata | Authorized: DigiKey/Mouser | No |
+| 8 | `C_M2` | 1 | 4.3 pF | 0402 | `GJM1555C1H4R3WB01D` | Murata | Authorized: DigiKey/Mouser | No |
+| 9 | `C_MZ` | 1 | 0.5 pF | 0402 | `GJM1555C1HR50WB01D` | Murata | Authorized: DigiKey/Mouser | No |
+| 10 | `C_PAV, C_RFV, C_VBAT, C_VDDA2` | 4 | 1 µF | 0402 | `GRM155R61E105KA12D` | Murata | `C77009` | No |
+| 11 | `C_S, C_S2` | 2 | 1.0 pF | 0402 | `GJM1555C1H1R0WB01D` | Murata | `C161339` | No |
+| 12 | `C_SMPS1` | 1 | 4.7 µF | 0402 | `GRM155R61A475MEAAD` | Murata | `C335105` | No |
+| 13 | `C_SMPS2` | 1 | 470 nF | 0402 | `GRM155R71C474KA01D` | Murata | `C52923` | No |
+| 14 | `C_U1A, C_VDDA1` | 2 | 4.7 µF | 0603 | `GRM188R61E475KE11D` | Murata | `C90057` | No |
+| 15 | `D_3V3, D_RST, D_VBAT` | 3 | TVS 5 V | SOD-323 | `PESD5V0S1BA,115` | Nexperia | `C19224` | No |
+| 16 | `D_SWD, D_UART` | 2 | Dual TVS | SOT-23 | `PESD5V0U2BT,215` | Nexperia | Authorized: DigiKey/Mouser | No |
+| 17 | `FB_PA, FB_RF, FB_VDDA` | 3 | 120 Ω @ 100M | 0402 | `BLM15AG121SN1D` | Murata | `C85812` | No |
+| 18 | `FB_SMPS` | 1 | 0 Ω | 0402 | `RC0402JR-070RL` | Yageo | `C60485` | No |
+| 19 | `L_M1` | 1 | 8.2 nH | 0402 | `LQW15AN8N2G00D` | Murata | Authorized: DigiKey/Mouser | No |
+| 20 | `L_Q` | 1 | 27 nH | 0402 | `LQW15AN27NG00D` | Murata | Authorized: DigiKey/Mouser | No |
+| 21 | `L_S` | 1 | 30 nH | 0402 | `LQW15AN30NG00D` | Murata | Authorized: DigiKey/Mouser | No |
+| 22 | `L_SMPS` | 1 | 15 µH | 0805 | `LQH2MCN150K02L` | Murata | `C86089` | No |
+| 23 | `Q1` | 1 | Load Sw | SC-70-6 | `TPS22919DCKR` | Texas Instruments | Authorized: DigiKey/Mouser | No |
+| 24 | `Q2` | 1 | N/P MOS | SOT-363 | `NX3008CBKS,115` | Nexperia | `C456076` | No |
+| 25 | `Q3` | 1 | P-MOS | SOT-23 | `AO3401A` | Alpha & Omega | `C15127` | No |
+| 26 | `R1` | 1 | 8.2 Ω (0.1%) | 0402 | `RT0402BRD078R2L` | Yageo | Authorized: DigiKey/Mouser | No |
+| 27 | `R2` | 1 | 681 Ω (0.1%) | 0402 | `RG1005P-6810-B-T5` | Susumu | Authorized: DigiKey/Mouser | No |
+| 28 | `R3` | 1 | 3.57 kΩ (0.1%) | 0402 | `RG1005P-3571-B-T5` | Susumu | Authorized: DigiKey/Mouser | No |
+| 29 | `R_B1, R_B2` | 2 | 4.7 kΩ (0.1%) | 0402 | `RG1005P-472-B-T5` | Susumu | Authorized: DigiKey/Mouser | No |
+| 30 | `R_BG` | 1 | 470 kΩ | 0402 | `RC0402FR-07470KL` | Yageo | `C482181` | No |
+| 31 | `R_BHI, R_BOOT, R_RST` | 3 | 10 kΩ | 0402 | `RC0402FR-0710KL` | Yageo | `C60490` | No |
+| 32 | `R_BPD, R_PD` | 2 | 100 kΩ | 0402 | `RC0402FR-07100KL` | Yageo | `C60491` | No |
+| 33 | `R_LPF, R_VAPP` | 2 | 1 kΩ | 0402 | `RC0402FR-071KL` | Yageo | `C106235` | No |
+| 34 | `R_TERM` | 1 | 56 Ω (0.1%) | 0402 | `RG1005P-560-B-T5` | Susumu | Authorized: DigiKey/Mouser | No |
+| 35 | `SW1` | 1 | Reset Sw | SMD Tact | `B3U-1000P` | Omron | `C231329` | No |
+| 36 | `U1` | 1 | LoRa SiP | LGA-73 (12×12) | `RAK3172LP-SIP-8-SM-NI` | RAKwireless | Authorized: RAKwireless/Mouser/DigiKey | No |
+| 37 | `U2` | 1 | Log Det | DFN-8-1EP (3×3) | `LT5538IDD#TRPBF` | Analog Devices | Authorized: DigiKey/Mouser | No |
+| 38 | `U3` | 1 | 3.3 V LDO | SOT-23-5 | `TPS7A0233DBVR` | Texas Instruments | `C2873330` | No |
+| 39 | `C_SMPS3` | 1 | DNP 100 nF | 0402 (DNP) | `GRM155R71C104KA88D` | Murata | `C71629` | **Yes** |
+| 40 | `D_RF` | 1 | DNP ESD | SOD-523 (DNP) | `ESD9B5.0ST5G` | onsemi | Authorized: DigiKey/Mouser | **Yes** |
+| 41 | `J1` | 1 | DNP SMA | Edge-SMA (DNP) | `73251-1153` | Molex | Authorized: Mouser/DigiKey | **Yes** |
+| 42 | `J2` | 1 | DNP Batt | JST-PH-2 (DNP) | `B2B-PH-K-S` | JST | `C131337` | **Yes** |
+| 43 | `J3` | 1 | DNP BOOT | Hdr 1×2 (DNP) | `PZ254V-11-02P` | XFCN | `C492401` | **Yes** |
+| 44 | `J4` | 1 | DNP SWD | Hdr 1×5 (DNP) | `PZ254V-11-05P` | XFCN | `C492404` | **Yes** |
+| 45 | `J5` | 1 | DNP UART | Hdr 1×4 (DNP) | `PZ254V-11-04P` | XFCN | `C492403` | **Yes** |
+| 46 | `R_DIV1, R_DIV2, R_VUART` | 3 | DNP 0 Ω | 0402 (DNP) | `RC0402JR-070RL` | Yageo | `C60485` | **Yes** |
 
 ---
 
@@ -365,7 +404,8 @@ Connect an ST-LINK/V3MINIE (`STM32_Programmer_CLI`) to `J4` (Pins 1..5: `VAPP_SE
   --cal-ref-cdb 0 \
   --lock-rdp1
 ```
-*(Generated per-unit `AppKey` records are stored locally with `0600` permissions in `provisioning_vault/`, which is git-ignored. Step-by-step first-article procedures are documented in [`docs/bringup_report.md`](docs/bringup_report.md).)*
+
+> **Provisioning Note:** Per-unit `AppKey` records are stored locally with `0600` permissions in `provisioning_vault/` (git-ignored). Step-by-step first-article procedures are documented in [`docs/bringup_report.md`](docs/bringup_report.md).
 
 ### 11.4 Design & Documentation Verification Scripts
 To run the non-destructive DFM, BOM/CPL, schematic/layout consistency, CST macro, seeded-defect, and documentation parity checks against the frozen `Rev E.5` design:
@@ -380,7 +420,8 @@ PYTHONDONTWRITEBYTECODE=1 python3 cst_studio/python/run_cst_batch.py --check-mac
 PYTHONDONTWRITEBYTECODE=1 python3 cst_studio/python/postprocess_cst_results.py --verify-pipeline
 PYTHONDONTWRITEBYTECODE=1 python3 tools/test_seeded_defects.py
 ```
-*(For full CAD/EM/turnkey regeneration from scratch when modifying copper geometry on a future revision, run `tools/verify_e2e_release_gate.py`.)*
+
+For full CAD/EM/turnkey regeneration from scratch when modifying copper geometry on a future revision, run `tools/verify_e2e_release_gate.py`.
 
 ---
 

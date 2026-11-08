@@ -48,7 +48,7 @@ To avoid adding ~1.5 pF of pad capacitance to the RF reflectometer, no test poin
    - Apply -4.20 V (10 mA current limit) to `J2.2` relative to `J2.1`: verify $I_{\text{J2}} < 1\ \mu\text{A}$ and `TP3` = 0.000 V ± 2 mV.
    - Verify `J5.1` (`VUART`) reads open (> 10 MΩ) to `TP1` (`R_VUART` = DNP) and `J4.1` (`VAPP_SENSE`) reads 1.00 kΩ ± 1% (`R_VAPP`) to `TP1`.
 4. **Nominal 3.70 V Power-Up:** Apply +3.700 V (100 mA limit) to `J2` (Pin 2 = +, Pin 1 = -). Confirm `TP3` $\ge$ 3.695 V and `TP1` = 3.300 V ± 33 mV.
-5. **Firmware Flashing & 2-Point Calibration (`O-05`):** Connect the 5-pin SWD pogo clip to `J4`. Flash an initial bench image with `--uncalibrated-bench --no-rdp` to read `g_selftest_report` and capture the enclosed Dry-Air detector voltages (`v1,v2,v3` in mV) plus the sintered 2.0 mm $\text{Al}_2\text{O}_3$ ceramic reference block reading (`cal_ref_cdb = level_dbm_x100 - (-2619)` in 0.01 dB units). Re-provision the calibration constants and unit keys into `0x0803E000`:
+5. **Firmware Flashing & 2-Point Calibration (`O-05`):** Connect the 5-pin SWD pogo clip to `J4`. Flash an initial bench image with `--uncalibrated-bench --no-rdp` to read `g_selftest_report` and capture the enclosed Dry-Air detector voltages (`v1,v2,v3` in mV) plus the sintered 2.0 mm Al<sub>2</sub>O<sub>3</sub> ceramic reference block reading (`cal_ref_cdb = level_dbm_x100 - (-2619)` in 0.01 dB units). Re-provision the calibration constants and unit keys into `0x0803E000`:
    ```bash
    ./tools/production_flash.sh \
      --deveui 70B3D57ED0060001 \
@@ -84,7 +84,7 @@ To avoid adding ~1.5 pF of pad capacitance to the RF reflectometer, no test poin
 | `B-05` | Cold-Cutoff Droop & TCXO Headroom | $V_{\text{J2}} = 3.10\text{ V}$ (0.5 Ω $R_s$) $\to$ 2.95 V | `TP1` $\ge 3.05\text{ V}$ at 3.10 V; TX inhibited < 3.00 V | *Pending `O-04`* | `[ ]` |
 | `B-06` | Conducted Power & $2f_0 / 3f_0$ Harmonics | +4 dBm CW / +14 dBm LoRa | Fundamental ±1.0 dB; conducted $2f_0, 3f_0 \le -36\text{ dBm}$ | *Pending `O-02`* | `[ ]` |
 | `B-07` | Enclosed ASA/PETG + LiPo Return Loss | `J1` + `R_DIV2`=0R, SOL cal | $\lvert S_{11}\rvert \le -10.0\text{ dB}$ across 863.0–870.0 MHz | *Pending `O-02`* | `[ ]` |
-| `B-08` | 2-Point Calibrated Ice & Water/IPA Contrast | Dry + $\text{Al}_2\text{O}_3$ cal + Ice/Water/IPA | Ice contrast $\ge 8.0\text{ dB}$; Water vs. IPA gap $\ge 0.50\text{ dB}$ | *Pending `O-02`* | `[ ]` |
+| `B-08` | 2-Point Calibrated Ice & Water/IPA Contrast | Dry + Al<sub>2</sub>O<sub>3</sub> cal + Ice/Water/IPA | Ice contrast $\ge 8.0\text{ dB}$; Water vs. IPA gap $\ge 0.50\text{ dB}$ | *Pending `O-02`* | `[ ]` |
 | `B-09` | 0.80 mm Window Runoff & O-Ring Seal | Micrometer + IP65 spray test | 0.80 ± 0.05 mm window, clean East drainage, dry interior | *Pending `O-06`* | `[ ]` |
 | `B-10` | 1,000-Cycle Power-Cut & `RDP1` Unlock | Relay cycling + `J4.5` `NRST` | 0 `DevNonce`/`FCnt` regressions; `UR` unlock verified | *Pending `O-05`* | `[ ]` |
 

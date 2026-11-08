@@ -107,7 +107,7 @@ Cascading `AE1` with the 0.50 pF elliptic notch stores reactive energy near 869 
 2. Open **Home → Macros → File → Open VBA Macro Editor**, load [`macros/ISAC_868_Complete_Antenna_MWS.bas`](macros/ISAC_868_Complete_Antenna_MWS.bas), and press **F5 (Run)**.
 3. Inspect the 3D solids and mesh (**Mesh → Mesh View**). Adjust `superstrate_id`, `enclosure_en`, `battery_mode`, `h_superstrate`, `h_window`, or `fastener_metal_en` in **View → Parameter List** (`F7` to rebuild).
 4. Run **Home → Start Simulation** (`Time Domain Solver`).
-5. **Overlaying 3D-FDTD Reference Curves:** Drag any `.s1p` file from [`results/fdtd_reference/`](results/fdtd_reference/) (for example `02_dry_air_fdtd_ref.s1p` or `07_glaze_ice_fdtd_ref.s1p`) onto **1D Results → S-Parameters** in the CST Navigation Tree to compare $|\Gamma_{\text{in}}(f)|$ at `/BR_Q`.
+5. **Overlaying 3D-FDTD Reference Curves:** Drag any `.s1p` file from [`results/fdtd_reference/`](results/fdtd_reference/) (for example `02_dry_air_fdtd_ref.s1p` or `07_glaze_ice_fdtd_ref.s1p`) onto **1D Results → S-Parameters** in the CST Navigation Tree to compare $\lvert\Gamma_{\text{in}}(f)\rvert$ at `/BR_Q`.
 6. **10-Scenario Batch Sweep:** Run [`macros/ISAC_868_Sweep_All_Superstrates.bas`](macros/ISAC_868_Sweep_All_Superstrates.bas) to solve all 10 benchmark cases and export `.s1p` plus 866.5 MHz Farfield ASCII files into `<project_folder>/cst_exports/`.
 7. **Tetrahedral FEM Cross-Check:** On a project copy, run [`macros/ISAC_868_Setup_FEM_CrossCheck.bas`](macros/ISAC_868_Setup_FEM_CrossCheck.bas) and start the **Frequency Domain Solver** (730–940 MHz, 2nd-order curved tetrahedra, adaptive energy threshold $\Delta S \le 0.005$ at 866.5 MHz).
 
@@ -134,7 +134,7 @@ PYTHONDONTWRITEBYTECODE=1 python3 cst_studio/python/postprocess_cst_results.py \
 
 ## 6. 3D-FDTD Reference Targets (`rf/results/ifa_fullwave_3d.json`)
 
-When comparing CST `FIT` and `FEM` runs against the in-repository Yee-grid FDTD baseline (self-check summary in [`results/fdtd_reference/fdtd_touchstone_selfcheck.md`](results/fdtd_reference/fdtd_touchstone_selfcheck.md)), conformal PBA edge treatment typically shifts unloaded $f_0$ by ±4–8 MHz—within half the FR-4 $\varepsilon_r = 4.4 \pm 0.2$ laminate tolerance—while preserving the dielectric detuning trajectory. Both reflection reference planes are listed below (`AE1` Pad 1 standalone $|\Gamma_{\text{ant}}|$ vs. Pi-filter-cascaded $|\Gamma_{\text{in}}|$ at `/BR_Q`):
+When comparing CST `FIT` and `FEM` runs against the in-repository Yee-grid FDTD baseline (self-check summary in [`results/fdtd_reference/fdtd_touchstone_selfcheck.md`](results/fdtd_reference/fdtd_touchstone_selfcheck.md)), conformal PBA edge treatment typically shifts unloaded $f_0$ by ±4–8 MHz—within half the FR-4 $\varepsilon_r = 4.4 \pm 0.2$ laminate tolerance—while preserving the dielectric detuning trajectory. Both reflection reference planes are listed below (`AE1` Pad 1 standalone $\lvert\Gamma_{\text{ant}}\rvert$ vs. Pi-filter-cascaded $\lvert\Gamma_{\text{in}}\rvert$ at `/BR_Q`):
 
 | Case Tag | Scenario ($h_{\text{sup}} = 2.0\text{ mm}$) | FDTD $f_0$ [MHz] | $\lvert\Gamma_{\text{ant}}\rvert_{866.5}$ @ `AE1` [dB] | $\lvert\Gamma_{\text{in}}\rvert_{866.5}$ @ `/BR_Q` [dB] | $\eta_{\text{tot}}$ [%] | Tilt [dB] | Level [dBm] | Expected Firmware Class |
 | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
@@ -142,6 +142,6 @@ When comparing CST `FIT` and `FEM` runs against the in-repository Yee-grid FDTD 
 | `02_dry_air` | Enclosed Dry Air ($\varepsilon_r'=1.00$) | 869.0 | -23.69 | -20.83 | 45.5% | -3.44 | -45.66 | `DRY_AIR` (`SF7`) |
 | `06_oil_ptfe` | Oil / PTFE ($\varepsilon_r'=2.10$) | 849.0 | -7.04 | -7.14 | 35.4% | -1.23 | -33.26 | `OIL` (`SF7`) |
 | `07_glaze_ice` | Glaze Ice ($\varepsilon_r'=3.20$) | 834.5 | -2.55 | -2.89 | 13.4% | -0.01 | -28.63 | `GLAZE_ICE` (`SF9`) |
-| `08_alumina_al2o3` | Alumina Al2O3 ($\varepsilon_r'=9.80$) | 783.0 | -0.36 | -0.53 | 5.1% | +1.56 | -26.19 | `IPA` *(Point-2 Cal Ref)* |
+| `08_alumina_al2o3` | Alumina Al<sub>2</sub>O<sub>3</sub> ($\varepsilon_r'=9.80$) | 783.0 | -0.36 | -0.53 | 5.1% | +1.56 | -26.19 | `IPA` *(Point-2 Cal Ref)* |
 | `09_ipa_debye` | IPA (`Debye1st`, $6.29 - j6.09$) | 794.0 | -1.63 | -2.19 | 4.8% | +1.45 | -27.75 | `IPA` (`SF12`) |
 | `10_water_debye` | Water (`Debye1st`, $79.9 - j3.81$) | 776.0 | -0.46 | -0.72 | 9.6% | +1.22 | -26.35 | `LIQUID_WATER` (`SF12`) |
