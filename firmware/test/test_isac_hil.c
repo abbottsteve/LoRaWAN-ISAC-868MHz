@@ -1,14 +1,14 @@
 /**
  * @file test_isac_hil.c
- * @brief Deterministic Host Hardware-in-the-Loop (HIL) Unit-Test Suite for Rev E.1 Firmware
+ * @brief Deterministic Host Hardware-in-the-Loop (HIL) Unit-Test Suite for Rev E.5 Firmware
  *
  * Validates `isac_sensing.c`, `isac_lorawan_eu868.c`, and `isac_board_pins.h` against
- * `analysis/results/design_values.json`, NIST FIPS-197, RFC 4493, and LoRaWAN 1.0.3:
+ * `firmware/test/data/design_values.json`, NIST FIPS-197, RFC 4493, and LoRaWAN 1.0.3:
  *   1. Schematic Pin Parity (`PA0/PA1` RF switch, `PB0/DIO3` 32 MHz TCXO, `ADC_IN13` VREFINT,
  *      `CKMODE=PCLK/2`), 15 uH `USE_DCDC` SMPS Sequence & Gated `PA8` (`DET_EN`) Timing
  *   2. Exact `VREFINT` Supply-Droop Immunity (`VDDA = 3.00 V` vs `3.30 V` -> `0 mV` error)
  *   3. Exact PA / Temperature Common-Mode Drift Cancellation (`+/- 2.0 dB` -> `0.00 dB` Tilt error)
- *   4. `100%` Surface Medium Classification Accuracy (`Dry Air`, `Oil`, `Glaze Ice`, `IPA`,
+ *   4. Benchmark Surface Medium Classification (`Dry Air`, `Oil`, `Glaze Ice`, `IPA`,
  *      `Liquid Water`) + Byte-Exact 10-Byte `FPort 10` Serialization & ETSI `<= 1%` Duty Cycle
  *   5. NIST FIPS-197 AES-128, RFC 4493 CMAC, LoRaWAN 1.0.3 OTAA Join + Encrypted Class A
  *      `FPort 10` Uplink + `RX1 (+1.0 s)` / `RX2 (+2.0 s, 869.525 MHz)` State Machine.

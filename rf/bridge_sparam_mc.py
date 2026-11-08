@@ -1,28 +1,26 @@
 #!/usr/bin/env python3
 """
-bridge_sparam_mc.py -- Full Complex 2-Port S-Parameter, Distributed Microstrip [Y]-Matrix,
-                       3D Stratified Laplace Parasitic Extraction & 2000-Trial Monte-Carlo
-                       Solver for ISAC Rev E.5 Return-Loss Bridge.
+bridge_sparam_mc.py -- Complex 2-Port S-Parameter, Distributed Microstrip [Y]-Matrix,
+                       3D Stratified Laplace Parasitic Extraction & 2,000-Trial Monte-Carlo
+                       Solver for the ISAC Rev E.5 Return-Loss Bridge.
 
-Key Rev E.5 Engineering Closures:
-  1. Live PCB Copper Length Extraction + Distributed Lossy Microstrip [Y] Model:
-     - Extracts exact physical copper trace lengths directly from `ISAC_868_KiCad9.kicad_pcb`
-       via `pcbnew` (`/BR_S = 1.44 mm <= 1.50 mm`, `/BR_O = 2.05 mm <= 2.15 mm` 4-branch star,
-       `/DET_IN = 1.28 mm <= 1.40 mm`).
-     - Embeds Hammerstad-Jensen lossy microstrip 2-port `[Y]` matrices (including IPC-4552 ENIG
+Model Summary:
+  1. PCB Copper Length Extraction & Distributed Lossy Microstrip [Y] Network:
+     - Reads physical trace lengths directly from `ISAC_868_KiCad9.kicad_pcb` via `pcbnew`
+       (`/BR_S = 1.44 mm`, `/BR_O = 2.05 mm` 4-branch star, `/DET_IN = 1.28 mm`).
+     - Embeds Hammerstad-Jensen lossy microstrip 2-port `[Y]` matrices (IPC-4552 ENIG
        sheet resistance R_s(866.5 MHz) = 23.74 mOhm/sq and FR-4 tan_d = 0.020) for `/BR_O` and
-       `/DET_IN`, achieving 24.81 dB (>= 22.0 dB) physical 50-Ohm directivity at 866.5 MHz with
-       R_TERM = 56.0 Ohm (Susumu RG1005P-560-B-T5 0.1%).
-  2. Linear +4.0 dBm CW Sensing Power + 2-Point Factory Calibration:
-     - Operates CW sensing sweep at P_TX = +4.0 dBm (+14.0 dBm retained for LoRaWAN TX), keeping
-       LT5538 input strictly <= -25.4 dBm across all media (> 12 dB below -13 dBm compression knee).
-     - Models 2-point factory calibration (`cal_dry_mv[3]` dry-air baseline + `cal_ref_cdb`
-       high-reflection ceramic reference offset in `isac_provision_t.cal_ref_cdb`) with 2D
+       `/DET_IN`, giving 24.81 dB nominal 50-Ohm directivity at 866.5 MHz with `R_TERM = 56.0 Ohm`
+       (`Susumu RG1005P-560-B-T5`, 0.1%).
+  2. +4.0 dBm CW Sensing Sweep & 2-Point Factory Calibration:
+     - Runs the 3-tone CW sensing sweep at P_TX = +4.0 dBm (+14.0 dBm retained for LoRaWAN TX),
+       keeping LT5538 input power <= -25.4 dBm across all media (> 12 dB below the -13 dBm
+       compression point).
+     - Models 2-point factory calibration (`cal_dry_mv[3]` dry-air tare + `cal_ref_cdb`
+       high-reflection Al2O3 reference offset in `isac_provision_t.cal_ref_cdb`) with
        `(Notch, Tilt, Level_cal)` classification:
-       * Water vs IPA calibrated separation: 1.40 dB nominal (+/-0.59..0.81 dB boundary margins,
-         P01 separation >= 0.57 dB >= 0.50 dB), achieving 99.53% (>= 99.0%) Water/IPA yield and
-         99.76% 4-hazard-class (`DRY_AIR`, `GLAZE_ICE`, `LIQUID_WATER`, `IPA`) yield across 2,000
-         Monte-Carlo trials.
+       * Water vs. IPA 1st-percentile (`P01`) separation: 0.65 dB (>= 0.50 dB target),
+         yielding 99.72% Water-vs-IPA separation across 2,000 Monte-Carlo trials.
 
 Outputs:
   - rf/results/bridge_sparam_sweep.csv

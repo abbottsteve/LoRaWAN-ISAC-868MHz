@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-cpwg_2dfvm_solver.py -- Self-Contained Non-Uniform 2D Finite-Volume Laplace Cross-Sectional
-                        Solver for the ISAC Rev E.2 868 MHz CPWG Spine.
+cpwg_2dfvm_solver.py -- Non-Uniform 2D Finite-Volume Laplace Cross-Sectional
+                        Solver for the ISAC Rev E.5 868 MHz CPWG Spine.
 
-Models the exact finished 2-layer PCBWay stackup on a graded tensor-product mesh whose node
-lines align identically with every material interface (zero staircasing):
+Models the finished 2-layer stackup on a graded tensor-product mesh whose node
+lines align with each dielectric/conductor interface:
   - Finished board thickness : 1.60 mm nominal (+/-10%)
   - FR-4 dielectric core     : h_core = 1.51 mm, eps_r in {4.2, 4.4, 4.6}
   - Outer copper weight      : 1 oz finished = 35 um (0.035 mm)

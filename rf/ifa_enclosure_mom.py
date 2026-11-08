@@ -4,23 +4,23 @@ ifa_enclosure_mom.py -- Full-Wave 3D Non-Uniform Yee-Grid Maxwell FDTD Solver &
                         4-Element Elliptic Low-Pass Harmonic Filter Co-Analysis
                         for ISAC_868 Rev E.5.
 
-ZERO hardcoded f0 overrides, ZERO lumped RLC tautologies, ZERO empirical scale factors:
-  1. Directly parses the exact copper segments and custom pad primitives from
+Methodology:
+  1. Parses the copper segments and pad primitives directly from
      `ISAC.pretty/IFA_868MHz_ISAC_40x20mm.kicad_mod`.
-  2. Builds the full 3D physical stackup in `rf/libfdtd_3d_ant.so` (OpenMP 3D Yee-Grid
+  2. Constructs the 3D stackup in `rf/libfdtd_3d_ant.so` (OpenMP 3D Yee-grid
      FDTD with 8-cell Convolutional PML absorbing boundaries):
        - 50 x 40 mm finite F.Cu + B.Cu ground counterpoise with stitching vias
        - 1.51 mm FR-4 core (eps_r = 4.4, tan_d = 0.020; plus 4.2 / 4.6 corners)
        - 25 um 3M 467MP acrylic transfer adhesive (eps_r = 2.80) + 0.80 mm UV-stabilized
-         ASA/PETG flush sensing boss (eps_r = 3.05, tan_d = 0.012) + full enclosure walls/base
-       - Optional 302535 LiPo conductive pouch (z = -3.60 mm under counterpoise X < 50 mm)
+         ASA/PETG flush sensing window (eps_r = 3.05, tan_d = 0.012) + enclosure walls/base
+       - Optional 302535 LiPo cell pouch (z = -3.60 mm under counterpoise X < 50 mm)
        - 2.00 mm superstrate layers across Dry Air, PTFE/Oil, Glaze Ice, Alumina, IPA, and Water
-  3. Cascades the populated 4-Element Elliptic Low-Pass Harmonic Pi-Network
+  3. Cascades the populated 4-element elliptic low-pass harmonic Pi-network
      (`C_M1 = 3.6 pF`, `L_M1 = 8.2 nH || C_MZ = 0.5 pF`, `C_M2 = 4.3 pF`) between `/BR_Q`
-     and `/ANT_FEED`, verifying:
-       - Standalone & filter-cascaded Enclosed Dry-Air |S11(866.5 MHz)| <= -14.0 dB
-       - Harmonic suppression >= 20.0 dB at 2*f0 (1733.0 MHz) and >= 30.0 dB at 3*f0 (2599.5 MHz)
-         across 50 Ohm, Dry-Air AE1, and Water-Detuned AE1 VSWR!
+     and `/ANT_FEED`, evaluating:
+       - Standalone (`/ANT_FEED`) & cascaded (`/BR_Q`) Enclosed Dry-Air |S11(866.5 MHz)| <= -14.0 dB
+       - Harmonic suppression >= 28.0 dB at 2*f0 (1733.0 MHz) and >= 45.0 dB at 3*f0 (2599.5 MHz)
+         across 50 Ohm, Dry-Air AE1, and Water-detuned AE1 loads.
 
 Outputs:
   - rf/results/ifa_s11_efficiency.csv

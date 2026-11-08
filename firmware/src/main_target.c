@@ -2,8 +2,8 @@
  * @file main_target.c
  * @brief Autonomous Low-Power Target Firmware Entry for RAK3172LP-SiP (STM32WLE5JC)
  *
- * Lifecycle per 15-minute (900 s) LSE/RTC Wakeup Cycle (Rev E.2 analytical ~4.5 uA typ avg @ SF7BW125;
- * bench Joulescope/PPK2 verification tracked in `docs/OPEN_ITEMS.md` O-08):
+ * Lifecycle per 15-minute (900 s) LSE/RTC Wakeup Cycle (Rev E.5 analytical ~4.4 uA typ avg @ SF7BW125;
+ * bench Joulescope/PPK2 verification tracked in `docs/OPEN_ITEMS.md` O-04):
  *   1. Boot: Engage SUBGHZ_SMPSC0R.CLKDE + external 15 uH SMPS buck (`PWR_CR5_SMPSEN` +
  *      `SetRegulatorMode(USE_DCDC)`), enable PB0/DIO3 32 MHz TCXO (`SetDIO3AsTCXOCtrl`),
  *      calibrate all radio blocks, configure +14 dBm `RFO_LP` PA, run boot self-test,

@@ -683,7 +683,7 @@ void ISAC_Extract_Features_And_Classify_WithTemp(const isac_raw_sweep_t *sweep,
             out_tel->eps_est_x100 = estimate_loaded_eps_x100(tilt_x100);
         }
     } else {
-        /* Uncalibrated bench fallback: 100% intercept-invariant differential (Notch, Tilt) classifier */
+        /* Uncalibrated bench fallback: intercept-invariant differential (Notch, Tilt) classifier */
         if (notch_x100 >= 220) {
             out_tel->state        = ISAC_SURFACE_DRY_AIR;
             out_tel->eps_est_x100 = 100U;

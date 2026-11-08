@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 """
-generate_cst_package.py -- Deterministic KiCad-to-CST Studio Suite Model Exporter
-                           for ISAC_868_KiCad9 (Hardware Revision E.5).
+KiCad-to-CST Studio Suite 3D model exporter for ISAC_868_KiCad9 (Rev E.5).
 
-Extracts the exact 1:1 copper polygons, CPWG feed geometry, 0402 harmonic Pi-filter
-pads, GND stitching/return vias, bare-ENIG solder-mask window, and ASA/PETG enclosure
-stackup directly from `ISAC_868_KiCad9.kicad_pcb` and `ISAC.pretty/IFA_868MHz_ISAC_40x20mm.kicad_mod`
-(read-only; zero modifications to frozen Rev E.5 hardware files) and generates:
+Reads copper polygons, CPWG feed geometry, 0402 harmonic Pi-filter pads, GND
+stitching/return vias, bare-ENIG solder-mask window, and ASA/PETG enclosure
+dimensions from `ISAC_868_KiCad9.kicad_pcb` and `ISAC.pretty/IFA_868MHz_ISAC_40x20mm.kicad_mod`
+(read-only, without modifying the frozen Rev E.5 hardware files) and generates:
 
   1. cst_studio/macros/ISAC_868_Complete_Antenna_MWS.bas
        Native CST Microwave Studio 3D VBA macro (Time-Domain FIT solver, 0.70-3.00 GHz,

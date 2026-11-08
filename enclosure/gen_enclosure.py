@@ -6,7 +6,7 @@ gen_enclosure.py -- Parametric CAD, 3D PCBA Clearance Verifier & Watertight STL
                     Continuous 360-Degree Parker ORD 5700 Face-Seal O-Ring Groove,
                     Solid Weatherproof Electronics Roof & Wall-Gusseted M2.5 Bosses.
 
-Canonical Right-Handed Coordinate System (1:1 identical to Gerber X2, Drill, CPL & STEP):
+Right-Handed Manufacturing Coordinate System (shared with Gerber X2, Drill, CPL & STEP):
   - Origin (0, 0, 0) = Bottom-Left corner of the 90.00 x 40.00 mm PCB on F.Cu top surface
                        (KiCad AuxOrigin = Sheet (103.50, 120.00) mm).
   - +X in [0, 90.00] mm = East (toward 40 x 40 mm antenna & open-East sensing runoff deck).
@@ -16,30 +16,28 @@ Canonical Right-Handed Coordinate System (1:1 identical to Gerber X2, Drill, CPL
 
 Generates:
   1. enclosure/ISAC_868_Lid_0p80mm_Window.stl
-     - 100% Uniform-Flat-Roof (z_top = +8.50 mm) UV-stabilized ASA (indoor alt: PETG) upper lid
-       with open-East self-draining t_ASA = 0.80 mm (5 x 0.16 mm solid FDM layers) sensing deck over
-       the 12.00 x 12.55 mm bare-ENIG interdigitated comb (X = 74.60..86.60 mm, Y = 7.65..20.20 mm)
-       extending flush through X = 92.85 mm (0.00 mm East dam lip, 0.00 mL trapped water pool),
-       bonded with 25 um 3M 467MP void-free acrylic transfer tape for 0.000 mm air gap across
-       -40..+85 C, 100% solid unbroken flat roof (J1/J2/J3/J4/J5 DNP — zero connector domes or roof
-       slots), flat Z = -1.44 mm compliant perimeter face-seal clamping skirt (+0.16 mm standoff gap
-       preventing -10% FR-4 tolerance hard-stop), and 4 x M2.5 Nylon clamping pillars sealed by captive
-       EPDM washers.
+     - Flat-roof (z_top = +8.50 mm) UV-stabilized ASA (indoor alt: PETG) upper lid with an
+       open-East self-draining t_ASA = 0.80 mm (5 x 0.16 mm FDM layers) sensing deck over the
+       12.00 x 12.55 mm bare-ENIG interdigital comb (X = 74.60..86.60 mm, Y = 7.65..20.20 mm)
+       extending flush through X = 92.85 mm (0.00 mm East lip so water drains off the edge),
+       laminated with 25 um 3M 467MP acrylic transfer adhesive to wet out micro-roughness and
+       displace interfacial air pockets, an unbroken electronics roof (J1..J5 DNP), a Z = -1.44 mm
+       compliant face-seal skirt (+0.16 mm clearance for -10% FR-4 thickness tolerance), and
+       4 x M2.5 clamping pillars sealed by captive EPDM washers.
   2. enclosure/ISAC_868_Base_Tray.stl
-     - Matching symmetric 95.70 x 45.70 mm slim lower base tray with continuous 360-degree unbroken
-       Parker ORD 5700 static face-seal O-ring groove (1.80 mm wide x 0.76 mm deep + 0.16 mm compliant
-       gap = 0.92 mm compressed gland for Dia 1.20 mm Shore 50A cord: 23.3% squeeze, 68.3% <= 85%
-       nominal gland fill; 82.7% <= 85% fill at 1.44 mm thin PCB), 4.00 mm M2.5 standoffs, internal
-       under-PCB wire-relief channel beneath J2 bare-ENIG PTH solder pads (4.56 mm clear bend height
-       below B.Cu, 100% inside the O-ring seal), and 4.00 mm unloaded IFA air cavity.
+     - Matching 95.70 x 45.70 mm slim lower base tray with a continuous perimeter Parker ORD 5700
+       static face-seal O-ring groove (1.80 mm wide x 0.76 mm deep + 0.16 mm skirt clearance
+       = 0.92 mm compressed gland for Dia 1.20 mm Shore 50A cord: 23.3% squeeze, 68.3% nominal
+       gland fill; 82.7% fill at 1.44 mm thin PCB), 4.00 mm M2.5 standoffs, an internal under-PCB
+       wire channel beneath J2 PTH solder pads (4.56 mm bend clearance inside the O-ring perimeter),
+       and a 4.00 mm unloaded air cavity beneath AE1.
   3. enclosure/ISAC_868_Base_Tray_Battery.stl
-     - Stepped dual-fit field battery-bay base tray with identical symmetric 360-degree Parker
-       face-seal O-ring groove and a 2.00 mm-walled lower cradle strictly under the X < 50 mm GND
-       counterpoise (fits EITHER a 2/3 AA ER14335M 3.6V 1300mAh sub-zero spiral Li-SOCl2
-       cylinder OR a 302535 LiPo pouch across coplanar side shelves), keeping X = 50..90 mm
-       antenna aperture unloaded and preserving M2.5 x 22 mm corner screw lengths (+2.30 mm full nut thread engagement).
+     - Stepped dual-fit battery-bay base tray with the same perimeter O-ring groove and a 2.00 mm
+       walled lower cradle confined under the X < 50 mm GND counterpoise (accepts either a 2/3 AA
+       ER14335M 3.6 V 1300 mAh spiral Li-SOCl2 cell or a 302535 LiPo pouch across side shelves),
+       leaving the X = 50..90 mm antenna aperture unloaded and retaining M2.5 x 22 mm corner screws.
   4. enclosure/ISAC_868_Enclosure_0p80mm.scad
-     - 1:1 synchronized OpenSCAD parametric source in exact right-handed AuxOrigin coordinates.
+     - Synchronized OpenSCAD parametric source in right-handed AuxOrigin coordinates.
   5. docs/ISAC_868_Enclosure_0p80mm_Blueprint.png & docs/ISAC_868_Enclosure_Battery_Blueprint.png
      - Dimensioned mechanical cross-section & top-view assembly blueprints.
 """

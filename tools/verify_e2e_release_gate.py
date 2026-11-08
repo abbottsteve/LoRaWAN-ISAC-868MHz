@@ -2,9 +2,9 @@
 """
 Master End-to-End Manufacturing Release Verification Gate (`Rev E.5`)
 =====================================================================
-100% self-contained workspace pipeline executing every CAD, Full-Wave 3D FDTD,
+Self-contained workspace pipeline executing CAD, full-wave 3D FDTD,
 2D-FVM, parasitic-extracted Monte-Carlo, DFM, Gerber, BOM/CPL, mechanical STL,
-firmware HIL/NVM/SysTick, negative-mutation, and documentation parity gate:
+firmware HIL/NVM/SysTick, negative-mutation, and documentation parity gates:
 
   [01] cpwg_2dfvm_solver      : Graded 2D-FVM CPWG 51.90 Ohm LPI + Wadell benchmark
   [02] ifa_enclosure_mom      : Full-Wave 3D Maxwell FDTD + Elliptic Harmonic Pi-Filter
@@ -123,7 +123,7 @@ def _verify_enclosure_watertight():
                 raise RuntimeError(
                     f"Lid sensing window thickness [{min_t:.3f}, {max_t:.3f}] mm outside 0.80 +/- 0.02 mm!"
                 )
-            details.append(f"Window t_ASA=[{min_t:.3f}..{max_t:.3f}] mm (25 rays, 0.000 mm air gap)")
+            details.append(f"Window t_ASA=[{min_t:.3f}..{max_t:.3f}] mm (25 rays, 25 um 467MP bondline)")
 
     return " | ".join(details)
 

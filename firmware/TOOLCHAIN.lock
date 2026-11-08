@@ -1,4 +1,4 @@
-# ISAC_868 Rev E.2 Pinned Firmware Toolchain Manifest (Audit M6)
+# ISAC_868 Rev E.5 Pinned Firmware Toolchain Manifest
 CROSS_CC=arm-none-eabi-gcc
 CROSS_GCC_MAJOR=12
 CROSS_GCC_VERSION=12.2.1 20221205 (15:12.2.rel1-1)

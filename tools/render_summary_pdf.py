@@ -76,28 +76,38 @@ def _render_mermaid_block(code_str):
 def _latex_to_html(expr, display=False):
     s = expr.strip()
     # Known exact display equations for crisp fraction layout
-    if "V_{\\text{DDA,true}}" in s:
+    if display and "P_{\\text{refl}}(f_k)" in s:
+        inner = (
+            "<i>P</i><sub>refl</sub>(<i>f<sub>k</sub></i>) = <i>P</i><sub>TX</sub> + "
+            "20&thinsp;log<sub>10</sub>&#124;<i>S</i><sub>31</sub>(<i>f<sub>k</sub></i>) + "
+            "<span class='frac'>"
+            "<span class='num'><i>S</i><sub>21</sub>(<i>f<sub>k</sub></i>)<i>S</i><sub>32</sub>(<i>f<sub>k</sub></i>)&thinsp;&Gamma;<sub>in</sub>(<i>f<sub>k</sub></i>)</span>"
+            "<span class='den'>1 &minus; <i>S</i><sub>22</sub>(<i>f<sub>k</sub></i>)&thinsp;&Gamma;<sub>in</sub>(<i>f<sub>k</sub></i>)</span>"
+            "</span>&#124;"
+        )
+        return f'<div class="math-display">{inner}</div>'
+    if display and "V_{\\text{DDA,true}}" in s:
         inner = (
             "<i>V</i><sub>DDA,true</sub> = 3000&nbsp;mV &times; "
             "<span class='frac'><span class='num'>16 &times; VREFINT_CAL</span>"
             "<span class='den'>ADC16<sub>VREFINT</sub></span></span>"
         )
         return f'<div class="math-display">{inner}</div>'
-    if "\\Delta L_{13} =" in s and "\\frac{V(f_1)" in s:
+    if display and "\\Delta L_{13} =" in s and "\\frac{V(f_1)" in s:
         inner = (
             "&Delta;<i>L</i><sub>13</sub> = "
             "<span class='frac'><span class='num'><i>V</i>(<i>f</i><sub>1</sub>) &minus; <i>V</i>(<i>f</i><sub>3</sub>)</span>"
             "<span class='den'>19.0&nbsp;mV/dB</span></span>"
         )
         return f'<div class="math-display">{inner}</div>'
-    if "\\Delta N_2 =" in s:
+    if display and "\\Delta N_2 =" in s:
         inner = (
             "&Delta;<i>N</i><sub>2</sub> = "
             "<span class='frac'><span class='num'>&frac12;[<i>V</i>(<i>f</i><sub>1</sub>) + <i>V</i>(<i>f</i><sub>3</sub>)] &minus; <i>V</i>(<i>f</i><sub>2</sub>)</span>"
             "<span class='den'>19.0&nbsp;mV/dB</span></span>"
         )
         return f'<div class="math-display">{inner}</div>'
-    if "\\bar{L} =" in s:
+    if display and "\\bar{L} =" in s:
         inner = (
             "<span style='text-decoration:overline;'><i>L</i></span> = "
             "<span class='frac'><span class='num'><i>P</i><sub>refl</sub>(<i>f</i><sub>1</sub>) + "
@@ -106,8 +116,13 @@ def _latex_to_html(expr, display=False):
         )
         return f'<div class="math-display">{inner}</div>'
 
-    # Inline math substitutions
+    # Inline math substitutions (note: &#124; avoids Markdown table cell splitting)
     replacements = [
+        (r"\\lvert", "&#124;"),
+        (r"\\rvert", "&#124;"),
+        (r"\\left\|", "&#124;"),
+        (r"\\right\|", "&#124;"),
+        (r"\|", "&#124;"),
         (r"\\hat\{\\varepsilon\}_r'", "ε̂<sub>r</sub>&prime;"),
         (r"\\varepsilon_r\^\*", "ε<sub>r</sub><sup>*</sup>"),
         (r"\\varepsilon_r'", "ε<sub>r</sub>&prime;"),
@@ -115,16 +130,42 @@ def _latex_to_html(expr, display=False):
         (r"\\varepsilon_r", "ε<sub>r</sub>"),
         (r"\\Delta L_\{13\}", "&Delta;<i>L</i><sub>13</sub>"),
         (r"\\Delta N_2", "&Delta;<i>N</i><sub>2</sub>"),
+        (r"\\Delta", "&Delta;"),
         (r"\\bar\{L\}", "<span style='text-decoration:overline;'><i>L</i></span>"),
         (r"\\delta_E", "&delta;<sub>E</sub>"),
+        (r"\\lambda_0", "&lambda;<sub>0</sub>"),
+        (r"\\lambda_g", "&lambda;<sub>g</sub>"),
+        (r"\\lambda", "&lambda;"),
+        (r"\\eta_\{([^}]*)\}", r"&eta;<sub>\1</sub>"),
+        (r"\\eta", "&eta;"),
         (r"\\Gamma", "&Gamma;"),
+        (r"\\delta", "&delta;"),
+        (r"\\sigma", "&sigma;"),
+        (r"\\tau", "&tau;"),
         (r"\\pi", "&pi;"),
         (r"\\to", "&rarr;"),
         (r"\\approx", "&approx;"),
+        (r"\\le\b", "&le;"),
+        (r"\\leq\b", "&le;"),
+        (r"\\ge\b", "&ge;"),
+        (r"\\geq\b", "&ge;"),
+        (r"\\parallel", "&#8741;"),
+        (r"\\times", "&times;"),
+        (r"\\pm", "&plusmn;"),
+        (r"\\in\b", "&isin;"),
+        (r"\\square", "&#9633;"),
         (r"\\Omega", "&Omega;"),
         (r"\\cdot", "&middot;"),
+        (r"\^\\circ", "&deg;"),
+        (r"\^\{\\circ\}", "&deg;"),
         (r"\\frac\{1\}\{2\}", "&frac12;"),
         (r"\\text\{([^}]*)\}", r"\1"),
+        (r"\\\{", "{"),
+        (r"\\\}", "}"),
+        (r"\\%", "%"),
+        (r"\\,", "&thinsp;"),
+        (r"\\!", ""),
+        (r"\\ ", "&nbsp;"),
         (r"_\{([^}]*)\}", r"<sub>\1</sub>"),
         (r"_([A-Za-z0-9])", r"<sub>\1</sub>"),
         (r"\^\{([^}]*)\}", r"<sup>\1</sup>"),
@@ -230,6 +271,10 @@ td {
     border: 0.6pt solid #cbd5e1;
     vertical-align: top;
 }
+tr {
+    page-break-inside: avoid;
+    break-inside: avoid;
+}
 tr:nth-child(even) td {
     background-color: #f8fafc;
 }
@@ -307,6 +352,16 @@ blockquote {
 .frac > .den {
     display: block;
     padding: 1pt 3pt 0 3pt;
+}
+img {
+    max-width: 100%;
+    max-height: 112mm;
+    width: auto;
+    height: auto;
+    display: block;
+    margin: 6pt auto;
+    border: 0.5pt solid #cbd5e1;
+    border-radius: 2pt;
 }
 """
 

@@ -4,8 +4,8 @@
 Uses the exact 8-node complex nodal + Hammerstad-Jensen microstrip [Y] model from `rf/bridge_sparam_mc.py`
 (including `R1=8.2R`, `R2=681R`, `R3=3.57k||C_S2=1.0pF`, `L_Q=27nH`, `C_S=1.0pF`, `L_S=30nH`,
 `R_TERM=56R`, `C_BLK=100pF`, and ADI `LT5538` datasheet complex `Z_in = 63.48 - j120.35 Ohm` at 866.5 MHz),
-and verifies that during +14.0 dBm LoRaWAN TX when `U2` (`LT5538`) is unpowered (`3V3_DET = 0 V` via `Q1` QOD),
-the peak AC voltage at `U2 Pin 2 (IN+)` stays strictly below the ~350 mV ESD-diode forward-conduction knee.
+and checks that during +14.0 dBm LoRaWAN TX when `U2` (`LT5538`) is unpowered (`3V3_DET = 0 V` via `Q1` QOD),
+the peak AC voltage at `U2 Pin 2 (IN+)` remains well below the ~350 mV ESD-diode forward-conduction knee.
 """
 from __future__ import annotations
 
